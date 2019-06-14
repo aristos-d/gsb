@@ -1,0 +1,8 @@
+# Generalized Sparse Blocks
+
+This library is the result of my diploma thesis for the Department of
+Electrical and Computer Engineering of the Aristotle University of
+Thessaloniki. It introduces a new sparse matrix storage format after which the
+library is named. However, a number of other storage formats are implemented
+and hopefully the library could be usefull to anyone intersted in research related
+to the SpMV routine.

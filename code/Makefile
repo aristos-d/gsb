@@ -1,0 +1,255 @@
+SRCDIR = src/
+BINDIR = bin/
+INCDIR = include/
+TESTDIR = src/test/
+TOOLDIR = src/tools/
+TESTBINDIR = bin/test/
+TOOLBINDIR = bin/tools/
+DEPDIR = dep/
+CSBDIR= dep/csb/
+
+OBJ = obj/common.o \
+      obj/mm_io.o
+
+TESTS = $(TESTBINDIR)result \
+		$(TESTBINDIR)structs \
+		$(TESTBINDIR)block \
+		$(TESTBINDIR)partition \
+		$(TESTBINDIR)mkl
+
+TOOLS = $(TOOLBINDIR)permute  \
+		$(TOOLBINDIR)sort \
+		$(TOOLBINDIR)convert_blocked \
+		$(TOOLBINDIR)convert \
+		$(TOOLBINDIR)expanded \
+		$(TOOLBINDIR)double2float \
+		$(TOOLBINDIR)pprint \
+		$(TOOLBINDIR)one2zero \
+		$(TOOLBINDIR)ipermute \
+		$(TOOLBINDIR)prepare
+
+INCFLAGS = -I$(INCDIR) -I$(DEPDIR)
+LINKFLAGS =
+
+INTELROOT = /opt/intel/parallel_studio
+INTELLINK = $(INTELROOT)/lib/intel64
+
+MATLABBIN = $(shell readlink -f $(which matlab))
+MATLABROOT = $(basename $(basename $(MATLABBIN)))
+MATLABINC = $(MATLABROOT)/extern/include
+
+# CC should be a C compiler and CXX a C++ compiler
+CC = icc
+CXX = icpc
+FLAGSOPT = -O3 -xHost -fno-rtti -fno-exceptions -fno-alias -funroll-loops -restrict 
+FLAGS = $(INCFLAGS) -std=c++11 -g $(FLAGSOPT)
+FLAGSDEBUG = $(INCFLAGS) -std=c++11 -g
+FLAGSSERIAL = $(FLAGS) -cilk-serialize
+FLAGSC = $(INCFLAGS)
+HEADERS = $(INCDIR)*.h $(INCDIR)matrix/*.h $(INCDIR)io/*.h $(INCDIR)test/*.h
+
+all: test tools spmv
+
+spmv: csbr cgbr csr cswr csb mkl
+
+test: $(TESTS)
+
+tools: $(TOOLS)
+
+clean:
+	find bin/ -type f -exec rm {} \;
+	rm -f obj/*.o obj/mex/*.o lib/*.a
+
+###############################
+# Test targets
+###############################
+
+$(TESTBINDIR)block: $(TESTDIR)block.cpp lib/common.a $(HEADERS)
+	$(CXX) $(FLAGS) -DITERATIONS=200 \
+		$< lib/common.a -o $@ -mkl=sequential
+
+$(TESTBINDIR)structs: $(TESTDIR)structs.cpp $(INCDIR)typedefs.h
+	$(CXX) $(FLAGSDEBUG) $< -o $@
+
+$(TESTBINDIR)result: $(TESTDIR)result.cpp lib/common.a $(HEADERS)
+	$(CXX) $(FLAGS) $< lib/common.a -o $@
+
+$(TESTBINDIR)partition: src/drivers/blocked.cpp lib/common.a $(HEADERS)
+	$(CXX) $(FLAGS) \
+		-DMATRIXTYPE="Cgbr<float,uint32_t,uint16_t>" -DPARTITION_DEBUG \
+		-DVALTYPE=float -DITYPE=uint32_t -DSITYPE=uint16_t \
+		$< lib/common.a -o $@
+
+$(TESTBINDIR)mkl: $(TESTDIR)mkl.cpp lib/common.a 
+	$(CXX) $(FLAGS) \
+		-DMKL_SPARSE -DMKL_DENSE \
+		$(TESTDIR)mkl.cpp lib/common.a -o $@ -mkl=sequential
+
+###############################
+# Tools
+###############################
+
+$(TOOLBINDIR)sort: $(TOOLDIR)sort.cpp lib/common.a $(HEADERS)
+	$(CXX) $(FLAGSDEBUG) $(TOOLDIR)sort.cpp lib/common.a -o $@
+
+$(TOOLBINDIR)permute: $(TOOLDIR)permute.cpp lib/common.a $(HEADERS)
+	$(CXX) $(FLAGSDEBUG) $(TOOLDIR)permute.cpp lib/common.a -o $@
+
+$(TOOLBINDIR)ipermute: $(TOOLDIR)permute.cpp lib/common.a $(HEADERS)
+	$(CXX) $(FLAGSDEBUG) $(TOOLDIR)permute.cpp lib/common.a -o $@ -DINVPERM
+
+$(TOOLBINDIR)expanded: $(TOOLDIR)expanded.cpp lib/common.a $(HEADERS)
+	$(CXX) $(FLAGSDEBUG) $(TOOLDIR)expanded.cpp lib/common.a -o $@
+
+$(TOOLBINDIR)convert_blocked: $(TOOLDIR)convert_blocked.cpp lib/common.a $(HEADERS)
+	$(CXX) $(FLAGSDEBUG) $(TOOLDIR)convert_blocked.cpp lib/common.a -o $@
+
+$(TOOLBINDIR)convert: $(TOOLDIR)convert.cpp lib/common.a $(HEADERS)
+	$(CXX) $(FLAGSDEBUG) $(TOOLDIR)convert.cpp lib/common.a -o $@
+
+$(TOOLBINDIR)prepare: $(TOOLDIR)prepare.cpp lib/common.a $(HEADERS)
+	$(CXX) $(FLAGSDEBUG) -O2 $(TOOLDIR)prepare.cpp lib/common.a -o $@
+
+$(TOOLBINDIR)double2float: $(TOOLDIR)double2float.c
+	$(CC) $(FLAGSC) $< -o $@
+
+$(TOOLBINDIR)one2zero: $(TOOLDIR)one2zero.c
+	$(CC) $(FLAGSC) $< -o $@
+
+$(TOOLBINDIR)pprint: $(TOOLDIR)pprint.c
+	$(CC) $(FLAGSC) $< -o $@
+
+###############################
+# Driver programs targets
+###############################
+
+csbr: $(BINDIR)csbr $(BINDIR)csbr2
+
+$(BINDIR)csbr: src/drivers/blocked.cpp lib/common.a $(HEADERS)
+	$(CXX) $(FLAGS) \
+		-DMATRIXTYPE="Csbr<float,uint32_t>" -DVALTYPE=float -DITYPE=uint32_t \
+		$< lib/common.a -o $@
+
+$(BINDIR)csbr2: src/drivers/blocked.cpp lib/common.a $(HEADERS)
+	$(CXX) $(FLAGS) \
+		-DMATRIXTYPE="Csbr2<float,uint32_t>" -DVALTYPE=float -DITYPE=uint32_t \
+		$< lib/common.a -o $@
+
+cgbr: $(BINDIR)cgbr $(BINDIR)cgbr2
+
+$(BINDIR)cgbr: src/drivers/blocked.cpp lib/common.a $(HEADERS)
+	$(CXX) $(FLAGS) \
+		-DMATRIXTYPE="Cgbr<float,uint32_t,uint16_t>" -DVALTYPE=float -DITYPE=uint32_t \
+		$< lib/common.a -o $@
+
+$(BINDIR)cgbr2: src/drivers/blocked.cpp lib/common.a $(HEADERS)
+	$(CXX) $(FLAGS) \
+		-DMATRIXTYPE="Cgbr2<float,uint32_t,uint16_t>" -DVALTYPE=float -DITYPE=uint32_t \
+		$< lib/common.a -o $@
+
+bcsr: $(BINDIR)bcsr
+
+$(BINDIR)bcsr: src/drivers/blocked.cpp lib/common.a $(HEADERS)
+	$(CXX) $(FLAGS) \
+		-DMATRIXTYPE="Bcsr<float,uint32_t>" \
+		$< lib/common.a -o $@
+
+csr: $(BINDIR)csr $(BINDIR)csr2
+
+$(BINDIR)csr: src/drivers/csr.cpp lib/common.a $(HEADERS)
+	$(CXX) $(FLAGS) \
+		-DMATRIXTYPE="Csr<float,uint32_t>" -DVALTYPE=float -DITYPE=uint32_t \
+		$< lib/common.a -o $@
+
+$(BINDIR)csr2: src/drivers/csr.cpp lib/common.a $(HEADERS)
+	$(CXX) $(FLAGS) \
+		-DMATRIXTYPE="Csr2<float,uint32_t>" -DVALTYPE=float -DITYPE=uint32_t \
+		$< lib/common.a -o $@
+
+cswr: $(BINDIR)cswr
+
+$(BINDIR)cswr: src/drivers/cswr.cpp lib/common.a $(HEADERS)
+	$(CXX) $(FLAGS) \
+		-DMATRIXTYPE="Cswr<float,uint32_t,uint8_t>" -DVALTYPE=float -DITYPE=uint32_t \
+		$< lib/common.a -o $@
+
+bench: $(BINDIR)bench $(BINDIR)pbench
+
+$(BINDIR)bench: src/drivers/bench.cpp lib/common.a $(HEADERS)
+	$(CXX) $(FLAGS) \
+		-DVALTYPE=float -DINDEXTYPE=uint32_t -DSINDEXTYPE=uint16_t \
+		$< lib/common.a -o $@
+
+$(BINDIR)pbench: src/drivers/pbench.cpp lib/common.a $(HEADERS)
+	$(CXX) $(FLAGS) \
+		 -DVALTYPE=float -DINDEXTYPE=uint32_t -DSINDEXTYPE=uint16_t \
+		$< lib/common.a -o $@
+
+###############################
+# Driver programs using Intel's MKL
+###############################
+
+mkl: $(BINDIR)csr_mkl $(BINDIR)cgbr_mkl $(BINDIR)cgbr_hyb $(BINDIR)cswr_mkl
+
+$(BINDIR)csr_mkl: src/drivers/csr.cpp lib/common.a $(HEADERS)
+	$(CXX) $(FLAGS) \
+		-DMKL_SPARSE -DMATRIXTYPE="Csr<float,int>" -DVALTYPE=float -DITYPE=int \
+		$< lib/common.a -o $@ -mkl=parallel
+
+$(BINDIR)cgbr_mkl: src/drivers/blocked.cpp lib/common.a $(HEADERS)
+	$(CXX) $(FLAGS) \
+	    -DMKL_DENSE -DMKL_SPARSE -DMATRIXTYPE="Cgbr<float,int,int>" -DVALTYPE=float -DITYPE=int \
+	    $< lib/common.a -o $@ -mkl=sequential
+
+$(BINDIR)cgbr2_hyb: src/drivers/blocked.cpp lib/common.a $(HEADERS)
+	$(CXX) $(FLAGS) \
+	    -DMKL_DENSE -DMATRIXTYPE="Cgbr2<float,int,uint16_t>" -DVALTYPE=float -DITYPE=int \
+	    $< lib/common.a -o $@ -mkl=sequential 
+
+$(BINDIR)cgbr_hyb: src/drivers/blocked.cpp lib/common.a $(HEADERS)
+	$(CXX) $(FLAGS) \
+	    -DMKL_DENSE -DMATRIXTYPE="Cgbr<float,int,uint16_t>" -DVALTYPE=float -DITYPE=int \
+	    $< lib/common.a -o $@ -mkl=sequential 
+
+$(BINDIR)cswr_mkl: src/drivers/cswr.cpp lib/common.a $(HEADERS)
+	$(CXX) $(FLAGS) \
+		-DMKL_SPARSE -DMATRIXTYPE="Cswr<float,int,int>" -DVALTYPE=float -DITYPE=int \
+		$< lib/common.a -o $@ -mkl=sequential
+
+###############################
+# Driver programs using CSB library
+###############################
+
+csb: $(BINDIR)bicsb
+
+$(BINDIR)bicsb: src/drivers/bicsb.cpp lib/common.a $(HEADERS)
+	$(CXX) $(FLAGS) \
+		-DVALTYPE=float -DITYPE=uint32_t \
+		$< lib/common.a -o $@
+
+###############################
+# MEX wrappers to use in MATLAB
+###############################
+
+mex: ../matlab/spmv.mexa64
+
+obj/mex/wrap.o: src/mex/wrap.cpp $(HEADERS)
+	$(CXX) $(FLAGS) -I$(MATLABINC) -I$(INCDIR) -Wall -c src/mex/wrap.cpp -fPIC -o $@
+	
+../matlab/spmv.mexa64: src/mex/spmv.cpp obj/mex/wrap.o $(HEADERS)
+	mex -g -I$(MATLABINC) -I$(INCDIR) -L$(INTELLINK) -lcilkrts -lirc \
+	src/mex/spmv.cpp obj/mex/wrap.o -outdir ./bin/mex
+
+###############################
+# Object files and libraries
+###############################
+
+obj/common.o: src/common.cpp
+	$(CXX) $(FLAGS) -c $< -o $@
+
+obj/mm_io.o: $(DEPDIR)mm_io/mm_io.c
+	$(CC) $(FLAGSC) -c $< -o $@
+
+lib/common.a: $(OBJ)
+	ar rcs $@ $^
+

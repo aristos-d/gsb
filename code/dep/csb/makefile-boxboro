@@ -1,0 +1,36 @@
+CILK = /usr/local/cilk
+INCADD = -I$(CILK)/include -I$(CILK)/examples/include
+LIBADD = -L$(CILK)/lib64/
+
+GCCOPT = -O2 -fno-rtti -fno-exceptions # -ftree-vectorize
+INTELOPT = -fast -fno-rtti -xW -restrict # -vec_report3
+DEB = -g 
+
+seqsym: sym_spmv_test.cpp csbsym.cpp csbsym.h utility.h friends.h SSEspmv.o
+	icpc $(INCADD) $(DEB) -o seqsym sym_spmv_test.cpp SSEspmv.o
+
+parsym: sym_spmv_test.cpp csbsym.cpp csbsym.h utility.h friends.h SSEspmv.o
+	cilk++ -DCILKPARALLEL $(INCADD) $(GCCOPT) -o parsym sym_spmv_test.cpp SSEspmv.o 
+
+symanal: sym_spmv_test.cpp csbsym.cpp csbsym.h utility.h friends.h SSEspmv.o
+	cilk++ -DSTATS $(INCADD) $(GCCOPT) -o symanal sym_spmv_test.cpp SSEspmv.o -lcilkutil
+
+seqspmv: csb_spmv_test.cpp bicsb.cpp bicsb.h bmcsb.cpp bmcsb.h utility.h SSEspmv.o
+	icpc $(INCADD) $(INTELOPT) -o seqspmv csb_spmv_test.cpp SSEspmv.o
+
+parspmv: csb_spmv_test.cpp bicsb.cpp bicsb.h bmcsb.cpp bmcsb.h utility.h SSEspmv.o
+	cilk++ -DCILKPARALLEL $(INCADD) $(GCCOPT) -o parspmv csb_spmv_test.cpp SSEspmv.o
+
+parspmvt: csb_spmvt_test.cpp bicsb.cpp bicsb.h utility.h
+	cilk++ -DCILKPARALLEL $(INCADD) $(GCCOPT) -o parspmvt csb_spmvt_test.cpp
+
+SSEspmv.o: SSEspmv.cpp
+	icpc -O3 -xT -c SSEspmv.cpp	
+
+clean:	
+	rm -f seqspmv
+	rm -f seqsym
+	rm -f parspmv
+	rm -f parsym 
+	rm -f parspmvt
+	rm -f *.o
