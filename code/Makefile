@@ -34,8 +34,8 @@ LINKFLAGS =
 INTELROOT = /opt/intel/parallel_studio
 INTELLINK = $(INTELROOT)/lib/intel64
 
-MATLABBIN = $(shell readlink -f $(which matlab))
-MATLABROOT = $(basename $(basename $(MATLABBIN)))
+MATLABBIN = $(shell readlink -f $(shell which matlab))
+MATLABROOT = $(shell dirname $(shell dirname $(MATLABBIN)))
 MATLABINC = $(MATLABROOT)/extern/include
 
 # CC should be a C compiler and CXX a C++ compiler
@@ -48,6 +48,10 @@ FLAGSSERIAL = $(FLAGS) -cilk-serialize
 FLAGSC = $(INCFLAGS)
 HEADERS = $(INCDIR)*.h $(INCDIR)matrix/*.h $(INCDIR)io/*.h $(INCDIR)test/*.h
 
+# An ugly solution to generate output directories because git cannot keep track
+# of them
+IGNORE := $(shell mkdir -p obj obj/mex lib bin bin/test bin/tools bin/mex)
+
 all: test tools spmv
 
 spmv: csbr cgbr csr cswr csb mkl
@@ -57,8 +61,7 @@ test: $(TESTS)
 tools: $(TOOLS)
 
 clean:
-	find bin/ -type f -exec rm {} \;
-	rm -f obj/*.o obj/mex/*.o lib/*.a
+	rm -rf obj lib bin
 
 ###############################
 # Test targets
@@ -231,12 +234,12 @@ $(BINDIR)bicsb: src/drivers/bicsb.cpp lib/common.a $(HEADERS)
 # MEX wrappers to use in MATLAB
 ###############################
 
-mex: ../matlab/spmv.mexa64
+mex: bin/mex/spmv.mexa64
 
 obj/mex/wrap.o: src/mex/wrap.cpp $(HEADERS)
-	$(CXX) $(FLAGS) -I$(MATLABINC) -I$(INCDIR) -Wall -c src/mex/wrap.cpp -fPIC -o $@
+	$(CXX) -I$(MATLABINC) $(FLAGS) -Wall -c src/mex/wrap.cpp -fPIC -o $@
 	
-../matlab/spmv.mexa64: src/mex/spmv.cpp obj/mex/wrap.o $(HEADERS)
+bin/mex/spmv.mexa64: src/mex/spmv.cpp obj/mex/wrap.o $(HEADERS)
 	mex -g -I$(MATLABINC) -I$(INCDIR) -L$(INTELLINK) -lcilkrts -lirc \
 	src/mex/spmv.cpp obj/mex/wrap.o -outdir ./bin/mex
 
