@@ -3,7 +3,6 @@
 
 #include <assert.h>
 #include <stdio.h>
-#include <limits.h>
 
 #include "mm_io/mm_io.h"
 #include "common.h"
@@ -73,7 +72,7 @@ int read_mm_COO(COO<T,IT> * A, const char * filename)
   // Read size and allocate memory. Following function only works with ints
   int nr, nc, nnz;
   int ret_code = mm_read_mtx_crd_size(f, &nr, &nc, &nnz);
-  if (ret_code != 0){
+  if (ret_code != 0) {
     fprintf(stderr, "Error while reading size information.\n");
     return -4;
   }
@@ -265,8 +264,7 @@ int read_bin_COO(COO<T, IT> * A, const char * file_row, const char * file_col, c
 }
 
 /*
- * Read a COO matrix from a binary file (.bin). File format is described in
- * "notes/File Formats.md"
+ * Read a COO matrix from a binary file (.bin). 
  */
 template <typename T, typename IT, 
           template <typename, typename> typename COO>
@@ -277,19 +275,17 @@ int read_bin_COO(COO<T,IT> * A, const char * filename)
     FILE * f;
    
     f = fopen(filename, "rb");
-    if (f == NULL){
+    if (f == NULL) {
         fprintf(stderr, "Cannot open matrix file.\n");
         return -1;
     }
-
-    // TODO: Set buffering mode to improve IO performance
 
     // Reading header
     counter = 0;
     counter += fread(&(A->rows), sizeof(IT), 1, f);
     counter += fread(&(A->columns), sizeof(IT), 1, f);
     counter += fread(&(A->nnz), sizeof(IT), 1, f);
-    if (counter != 3){
+    if (counter != 3) {
         fprintf(stderr, "Failed to read matrix header.\n");
         return -2;
     }
@@ -299,22 +295,22 @@ int read_bin_COO(COO<T,IT> * A, const char * filename)
 
     // Reading rest of the file
     counter = 0;
-    for(IT i=0; i<A->nnz; i++){
+    for (IT i=0; i<A->nnz; i++) {
         counter += fread(&buffer, sizeof(IT), 1, f);
         set_row_index(A, i, buffer);
     }
 
-    for(IT i=0; i<A->nnz; i++){
+    for (IT i=0; i<A->nnz; i++) {
         counter += fread(&buffer, sizeof(IT), 1, f);
         set_column_index(A, i, buffer);
     }
 
-    for(IT i=0; i<A->nnz; i++){
+    for (IT i=0; i<A->nnz; i++) {
         counter += fread(&vbuffer, sizeof(T), 1, f);
         set_value(A, i, vbuffer);
     }
 
-    if (counter != 3 * A->nnz){
+    if (counter != 3 * A->nnz) {
         fprintf(stderr, "Failed to read matrix.\n");
         return -4;
     }
