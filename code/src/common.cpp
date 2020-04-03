@@ -1,6 +1,3 @@
-#ifndef _CSBR_COMMON_
-#define _CSBR_COMMON_
-
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -185,5 +182,3 @@ int highest_bit_set(int v)
 		return static_cast<int> (ur); 
 	}
 }
-
-#endif
