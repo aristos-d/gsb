@@ -95,7 +95,7 @@ int main(int argc, char * argv[])
     
     } else {  // Block sizes not provided. Pick constant block size.
 
-        ITYPE beta = pick_block_size<VALTYPE,ITYPE>(B.rows, B.columns, __cilkrts_get_nworkers());
+        ITYPE beta = pick_block_size<VALTYPE,ITYPE>(B.rows, B.columns, RT_WORKERS);
  
         printf("Converting to blocked format..."); fflush(stdout);
         tick();

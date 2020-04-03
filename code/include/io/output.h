@@ -32,7 +32,7 @@ int write_bin_array(const char * filename, T * data, size_t num )
  * otherwise.
  */
 template <typename T, typename IT,
-          template <typename, typename> typename COO>
+          template <typename, typename> class COO>
 int write_mm_COO(COO<T,IT> * A, const char * filename)
 {
   MM_typecode matcode;
@@ -81,7 +81,7 @@ int write_mm_COO(COO<T,IT> * A, const char * filename)
  * a negative number otherwise.
  */
 template <typename T, typename IT,
-          template <typename, typename> typename COO>
+          template <typename, typename> class COO>
 int write_bin_COO(COO<T,IT> * A,
         const char * file_row, const char * file_col, const char * file_val)
 {
@@ -131,7 +131,7 @@ int write_bin_COO(COO<T,IT> * A,
  * in "notes/File Formats.md"
  */
 template <typename T, typename IT,
-          template <typename, typename> typename COO>
+          template <typename, typename> class COO>
 int write_bin_COO(COO<T,IT> A, const char * filename)
 {
     T vbuffer;

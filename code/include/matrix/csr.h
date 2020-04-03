@@ -31,8 +31,8 @@ inline IT nonzeros(BlockCsr<T,IT,SIT> const A){ return A.row_ptr[A.rows]; }
  * should already be allocated and initialized.
  */
 template <class T, class RIT, class CIT>
-inline void spmv_csr(RIT const * const row_ptr, CIT const * const col_ind, T const * const val, RIT const M,
-                     T const * const __restrict x, T * const __restrict y)
+inline void spmv_csr (RIT const * const row_ptr, CIT const * const col_ind, T const * const val, RIT const M,
+                      T const * const __restrict x, T * const __restrict y)
 {
     // For every row, in parallel
     #pragma omp parallel for schedule(dynamic,16)
@@ -46,8 +46,8 @@ inline void spmv_csr(RIT const * const row_ptr, CIT const * const col_ind, T con
 }
 
 template <class T, class RIT, class CIT>
-inline void spmv_csr_serial(RIT const * const row_ptr, CIT const * const col_ind, T const * const val,
-                            RIT const M, T const * const __restrict x, T * const __restrict y)
+inline void spmv_csr_serial (RIT const * const row_ptr, CIT const * const col_ind, T const * const val,
+                             RIT const M, T const * const __restrict x, T * const __restrict y)
 {
     RIT row_start, row_end;
     
@@ -64,33 +64,33 @@ inline void spmv_csr_serial(RIT const * const row_ptr, CIT const * const col_ind
 }
 
 template <class T, class IT>
-inline void spmv(Csr<T,IT> const * const A,
-                 T const * const __restrict x,
-                 T * const __restrict y)
+inline void spmv (Csr<T,IT> const * const A,
+                  T const * const __restrict x,
+                  T * const __restrict y)
 {
     spmv_csr(A->row_ptr, A->col_ind, A->val, A->rows, x, y);
 }
 
 template <class T, class IT>
-inline void spmv_serial(Csr<T,IT> const * const A,
-                        T const * const __restrict x,
-                        T * const __restrict y)
+inline void spmv_serial (Csr<T,IT> const * const A,
+                         T const * const __restrict x,
+                         T * const __restrict y)
 {
     spmv_csr_serial(A->row_ptr, A->col_ind, A->val, A->rows, x, y);
 }
 
 template <class T, class IT, class SIT>
-inline void spmv(BlockCsr<T,IT,SIT> const * const A,
-                 T const * const __restrict x,
-                 T * const __restrict y)
+inline void spmv (BlockCsr<T,IT,SIT> const * const A,
+                  T const * const __restrict x,
+                  T * const __restrict y)
 {
     spmv_csr(A->row_ptr, A->col_ind, A->val, A->rows, x, y);
 }
 
 template <class T, class IT, class SIT>
-inline void spmv_serial(BlockCsr<T,IT,SIT> const * const A,
-                        T const * const __restrict x,
-                        T * const __restrict y)
+inline void spmv_serial (BlockCsr<T,IT,SIT> const * const A,
+                         T const * const __restrict x,
+                         T * const __restrict y)
 {
     spmv_csr_serial(A->row_ptr, A->col_ind, A->val, A->rows, x, y);
 }

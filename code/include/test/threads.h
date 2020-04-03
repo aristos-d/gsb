@@ -9,12 +9,15 @@
 #include "matrix/cgbr.h"
 #include "common.h"
 
+static const char * worker_number[] = {
+    "1", "2", "4", "8", "16", "32", "64", "128", "256"
+};
+
 template<class T, class IT>
 int benchmark_SpMV(Csbr<T, IT> A, int iterations)
 {
   T * x, * y;
   double ts, te, time_avg;
-  const char * worker_number[] = {"1", "2", "4", "8", "16", "32", "64", "128", "256"};
 
   // Allocate and initialize x and y
   srand(0);
@@ -25,14 +28,12 @@ int benchmark_SpMV(Csbr<T, IT> A, int iterations)
   printf("Vectors initialized.\n");
 
   printf("--------------- Benchmarking ---------------\n");
-  printf("Cilk workers, SpMV, SpMV_sb, SpMV_p, SpMV_p_sb\n");
+  printf("Threads, SpMV, SpMV_sb, SpMV_p, SpMV_p_sb\n");
 
   for(int w=0; w<9; w++){
-    // Set up Cilk RTS
-    __cilkrts_end_cilk();
-    __cilkrts_set_param("nworkers", worker_number[w]);
-    __cilkrts_init();
-    printf("%3d, ", __cilkrts_get_nworkers());
+    // Set up the parallel runtime
+    RT_SET_WORKERS(worker_number[w]);
+    printf("%3d, ", RT_WORKERS);
 
     // Run SpMV multiple times and measure execution time
     SpMV(&A, x, y);
@@ -80,7 +81,6 @@ int benchmark_SpMV(Csbr2<T, IT> A, int iterations)
 {
   T * x, * y;
   double ts, te, time_avg;
-  const char * worker_number[] = {"1", "2", "4", "8", "16", "32", "64", "128", "256"};
 
   // Allocate and initialize x and y
   srand(0);
@@ -91,14 +91,11 @@ int benchmark_SpMV(Csbr2<T, IT> A, int iterations)
   printf("Vectors initialized.\n");
 
   printf("--------------- Benchmarking ---------------\n");
-  printf("Cilk workers, SpMV, SpMV_sb\n");
+  printf("Threads, SpMV, SpMV_sb\n");
 
   for(int w=0; w<9; w++){
-    // Set up Cilk RTS
-    __cilkrts_end_cilk();
-    __cilkrts_set_param("nworkers", worker_number[w]);
-    __cilkrts_init();
-    printf("%3d, ", __cilkrts_get_nworkers());
+    // Set up the parallel runtime
+    RT_SET_WORKERS(worker_number[w]);
 
     // Run SpMV multiple times and measure execution time
     SpMV(&A, x, y);
@@ -130,7 +127,6 @@ int benchmark_SpMV(Bcsr<T, IT> A, int iterations)
 {
   T * x, * y;
   double ts, te, time_avg;
-  const char * worker_number[] = {"1", "2", "4", "8", "16", "32", "64", "128", "256"};
 
   // Allocate and initialize x and y
   srand(0);
@@ -141,14 +137,12 @@ int benchmark_SpMV(Bcsr<T, IT> A, int iterations)
   printf("Vectors initialized.\n");
 
   printf("--------------- Benchmarking ---------------\n");
-  printf("Cilk workers, SpMV, SpMV_sb\n");
+  printf("Threads, SpMV, SpMV_sb\n");
 
   for(int w=0; w<9; w++){
-    // Set up Cilk RTS
-    __cilkrts_end_cilk();
-    __cilkrts_set_param("nworkers", worker_number[w]);
-    __cilkrts_init();
-    printf("%3d, ", __cilkrts_get_nworkers());
+    // Set up the parallel runtime
+    RT_SET_WORKERS(worker_number[w]);
+    printf("%3d, ", RT_WORKERS);
 
     // Run SpMV multiple times and measure execution time
     SpMV(&A, x, y);
@@ -181,7 +175,6 @@ int benchmark_SpMV(Cgbr<T, IT> A, int iterations)
 {
   T * x, * y;
   double ts, te, time_avg;
-  const char * worker_number[] = {"1", "2", "4", "8", "16", "32", "64", "128", "256"};
 
   // Allocate and initialize x and y
   srand(0);
@@ -192,14 +185,12 @@ int benchmark_SpMV(Cgbr<T, IT> A, int iterations)
   printf("Vectors initialized.\n");
 
   printf("--------------- Benchmarking ---------------\n");
-  printf("Cilk workers, SpMV, SpMV_sb\n");
+  printf("Threads, SpMV, SpMV_sb\n");
 
   for(int w=0; w<9; w++){
-    // Set up Cilk RTS
-    __cilkrts_end_cilk();
-    __cilkrts_set_param("nworkers", worker_number[w]);
-    __cilkrts_init();
-    printf("%3d, ", __cilkrts_get_nworkers());
+    // Set up the parallel runtime
+    RT_SET_WORKERS(worker_number[w]);
+    printf("%3d, ", RT_WORKERS);
 
     // Run SpMV multiple times and measure execution time
     SpMV(&A, x, y);
@@ -231,7 +222,6 @@ int benchmark_SpMV(CSRMATRIX A, IT columns, int iterations)
 {
   T * x, * y;
   double ts, te, time_avg;
-  const char * worker_number[] = {"1", "2", "4", "8", "16", "32", "64", "128", "256"};
 
   // Allocate and initialize x and y
   srand(0);
@@ -242,14 +232,12 @@ int benchmark_SpMV(CSRMATRIX A, IT columns, int iterations)
   printf("Vectors initialized.\n");
 
   printf("--------------- Benchmarking ---------------\n");
-  printf("Cilk workers, SpMV\n");
+  printf("Threads, SpMV\n");
 
   for(int w=0; w<9; w++){
-    // Set up Cilk RTS
-    __cilkrts_end_cilk();
-    __cilkrts_set_param("nworkers", worker_number[w]);
-    __cilkrts_init();
-    printf("%3d, ", __cilkrts_get_nworkers());
+    // Set up the parallel runtime
+    RT_SET_WORKERS(worker_number[w]);
+    printf("%3d, ", RT_WORKERS);
 
     // Run SpMV multiple times and measure execution time
     SpMV(&A, x, y);

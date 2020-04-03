@@ -4,16 +4,10 @@
 
 #define _NO_CSB_ALIGNED_MALLOC_
 #include "common.h"
-#include "csb/cilk_util.h"
-#include "csb/utility.h"
-#include "csb/triple.h"
-#include "csb/csc.h"
-#include "csb/bicsb.h"
 #include "matrix/coo.h"
 #include "matrix/cgbr.2.h"
 #include "io/input.h"
 #include "test/utils.h"
-#include "test/csb.h"
 
 int main(int argc, char * argv[])
 {
@@ -23,10 +17,7 @@ int main(int argc, char * argv[])
     INDEXTYPE beta;
     VALTYPE * x, * y;
   
-    Coo<VALTYPE,INDEXTYPE> triplets;
     Coo3<VALTYPE,INDEXTYPE> coo;
-    Csc<VALTYPE,INDEXTYPE> * csc;
-    BiCsb<VALTYPE,INDEXTYPE> * csb;
     Csr<VALTYPE,INDEXTYPE> csr;   // Don't use MKL for this one!
     Cgbr2<VALTYPE,INDEXTYPE,SINDEXTYPE> cgbr; 
   
@@ -35,7 +26,7 @@ int main(int argc, char * argv[])
         return 1;
     }
 
-    printf("Cilk threads   : %d\n", __cilkrts_get_nworkers());
+    printf("Threads   : %d\n", RT_WORKERS);
     
     // Reading matrix
     printf("Reading matrix from disk..."); fflush(stdout);
@@ -49,45 +40,14 @@ int main(int argc, char * argv[])
     } 
     printf(" done in %.4f sec\n", t);
 
-    // Create Coo copy
-    printf("Converting to COO format..."); fflush(stdout);
-    tick();
-    sort_triplets(coo.elements, coo.nnz, false); // Sort column-major
-    Coo_to_Coo(&triplets, &coo);
-    t = tock();
-    printf(" done in %.4f sec\n", t);
-    
-    // Create CSC copy
-    printf("Converting to CSC format..."); fflush(stdout);
-    tick();
-    csc = new Csc<VALTYPE,INDEXTYPE>(triplets.I, triplets.J, triplets.val,
-                         triplets.nnz, triplets.rows, triplets.columns);
-    t = tock();
-    printf(" done in %.4f sec\n", t);
-  
-    release(triplets);
+    // Pick block size
+    beta = pick_block_size(coo.rows, coo.columns, sizeof(VALTYPE), RT_WORKERS);
+    printf("Beta = %u\n", beta);
 
     // Intitialize y and x
     #define T VALTYPE
-    INIT(x, triplets.columns, y, triplets.rows);
+    INIT(x, coo.columns, y, coo.rows);
     #undef T
-    
-    // CSB - start
-    printf("Converting to CSB..."); fflush(stdout);
-    tick();
-    csb = new BiCsb<VALTYPE,INDEXTYPE>(*csc, __cilkrts_get_nworkers());
-    t = tock();
-    printf(" done in %.4f sec\n", t);
-    
-    beta = csb->beta();
-    printf("Beta = %u\n", beta);
-
-    typedef PTSR<VALTYPE,VALTYPE> PTDD;
-    BENCH_CSV( bicsb_gespmv<PTDD>(*csb, x, y), ITERATIONS, csb->numnonzeros(), "CSB");
-    
-    delete csc;
-    delete csb;
-    // CSB - end
     
     // CSR - start
     printf("Converting to CSR format..."); fflush(stdout);

@@ -40,7 +40,7 @@ int read_bin_array(const char * filename, T ** data, size_t * num )
  * example code provided with the library (example_read.c)
  */
 template <typename T, typename IT,
-          template <typename, typename> typename COO>
+          template <typename, typename> class COO>
 int read_mm_COO(COO<T,IT> * A, const char * filename)
 {
   // Open file for reading
@@ -199,7 +199,7 @@ int read_bin_COO(Coo<T, IT> * A, const char * file_row, const char * file_col, c
  * negative number otherwise.
  */
 template <typename T, typename IT,
-          template <typename, typename> typename COO>
+          template <typename, typename> class COO>
 int read_bin_COO(COO<T, IT> * A, const char * file_row, const char * file_col, const char * file_val)
 {
   T vbuffer;
@@ -267,7 +267,7 @@ int read_bin_COO(COO<T, IT> * A, const char * file_row, const char * file_col, c
  * Read a COO matrix from a binary file (.bin). 
  */
 template <typename T, typename IT, 
-          template <typename, typename> typename COO>
+          template <typename, typename> class COO>
 int read_bin_COO(COO<T,IT> * A, const char * filename)
 {
     IT counter, buffer;
@@ -324,16 +324,17 @@ int read_bin_COO(COO<T,IT> * A, const char * filename)
  * Use filename suffix to decide.
  */
 template <typename T, typename IT, 
-          template <typename, typename> typename COO>
+          template <typename, typename> class COO>
 int read_COO(COO<T,IT> * A, const char * filename)
 {
     if (string_ends_with(filename, ".bin")) {
         return read_bin_COO(A, filename);
     } else if (string_ends_with(filename, ".mtx")) {
         return read_mm_COO(A, filename);
-    } else {
-        fprintf(stderr, "Unknown file extension. Use \".bin\" or \".mtx\"\n");
     }
+
+    fprintf(stderr, "Unknown file extension. Use \".bin\" or \".mtx\"\n");
+    return -1;
 }
 
 /*

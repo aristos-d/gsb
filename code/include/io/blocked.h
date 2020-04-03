@@ -146,13 +146,13 @@ int read_bin_blocked(Csbr<T, IT> * A, const char * filename,
   DEBUG(puts("Reading data section done"));
 
   // Get row pointers from row non-zero counters
-  cilk_for(IT bi=0; bi<A->nnzblocks; bi++){
-    for(IT i=0; i<A->blocks[bi].rows; i++){
+  for (IT bi=0; bi<A->nnzblocks; bi++) {
+    for (IT i=0; i<A->blocks[bi].rows; i++) {
       A->blocks[bi].row_ptr[i+1] = A->blocks[bi].row_ptr[i+1] + A->blocks[bi].row_ptr[i];
     }
   }
 
-  for(br=0; br<A->blockrows; br++){
+  for (br=0; br<A->blockrows; br++) {
     A->blockrow_ptr[br+1] = A->blockrow_ptr[br+1] + A->blockrow_ptr[br];
   }
 

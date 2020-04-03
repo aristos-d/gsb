@@ -6,10 +6,11 @@
 #include <limits>
 
 #include "typedefs.h"
+#include "common.h"
 #include "pss/parallel_stable_sort.h"
 
-template <class T, class IT>
-IT pick_block_size(IT m, IT n, int workers)
+template <class IT>
+IT pick_block_size(IT m, IT n, size_t val_size, int workers)
 {
     bool ispar = (workers > 1);
     IT roundrowup = next_power_of_two(m);
@@ -46,7 +47,7 @@ IT pick_block_size(IT m, IT n, int workers)
     }
     
     // calculate the space that suby occupies in L2 cache
-    IT yL2 = (1 << rowlowbits) * sizeof(T);
+    IT yL2 = (1 << rowlowbits) * val_size;
     while(yL2 > L2SIZE)
     {
     	yL2 /= 2;
@@ -55,7 +56,7 @@ IT pick_block_size(IT m, IT n, int workers)
     }
     
     // calculate the space that subx occupies in L2 cache
-    IT xL2 = (1 << collowbits) * sizeof(T);
+    IT xL2 = (1 << collowbits) * val_size;
     while(xL2 > L2SIZE)
     {
     	xL2 /= 2;

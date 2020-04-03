@@ -1,7 +1,5 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <cilk/cilk.h>
-#include <cilk/cilk_api.h>
 
 #include "matrix/coo.h"
 #include "matrix/csr.h"
@@ -22,7 +20,7 @@ void benchmark_spmv(const Csbr<T, IT> A, int iterations)
 
   INIT(x, A.columns, y, A.rows);
 
-  printf("Cilk threads   : %d\n", __cilkrts_get_nworkers());
+  printf("Threads   : %d\n", RT_WORKERS);
 
   BENCH( spmv(&A, x, y), iterations, nonzeros(A) )
 
@@ -38,7 +36,7 @@ void benchmark_spmv(const Csbr2<T, IT> A, int iterations)
 
   INIT(x, A.columns, y, A.rows);
 
-  printf("Cilk threads   : %d\n", __cilkrts_get_nworkers());
+  printf("Threads   : %d\n", RT_WORKERS);
 
   BENCH( spmv(&A, x, y), iterations, nonzeros(A) )
 
@@ -54,7 +52,7 @@ void benchmark_spmv(const Bcsr<T, IT> A, int iterations)
 
   INIT(x, A.columns, y, A.rows);
   
-  printf("Cilk threads   : %d\n", __cilkrts_get_nworkers());
+  printf("Threads   : %d\n", RT_WORKERS);
 
   BENCH( spmv(&A, x, y), iterations, nonzeros(A) )
 
@@ -70,7 +68,7 @@ void benchmark_spmv(const Cgbr<T,IT,SIT> A, int iterations)
 
   INIT(x, A.columns, y, A.rows);
 
-  printf("Cilk threads   : %d\n", __cilkrts_get_nworkers());
+  printf("Threads   : %d\n", RT_WORKERS);
 
   BENCH( spmv(&A, x, y), iterations, nonzeros(A));
   
@@ -86,7 +84,7 @@ void benchmark_spmv(const Cgbr2<T,IT,SIT> A, int iterations)
 
   INIT(x, A.columns, y, A.rows);
 
-  printf("Cilk threads   : %d\n", __cilkrts_get_nworkers());
+  printf("Threads   : %d\n", RT_WORKERS);
 
   BENCH( spmv(&A, x, y), iterations, A.nnz);
   
@@ -102,7 +100,7 @@ void benchmark_spmv(const Csr<T, IT> A, int iterations)
 
   INIT(x, A.columns, y, A.rows);
 
-  printf("Cilk threads   : %d\n", __cilkrts_get_nworkers());
+  printf("Threads   : %d\n", RT_WORKERS);
 
   BENCH( spmv(&A, x, y), iterations, nonzeros(A) );
 
@@ -117,7 +115,7 @@ void benchmark_spmv(const Csr2<T, IT> A, int iterations)
     T * x, * y;
     INIT(x, A.columns, y, A.rows);
   
-    printf("Cilk threads   : %d\n", __cilkrts_get_nworkers());
+    printf("Threads   : %d\n", RT_WORKERS);
   
     BENCH( spmv(&A, x, y), iterations, nonzeros(A) );
   
@@ -132,7 +130,7 @@ void benchmark_spmv(const Cswr<T, IT, SIT> A, int iterations)
     T * x, * y;
     INIT(x, A.columns, y, A.rows);
 
-    printf("Cilk threads   : %d\n", __cilkrts_get_nworkers());
+    printf("Threads   : %d\n", RT_WORKERS);
 
     BENCH( spmv(&A, x, y), iterations, nonzeros(A));
 

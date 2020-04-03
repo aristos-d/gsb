@@ -1,31 +1,33 @@
 #ifndef _GSB_H_
 #define _GSB_H_
 
+#include "rt.h"
+
 /*
  * Returns the number of non-zero elements of the matrix.
  */
 template <class T, class IT, class SIT,
           template <typename, typename, typename> class GSB>
-inline IT nonzeros(const GSB<T,IT,SIT> * A){ return A->nnz; }
+inline IT nonzeros (const GSB<T,IT,SIT> * A) { return A->nnz; }
 
 template <class T, class IT, class SIT,
           template <typename, typename, typename> class GSB>
-inline IT nonzeros(const GSB<T,IT,SIT> A){ return A.nnz; }
+inline IT nonzeros (const GSB<T,IT,SIT> A) { return A.nnz; }
 
 template <class T, class IT, class SIT,
           template <typename, typename, typename> class GSB>
-inline IT block_nonzeros(const GSB<T,IT,SIT> A, IT block){ return nonzeros(A.blocks[block]); }
+inline IT block_nonzeros (const GSB<T,IT,SIT> A, IT block) { return nonzeros(A.blocks[block]); }
 
 template <class T, class IT, class SIT,
           template <typename, typename, typename> class GSB>
-inline IT block_nonzeros(const GSB<T,IT,SIT> * A, IT block){ return nonzeros(A->blocks[block]); }
+inline IT block_nonzeros (const GSB<T,IT,SIT> * A, IT block) { return nonzeros(A->blocks[block]); }
 
 // ------------------------- SpMV -------------------------
 
 template <class T, class IT, class SIT,
           template <typename, typename, typename> class GSB>
-void spmv_chunk(
-	GSB<T,IT,SIT> const * const A,
+void spmv_chunk (
+	    GSB<T,IT,SIT> const * const A,
         T const * const __restrict x, T * const __restrict y,
         BlockRowPartition<IT> const * const partition,
         IT const first, IT const last, IT const bsize)
