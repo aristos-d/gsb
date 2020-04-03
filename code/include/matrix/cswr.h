@@ -3,7 +3,7 @@
 
 #include <assert.h>
 #include <stdio.h>
-#include <cilk/cilk.h>
+#include <omp.h>
 
 #include "typedefs.h"
 #include "utils.h"
@@ -18,7 +18,8 @@ IT nonzeros(const Cswr<T,IT,SIT> A){ return A.nnz; }
 template <class T, class IT, class SIT>
 void spmv(Cswr<T,IT,SIT> const * const A, T const * const __restrict x, T * const __restrict y)
 {
-    cilk_for(IT i=0; i<A->nwrows; i++){
+    #pragma omp parallel for schedule(dynamic,1)
+    for (IT i=0; i<A->nwrows; i++) {
         IT wrow_offset = A->width * i;
         IT wrow_start = A->wrow_ptr[i];
         IT nnz = A->wrow_ptr[i+1] - wrow_start;

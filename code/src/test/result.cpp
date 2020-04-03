@@ -12,6 +12,7 @@
 #include "matrix/cgbr.h"
 #include "matrix/cgbr.2.h"
 #include "io/input.h"
+#include "rt.h"
 #include "test/utils.h"
 
 int main(int argc, char* argv[])
@@ -43,7 +44,7 @@ int main(int argc, char* argv[])
     exit(1);
   }
 
-  INDEXTYPE b_size = pick_block_size<VALUETYPE,INDEXTYPE>(coo3.rows, coo3.columns, __cilkrts_get_nworkers());
+  INDEXTYPE b_size = pick_block_size<VALUETYPE,INDEXTYPE>(coo3.rows, coo3.columns, RT_WORKERS);
   if(b_size > coo3.rows) b_size = coo3.rows;
   if(b_size > coo3.columns) b_size = coo3.columns;
   printf("Block size : %lu\n", (unsigned long) b_size);

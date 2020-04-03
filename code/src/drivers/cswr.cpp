@@ -7,12 +7,7 @@
 #include "matrix/cswr.h"
 #include "io/input.h"
 #include "common.h"
-
-#ifdef BENCH_THREADS
-#include "test/threads.h"
-#else
-#include "test/single.h"
-#endif
+#include "test/utils.h"
 
 #ifndef MATRIXTYPE
 #define MATRIXTYPE Cswr<VALTYPE,ITYPE,SITYPE>
@@ -24,6 +19,7 @@ int main(int argc, char * argv[])
   double t;
   bool binary;
   MATRIXTYPE A;
+  VALTYPE *x, *y;
   Coo2<VALTYPE,ITYPE> B;
   ITYPE width;
 
@@ -61,7 +57,13 @@ int main(int argc, char * argv[])
 
   print_info(A);
 
-  benchmark_spmv(A, ITERATIONS);
+  //benchmark_spmv(A, ITERATIONS);
+  
+  #define T VALTYPE
+  INIT(x, B.columns, y, B.rows);
+  #undef T
+
+  BENCH_CSV( spmv(&A, x, y), ITERATIONS, nonzeros(A), "CSWR");
 
   release(A);
   release(B);

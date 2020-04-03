@@ -15,7 +15,6 @@
 #include "matrix/dense.h"
 #include "io/input.h"
 #include "test/utils.h"
-#include "mkl.h"
 
 int main(int argc, char* argv[])
 {
@@ -34,21 +33,21 @@ int main(int argc, char* argv[])
   BlockCsr<VALUETYPE,INDEXTYPE,SMALLINDEXTYPE> csr_si;
   Dense<VALUETYPE,INDEXTYPE> dense;
 
-  if (argc < 2){
+  if (argc < 2) {
     fprintf(stderr, "Usage: %s [binary matrix filename(s)]\n", argv[0]);
     return 1;
   }
 
   srand(0);
 
-  printf("   N,    NNZ, NZ-RATIO,      COO,      COO2,   COO_SI,  COO_MKL,"
-    "     CSR,     CSR2,   CSR_SI,  CSR_MKL,    DENSE, DENSE_MKL\n");
+  printf("   N,    NNZ, NZ-RATIO,      COO,      COO2,   COO_SI,"
+    "     CSR,     CSR2,   CSR_SI,    DENSE\n");
 
   // Iterate over every filename provided as argument
   for (int f=1; f<argc; f++) {
 
     // Load matrix to memory
-    ret = read_bin_COO(&coo2, argv[f]);
+    ret = read_COO(&coo2, argv[f]);
     if (ret!=0) {
         fprintf(stderr, "Something went wrong while reading the matrix. Aborting.\n");
         return 1; 
@@ -83,23 +82,6 @@ int main(int argc, char* argv[])
 
     release(coo_si);
 
-    /* ------------------ Coo (MKL-deprecated) ----------- */
-
-//    void mkl_scoomv (const char *transa , const MKL_INT *m , const MKL_INT *k ,
-//      const float*alpha , const char *matdescra , 
-//      const float *val , const MKL_INT *rowind , constMKL_INT *colind , const MKL_INT *nnz , 
-//      const float *x , const float *beta , float *y );
-
-    BENCH_AVG(
-        mkl_scoomv ("N", &(coo.rows), &(coo.columns),
-            &alpha, "G__C", 
-            coo.val, coo.I, coo.J, &(coo.nnz), 
-            x, &beta, y ), 
-        ITERATIONS,
-        t_avg );
-    printf("%e, ", t_avg); fflush(stdout);
-    
-    release(coo);
 
     /* ----------------------- Csr ------------------------ */
     Coo_to_Csr(&csr, &coo2);
@@ -123,19 +105,6 @@ int main(int argc, char* argv[])
 
     release(csr_si);
     
-    /* ----------------------- Csr (MKL) ------------------ */
-    
-    BENCH_AVG(
-        mkl_scsrmv("N", &(csr.rows), &(csr.columns),
-            &alpha, "G__C",
-            csr.val, csr.col_ind,
-            csr.row_ptr, csr.row_ptr + 1,
-            x, &beta, y),
-        ITERATIONS,
-        t_avg );
-    printf("%e, ", t_avg); fflush(stdout);
-    
-    release(csr);
 
     /* ----------------------- Dense ---------------------- */
     Coo_to_Dense(&dense, &coo2);
@@ -143,16 +112,6 @@ int main(int argc, char* argv[])
     BENCH_AVG( spmv_serial(&dense, x, y), ITERATIONS, t_avg );
     printf("%e, ", t_avg); fflush(stdout);
 
-    /* ----------------------- Dense (MKL) ---------------- */
-    BENCH_AVG(
-        cblas_sgemv(CblasRowMajor, CblasNoTrans, 
-            dense.rows, dense.columns, alpha, dense.val, dense.columns,
-            x, 1, beta, y, 1),
-        ITERATIONS,
-        t_avg );
-    printf("%e\n", t_avg); fflush(stdout);
-
-    release(dense);
 
     // Clean up
     aligned_free(y);

@@ -2,7 +2,7 @@
 #define _DENSE_H_
 
 #include <assert.h>
-#include <cilk/cilk.h>
+#include <omp.h>
 
 #include "typedefs.h"
 
@@ -15,7 +15,8 @@ template <class T, class IT>
 inline void spmv_dense(T const * const val, IT const M, IT const N,
                        T const * const __restrict x, T * const __restrict y)
 {
-    cilk_for (IT i=0; i<M; i++) {
+    #pragma omp parallel for schedule(static,32)
+    for (IT i=0; i<M; i++) {
         T temp = y[i];
         for (IT j=0; j<N; j++) {
             temp += val[i*N + j] * x[j];

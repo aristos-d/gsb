@@ -4,8 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
-#include <cilk/cilk.h>
-#include <cilk/cilk_api.h>
+#include <omp.h>
 
 #include "typedefs.h"
 #include "utils.h"
@@ -133,9 +132,10 @@ void spmv_chunk(Cgbr<T,IT,SIT> const * const A,
 
         IT middle = (first+last) / 2;
 
-        cilk_spawn spmv_chunk(A, x, y, partition, first, middle, bsize);
+        #pragma omp task
+        spmv_chunk(A, x, y, partition, first, middle, bsize);
 
-        if (__cilkrts_synched()) {
+        if (RT_SYNCHED) {
             spmv_chunk(A, x, y, partition, middle, last, bsize);
         } else {
             
@@ -143,9 +143,9 @@ void spmv_chunk(Cgbr<T,IT,SIT> const * const A,
             T * temp = new T[bsize]();
 
             spmv_chunk(A, x, temp, partition, middle, last, bsize);
-            cilk_sync;
+            #pragma omp taskwait
 
-            #pragma simd
+            #pragma omp simd
             for (IT i=0; i<bsize; i++)
                 y[i] += temp[i];
 
@@ -164,7 +164,8 @@ void spmv_balanced(Cgbr<T,IT,SIT> const * const A,
                    T const * const __restrict x, T * const __restrict y)
 {
     // For each block row
-    cilk_for (IT bi=0; bi<A->blockrows; bi++) {
+    #pragma omp parallel for schedule(dynamic,1)
+    for (IT bi=0; bi<A->blockrows; bi++) {
         IT x_offset, y_offset;
         IT blockrow_start, blockrow_end;
         IT col_index;
@@ -196,7 +197,8 @@ void spmv(Cgbr<T,IT,SIT> const * const A,
     } else {
         
         // For each block row
-        cilk_for (IT bi=0; bi<A->blockrows; bi++) {
+        #pragma omp parallel for schedule(dynamic,1)
+        for (IT bi=0; bi<A->blockrows; bi++) {
   
             IT nchunks = A->partition[bi].nchunks;
             IT y_start = A->blockrow_offset[bi];

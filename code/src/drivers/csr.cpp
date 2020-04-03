@@ -14,7 +14,8 @@
 #define MATRIXTYPE Csr<VALTYPE,ITYPE> A;
 #endif
 
-int main(int argc, char * argv[]){
+int main (int argc, char * argv[])
+{
   int ret;
   double t;
   bool binary;

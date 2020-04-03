@@ -1,7 +1,7 @@
 #ifndef _PERMUTE_H_
 #define _PERMUTE_H_
 
-#include <cilk/cilk.h>
+#include <omp.h>
 
 // This function is copied and slightly modified from SuiteSParse library
 // http://faculty.cse.tamu.edu/davis/suitesparse.html
@@ -9,8 +9,9 @@ template <typename IT>
 IT * invert_permutation (IT const * p, IT size)
 {    
     IT * pinv = new IT[size];        /* allocate result */
-    
-    cilk_for (IT k=0; k<size; k++) {
+   
+    #pragma omp parallel for schedule(static,64)
+    for (IT k=0; k<size; k++) {
         pinv [p [k]] = k ;/* invert the permutation */
     }
 
@@ -24,7 +25,8 @@ IT * invert_permutation (IT const * p, IT size)
 template <typename IT>
 void permute_indeces(IT * indeces, IT * permutation, IT size)
 {
-    cilk_for(IT i=0; i<size; i++) {
+    #pragma omp parallel for schedule(static,64)
+    for(IT i=0; i<size; i++) {
         indeces[i] = permutation[indeces[i]];
     }
 }
@@ -32,7 +34,8 @@ void permute_indeces(IT * indeces, IT * permutation, IT size)
 template <typename NONZERO, typename IT>
 void permute_indeces(NONZERO * matrix, IT nnz, IT * permutation)
 {
-    cilk_for(IT i=0; i<nnz; i++) {
+    #pragma omp parallel for schedule(static,64)
+    for(IT i=0; i<nnz; i++) {
         matrix[i].row = permutation[matrix[i].row];
         matrix[i].col = permutation[matrix[i].col];
     }

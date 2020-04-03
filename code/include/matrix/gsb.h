@@ -5,25 +5,25 @@
  * Returns the number of non-zero elements of the matrix.
  */
 template <class T, class IT, class SIT,
-          template <typename, typename, typename> typename GSB>
+          template <typename, typename, typename> class GSB>
 inline IT nonzeros(const GSB<T,IT,SIT> * A){ return A->nnz; }
 
 template <class T, class IT, class SIT,
-          template <typename, typename, typename> typename GSB>
+          template <typename, typename, typename> class GSB>
 inline IT nonzeros(const GSB<T,IT,SIT> A){ return A.nnz; }
 
 template <class T, class IT, class SIT,
-          template <typename, typename, typename> typename GSB>
+          template <typename, typename, typename> class GSB>
 inline IT block_nonzeros(const GSB<T,IT,SIT> A, IT block){ return nonzeros(A.blocks[block]); }
 
 template <class T, class IT, class SIT,
-          template <typename, typename, typename> typename GSB>
+          template <typename, typename, typename> class GSB>
 inline IT block_nonzeros(const GSB<T,IT,SIT> * A, IT block){ return nonzeros(A->blocks[block]); }
 
 // ------------------------- SpMV -------------------------
 
-template <typename T, typename IT, typename SIT,
-          template <typename, typename, typename> typename GSB>
+template <class T, class IT, class SIT,
+          template <typename, typename, typename> class GSB>
 void spmv_chunk(
 	GSB<T,IT,SIT> const * const A,
         T const * const __restrict x, T * const __restrict y,
@@ -45,9 +45,10 @@ void spmv_chunk(
 
         IT middle = (first+last) / 2;
 
-        cilk_spawn spmv_chunk(A, x, y, partition, first, middle, bsize);
+        #pragma omp task
+        spmv_chunk(A, x, y, partition, first, middle, bsize);
 
-        if (__cilkrts_synched()) {
+        if (RT_SYNCHED) {
             spmv_chunk(A, x, y, partition, middle, last, bsize);
         } else {
             
@@ -55,9 +56,9 @@ void spmv_chunk(
             T * temp = new T[bsize]();
 
             spmv_chunk(A, x, temp, partition, middle, last, bsize);
-            cilk_sync;
+            #pragma omp taskwait
 
-            #pragma simd
+            #pragma omp simd
             for (IT i=0; i<bsize; i++)
                 y[i] += temp[i];
 
@@ -70,12 +71,13 @@ void spmv_chunk(
  * SpMV routine for matrices in GSB format. y vector MUST be already initialized.
  */
 template <typename T, typename IT, typename SIT,
-          template <typename, typename, typename> typename GSB>
+          template <typename, typename, typename> class GSB>
 void spmv(GSB<T,IT,SIT> const * const A,
           T const * const __restrict x, T * const __restrict y)
 {
     // For each block row
-    cilk_for (IT bi=0; bi<A->blockrows; bi++) {
+    #pragma omp parallel for schedule(dynamic,1)
+    for (IT bi=0; bi<A->blockrows; bi++) {
 
         IT nchunks = A->partition[bi].nchunks;
         IT y_start = A->blockrow_offset[bi];
@@ -93,8 +95,8 @@ void spmv(GSB<T,IT,SIT> const * const A,
  * not a divisor of total number of rows/columns.
  */
 template <class T, class IT, class SIT,
-          template <typename, typename, typename> typename GSB,
-          template <typename, typename> typename COO>
+          template <typename, typename, typename> class GSB,
+          template <typename, typename> class COO>
 void Coo_to_Cgbr(GSB<T,IT,SIT> * A, COO<T,IT> * B, IT br_size, IT bc_size)
 {
     IT blockrows = B->rows / br_size;
@@ -125,8 +127,8 @@ void Coo_to_Cgbr(GSB<T,IT,SIT> * A, COO<T,IT> * B, IT br_size, IT bc_size)
  * Wrappers around the constructors
  */
 template <class T, class IT, class SIT,
-          template <typename, typename, typename> typename GSB,
-          template <typename, typename> typename COO>
+          template <typename, typename, typename> class GSB,
+          template <typename, typename> class COO>
 void Coo_to_Blocked(GSB<T,IT,SIT> * A, COO<T,IT> * B,
                     IT * blockrow_offset, IT blockrows, 
                     IT * blockcol_offset, IT blockcols)
@@ -135,8 +137,8 @@ void Coo_to_Blocked(GSB<T,IT,SIT> * A, COO<T,IT> * B,
 }
 
 template <class T, class IT, class SIT,
-          template <typename, typename, typename> typename GSB,
-          template <typename, typename> typename COO>
+          template <typename, typename, typename> class GSB,
+          template <typename, typename> class COO>
 void Coo_to_Blocked(GSB<T,IT,SIT> * A, COO<T,IT> * B,
                     IT row_block_size, IT col_block_size)
 {
@@ -149,7 +151,7 @@ void Coo_to_Blocked(GSB<T,IT,SIT> * A, COO<T,IT> * B,
  * Print information about the matrix
  */
 template <class T, class IT, class SIT,
-          template <typename, typename, typename> typename GSB>
+          template <typename, typename, typename> class GSB>
 void print_info(GSB<T,IT,SIT> A)
 {
     printf("Matrix info : \n");

@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include <cilk/cilk.h>
+#include <omp.h>
 
 #include "typedefs.h"
 #include "utils.h"
@@ -29,7 +29,8 @@ inline void spmv_csr2(IT const * const row_ptr, NonZero<T,IT> const * const nonz
                       IT const M, T const * const __restrict x, T * const __restrict y)
 {
     // For every row, in parallel
-    cilk_for (IT i=0; i<M; i++) {
+    #pragma omp parallel for schedule(dynamic,16)
+    for (IT i=0; i<M; i++) {
       IT row_start = row_ptr[i];
       IT row_end = row_ptr[i+1];
       T res = y[i];

@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <limits>
-#include <cilk/cilk.h>
 
 #include "typedefs.h"
 #include "utils.h"
@@ -67,7 +66,8 @@ void spmv_partition(const Bcsr<T, IT> * const A, const T * __restrict x, T * __r
     const IT * blockrow_offset = A->blockrow_offset;
 
     // For each block row
-    cilk_for(IT bi=0; bi<A->blockrows; bi++){
+    #pragma omp parallel for schedule(dynamic,1)
+    for (IT bi=0; bi<A->blockrows; bi++) {
 
       BlockRowPartition<IT> partition;
       IT y_size, num_chunks;
@@ -77,36 +77,38 @@ void spmv_partition(const Bcsr<T, IT> * const A, const T * __restrict x, T * __r
       // Partition block row
       num_chunks = partition_blockrow(A, &partition, blockrow_ptr[bi], blockrow_ptr[bi+1]);
 
-      if(num_chunks>1){ // Multiple chunks case
+      if (num_chunks>1) { // Multiple chunks case
 
         // Allocate temporary y vectors
         y_size = A->blocks[blockrow_ptr[bi]].rows;
         y_temp = (T *) calloc( (num_chunks - 1) * y_size, sizeof(T));
 
-        if(y_temp==NULL){
+        if (y_temp==NULL) {
           fprintf(stderr, "Error in temp vector allocation.\n");
-        }else{
+        } else {
           // For every chunk (in parallel)
-          cilk_for(IT k=0; k<num_chunks; k++){
-            if(k==num_chunks-1){ // Last chunk writes to result vector directly
+          #pragma omp parallel for schedule(dynamic,1)
+          for (IT k=0; k<num_chunks; k++) {
+            if (k==num_chunks-1) { // Last chunk writes to result vector directly
               spmv_chunk(A, x, y_brow, partition.chunks[k].start, partition.chunks[k].end);
-            }else{
+            } else {
               spmv_chunk(A, x, y_temp + k*y_size, partition.chunks[k].start, partition.chunks[k].end);
             }
           }
 
           // Add temporary vectors to result
           IT offset;
-          for(IT k=0; k<num_chunks-1; k++){
+          for (IT k=0; k<num_chunks-1; k++) {
             offset = k*y_size;
-            cilk_for(IT i=0; i<y_size; i++){
+            #pragma omp parallel for schedule(static,64)
+            for (IT i=0; i<y_size; i++){
               y_brow[i] += y_temp[offset + i];
             }
           }
           free(y_temp);
         }
 
-      }else{  // Single chunk case
+      } else {  // Single chunk case
         spmv_chunk(A, x, y_brow, partition.chunks[0].start, partition.chunks[0].end);
       }
 
@@ -125,7 +127,8 @@ void spmv_partition_serial_block(const Bcsr<T, IT> * const A, const T * __restri
     const IT * blockrow_offset = A->blockrow_offset;
 
     // For each block row
-    cilk_for(IT bi=0; bi<A->blockrows; bi++){
+    #pragma omp parallel for schedule(dynamic,1)
+    for (IT bi=0; bi<A->blockrows; bi++) {
 
       BlockRowPartition<IT> partition;
       IT y_size, num_chunks;
@@ -145,7 +148,8 @@ void spmv_partition_serial_block(const Bcsr<T, IT> * const A, const T * __restri
           fprintf(stderr, "Error in temp vector allocation.\n");
         }else{
           // For every chunk (in parallel)
-          cilk_for(IT k=0; k<num_chunks; k++){
+          #pragma omp parallel for schedule(dynamic,1)
+          for (IT k=0; k<num_chunks; k++) {
             if(k==num_chunks-1){ // Last chunk writes to result vector directly
               spmv_chunk_serial(A, x, y_brow, partition.chunks[k].start, partition.chunks[k].end);
             }else{
@@ -155,9 +159,10 @@ void spmv_partition_serial_block(const Bcsr<T, IT> * const A, const T * __restri
 
           // Add temporary vectors to result
           IT offset;
+          #pragma omp parallel for schedule(static,64)
           for(IT k=0; k<num_chunks-1; k++){
             offset = k*y_size;
-            cilk_for(IT i=0; i<y_size; i++){
+            for(IT i=0; i<y_size; i++){
               y_brow[i] += y_temp[offset + i];
             }
           }
@@ -182,7 +187,8 @@ template <class T, class IT>
 void spmv(const Bcsr<T, IT> * const A, const T * __restrict x, T * __restrict y)
 {
   // For each block row
-  cilk_for(IT bi=0; bi<A->blockrows; bi++){
+  #pragma omp parallel for schedule(dynamic,1)
+  for (IT bi=0; bi<A->blockrows; bi++) {
     IT x_offset, y_offset, index;
     
     y_offset = A->blockrow_offset[bi];
@@ -204,7 +210,8 @@ template <class T, class IT>
 void spmv_serial_block(const Bcsr<T, IT> * const A, const T * __restrict x, T * __restrict y)
 {
   // For each block row
-  cilk_for(IT bi=0; bi<A->blockrows; bi++){
+  #pragma omp parallel for schedule(dynamic,1)
+  for (IT bi=0; bi<A->blockrows; bi++) {
     IT x_offset, y_offset, index;
 
     y_offset = A->blockrow_offset[bi];

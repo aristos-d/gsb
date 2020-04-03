@@ -3,8 +3,10 @@
 
 #include <stdint.h>
 #include <assert.h>
+#include <omp.h>
 
 #include "typedefs.h"
+#include "common.h"
 #include "utils.h"
 
 /*
@@ -40,7 +42,7 @@ IT expand_index(IT * offset, IT size, IT block_size, IT index)
 }
 
 template <class IT>
-IT expand_indeces(IT * indeces, IT size, IT * block_size, IT blocks )
+IT expand_indeces(IT * indeces, IT size, IT * block_size, IT blocks)
 {
   IT * block_offset;
   IT new_block_size;
@@ -49,7 +51,8 @@ IT expand_indeces(IT * indeces, IT size, IT * block_size, IT blocks )
   block_offset = (IT *) malloc((blocks+1) * sizeof(IT));
   size_to_offset(block_offset, block_size, blocks);
 
-  cilk_for(IT i=0; i<size; i++){
+  #pragma omp parallel for schedule(static, 64)
+  for (IT i=0; i<size; i++) {
     indeces[i] = expand_index(block_offset, blocks, new_block_size, indeces[i]);
   }
 
@@ -58,11 +61,12 @@ IT expand_indeces(IT * indeces, IT size, IT * block_size, IT blocks )
 }
 
 template <class T, class IT>
-IT expand_indeces(Element<T, IT> * indeces, IT size, IT * block_sizes, IT * block_offsets, IT blocks )
+IT expand_indeces(Element<T, IT> * indeces, IT size, IT * block_sizes, IT * block_offsets, IT blocks)
 {
   IT new_block_size = expand_block_size(block_sizes, blocks);
   
-  cilk_for(IT i=0; i<size; i++){
+  #pragma omp parallel for schedule(static, 64)
+  for (IT i=0; i<size; i++) {
     IT br, bc;
     br = indeces[i].block / blocks;
     bc = indeces[i].block % blocks;

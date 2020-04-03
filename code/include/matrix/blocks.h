@@ -7,7 +7,6 @@
 #include "matrix/csr.h"
 #include "matrix/dense.h"
 #include "matrix/gsb.h"
-#include "cilk/cilk_api.h"
 
 /*
  * Abstract block
@@ -270,7 +269,7 @@ class BlockFactoryDefault : public BlockFactory<T,IT> {
                            Element<T,IT> * array, IT rows, IT columns, IT nnz)
         {
             float coo, csr, dense, density;
-            int workers = __cilkrts_get_nworkers();
+            int workers = RT_WORKERS;
 
             coo = (float) nnz * (2 * sizeof(SIT) + sizeof(T));
             csr = (float) rows * sizeof(IT) + nnz * (sizeof(SIT) + sizeof(T));

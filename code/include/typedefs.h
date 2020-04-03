@@ -307,7 +307,7 @@ struct Cgbr {
  * Static Generalized Sparse Blocks
  */
 template <typename T, typename IT, typename SIT,
-          template <typename, typename, typename> typename BLOCK>
+          template <typename, typename, typename> class BLOCK>
 struct Sgsb {
   BLOCK<T,IT,SIT> * blocks;
   IT * blockrow_ptr;         // Indexes for blocks array

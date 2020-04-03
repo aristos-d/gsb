@@ -1,8 +1,6 @@
 #ifndef _CGBR_2_H_
 #define _CGBR_2_H_
 
-#include <cilk/cilk.h>
-
 #include "typedefs.h"
 #include "utils.h"
 #include "partition.h"

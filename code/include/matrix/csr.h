@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include <cilk/cilk.h>
+#include <omp.h>
 
 #include "typedefs.h"
 #include "utils.h"
@@ -35,7 +35,8 @@ inline void spmv_csr(RIT const * const row_ptr, CIT const * const col_ind, T con
                      T const * const __restrict x, T * const __restrict y)
 {
     // For every row, in parallel
-    cilk_for (RIT i=0; i<M; i++) {
+    #pragma omp parallel for schedule(dynamic,16)
+    for (RIT i=0; i<M; i++) {
         RIT row_start = row_ptr[i];
         RIT row_end = row_ptr[i+1];
         for (RIT k=row_start; k<row_end; k++) {
@@ -93,36 +94,6 @@ inline void spmv_serial(BlockCsr<T,IT,SIT> const * const A,
 {
     spmv_csr_serial(A->row_ptr, A->col_ind, A->val, A->rows, x, y);
 }
-
-#ifdef MKL_SPARSE
-#include <mkl.h>
-void inline spmv_csr(int const * const row_ptr, int const * const col_ind, float const * const v,
-                     int const M, int const N,
-                     float const * const __restrict x, float * const __restrict y)
-{
-    DEBUG_USE_MKL( fprintf(stderr, "MKL CSR in use\n") );
-    const float alpha = 1.0f;
-    const float beta = 1.0f;
-    mkl_scsrmv ("N", &M, &N, &alpha, "G__C", v, col_ind, row_ptr, row_ptr + 1, x, &beta, y);
-}
-
-template <>
-void inline spmv_serial(Csr<float,int> const * const A,
-                        float const * const __restrict x,
-                        float * const __restrict y)
-{
-    spmv_csr (A->row_ptr, A->col_ind, A->val, A->rows, A->columns, x, y); 
-}
-
-template <>
-inline void spmv_serial(BlockCsr<float,int,int> const * const A,
-                        float const * const __restrict x,
-                        float * const __restrict y)
-{
-    spmv_csr (A->row_ptr, A->col_ind, A->val, A->rows, A->columns, x, y);
-}
-#endif
-
 
 /* ------------------ Constructors begin ------------------ */
 

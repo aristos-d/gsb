@@ -3,7 +3,6 @@
 
 #include <stdlib.h>
 #include <assert.h>
-#include <cilk/cilk.h>
 
 #include "typedefs.h"
 #include "utils.h"
@@ -27,7 +26,8 @@ void spmv(CompRowCsr<T,IT> const * const A,
 	  T const * const __restrict x, T * const __restrict y)
 {
     // For every non-zero row
-    cilk_for(IT i=0; i<A->nnz_rows_num; i++){
+    #pragma omp parallel for schedule(dynamic,1)
+    for (IT i=0; i<A->nnz_rows_num; i++) {
       IT ri, row_start, row_end;
       T y_temp;
       row_start = A->row_ptr[i];

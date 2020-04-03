@@ -29,11 +29,8 @@
   WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
   POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef _PSS_PUBLIC_HEADER_H_
-#define _PSS_PUBLIC_HEADER_H_
-
 #include <algorithm>
-#include <cilk/cilk.h>
+#include <omp.h>
 
 #include "pss_common.h"
 
@@ -44,7 +41,15 @@ namespace internal {
 // Merge sequences [xs,xe) and [ys,ye) to output sequence [zs,zs+(xe-xs)+(ye-ys))
 // Destroy input sequence iff destroy==true
 template<typename RandomAccessIterator1, typename RandomAccessIterator2, typename RandomAccessIterator3, typename Compare>
+#if __INTEL_COMPILER<=1500
+// Work around bug where firstprivate applied to formal parameter does not work.
+void parallel_move_merge( RandomAccessIterator1 xs_, RandomAccessIterator1 xe, RandomAccessIterator2 ys_, RandomAccessIterator2 ye, RandomAccessIterator3 zs_, bool destroy, Compare comp ) {
+    RandomAccessIterator1 xs = xs_;
+    RandomAccessIterator2 ys = ys_;
+    RandomAccessIterator3 zs = zs_;
+#else
 void parallel_move_merge( RandomAccessIterator1 xs, RandomAccessIterator1 xe, RandomAccessIterator2 ys, RandomAccessIterator2 ye, RandomAccessIterator3 zs, bool destroy, Compare comp ) {
+#endif
     const size_t MERGE_CUT_OFF = 2000;
     while( (xe-xs) + (ye-ys) > MERGE_CUT_OFF ) {
         RandomAccessIterator1 xm;
@@ -56,7 +61,8 @@ void parallel_move_merge( RandomAccessIterator1 xs, RandomAccessIterator1 xe, Ra
             xm = xs+(xe-xs)/2;
             ym = std::lower_bound(ys,ye,*xm,comp);
         }
-        cilk_spawn parallel_move_merge( xs, xm, ys, ym, zs, destroy, comp );
+#pragma omp task untied mergeable firstprivate(xs,xm,ys,ym,zs,destroy,comp)
+        parallel_move_merge( xs, xm, ys, ym, zs, destroy, comp );
         zs += (xm-xs) + (ym-ys);
         xs = xm;
         ys = ym;
@@ -66,6 +72,7 @@ void parallel_move_merge( RandomAccessIterator1 xs, RandomAccessIterator1 xe, Ra
         serial_destroy( xs, xe );
         serial_destroy( ys, ye );
     }
+#pragma omp taskwait
 }
 
 // Sorts [xs,xe), where zs[0:xe-xs) is temporary buffer supplied by caller.
@@ -80,9 +87,10 @@ void parallel_stable_sort_aux( RandomAccessIterator1 xs, RandomAccessIterator1 x
         RandomAccessIterator1 xm = xs + (xe-xs)/2;
         RandomAccessIterator2 zm = zs + (xm-xs);
         RandomAccessIterator2 ze = zs + (xe-xs);
-        cilk_spawn parallel_stable_sort_aux( xs, xm, zs, !inplace, comp );
-        /*nospawn*/parallel_stable_sort_aux( xm, xe, zm, !inplace, comp );
-        cilk_sync;
+#pragma omp task
+        parallel_stable_sort_aux( xs, xm, zs, !inplace, comp );
+        parallel_stable_sort_aux( xm, xe, zm, !inplace, comp );
+#pragma omp taskwait
         if( inplace )
             parallel_move_merge( zs, zm, zm, ze, xs, inplace==2, comp );
         else
@@ -96,19 +104,15 @@ template<typename RandomAccessIterator, typename Compare>
 void parallel_stable_sort( RandomAccessIterator xs, RandomAccessIterator xe, Compare comp ) {
     typedef typename std::iterator_traits<RandomAccessIterator>::value_type T;
     if( internal::raw_buffer z = internal::raw_buffer( sizeof(T)*(xe-xs) ) )
-        internal::parallel_stable_sort_aux( xs, xe, (T*)z.get(), 2, comp );
+        if( omp_get_num_threads() > 1 ) 
+            internal::parallel_stable_sort_aux( xs, xe, (T*)z.get(), 2, comp );
+        else
+            #pragma omp parallel
+            #pragma omp master
+           internal::parallel_stable_sort_aux( xs, xe, (T*)z.get(), 2, comp );  
     else
         // Not enough memory available - fall back on serial sort
         std::stable_sort( xs, xe, comp );
 }
 
-//! Wrapper for sorting with default comparator.
-template<class RandomAccessIterator>
-void parallel_stable_sort( RandomAccessIterator xs, RandomAccessIterator xe ) {
-    typedef typename std::iterator_traits<RandomAccessIterator>::value_type T;
-    parallel_stable_sort( xs, xe, std::less<T>() );
-}
-
 } // namespace pss
-
-#endif

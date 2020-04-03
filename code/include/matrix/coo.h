@@ -257,8 +257,8 @@ inline void spmv_coo(float const * const v, int const * const ri, int const * co
  * Heavily overloaded constructors for COO matrices
  */
 template <typename T, typename IT, 
-          template <typename, typename> typename COOSRC,
-          template <typename, typename> typename COODST>
+          template <typename, typename> class COOSRC,
+          template <typename, typename> class COODST>
 int Coo_to_Coo(COODST<T,IT> * A, COOSRC<T,IT> * B)
 {
     A->rows = B->rows;

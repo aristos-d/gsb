@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <limits>
-#include <cilk/cilk.h>
+#include <omp.h>
 
 #include "typedefs.h"
 #include "utils.h"
@@ -27,7 +27,8 @@ template <class T, class IT>
 void spmv(const Csbr2<T, IT> * const A, const T * __restrict x, T * __restrict y)
 {
   // For each block row
-  cilk_for(IT bi=0; bi<A->blockrows; bi++){
+  #pragma omp parallel for schedule(dynamic,1)
+  for (IT bi=0; bi<A->blockrows; bi++) {
     IT rows;
     IT blockrow_start, blockrow_end;
     IT y_offset;
@@ -38,7 +39,7 @@ void spmv(const Csbr2<T, IT> * const A, const T * __restrict x, T * __restrict y
     blockrow_end = A->blockrow_ptr[bi+1];
 
     // For every block in block row
-    for(IT k=blockrow_start; k<blockrow_end; k++){
+    for (IT k=blockrow_start; k<blockrow_end; k++) {
       spmv_csr_serial ( A->row_ptr[k], A->col_ind, A->val, rows, x, y + y_offset);
     }
   }

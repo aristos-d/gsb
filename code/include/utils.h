@@ -4,7 +4,6 @@
 #include <algorithm>
 #include <numeric>
 #include <limits>
-#include <cilk/cilk.h>
 
 #include "typedefs.h"
 #include "pss/parallel_stable_sort.h"
@@ -286,7 +285,7 @@ void sort_triplets_blocks(Triplet<T, IT> * array, IT size,
   brow_ptr[blockrows] = size;
 
   // Sort every block row according to block-column, row and column
-  cilk_for (IT b=0; b<blockrows; b++) {
+  for (IT b=0; b<blockrows; b++) {
     IT start = brow_ptr[b];
     IT end = brow_ptr[b+1];
     std::sort(array + start, array + end, block_compare);
@@ -361,7 +360,7 @@ template <class T, class IT>
 void calculate_block_id(Element<T, IT> * elements, IT size,
   IT * blockrow_offset, IT blockrows, IT * blockcol_offset, IT blockcols)
 {
-    cilk_for (IT i=0; i<size; i++) {
+    for (IT i=0; i<size; i++) {
         IT br = index_to_blockindex(blockrow_offset, blockrows, elements[i].row );
         IT bc = index_to_blockindex(blockcol_offset, blockcols, elements[i].col );
         elements[i].block = br * blockcols + bc;

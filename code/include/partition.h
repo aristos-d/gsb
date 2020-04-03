@@ -2,17 +2,9 @@
 #define _PARTITION_H_
 
 #include <stdlib.h>
-#include <cilk/cilk.h>
-#include <cilk/cilk_api.h>
 
 #include "typedefs.h"
-
-#ifndef SYNCHED
-extern "C" {
-    CILK_EXPORT __CILKRTS_NOTHROW
-    int __cilkrts_synched(void);
-}
-#endif
+#include "rt.h"
 
 /*
  * Partition the blockrow into chunks. Return number of chunks
@@ -21,7 +13,7 @@ template <class BLOCKMATRIX, class IT>
 IT partition_blockrow(const BLOCKMATRIX * A, BlockRowPartition<IT> * partition, IT start, IT end)
 {
     IT b, c = 0, nnz = 0, size = INITPARTITION;
-    const IT min_nnz = PARTITION_FACTOR * A->nnz / (PARTITION_FACTOR_INV * __cilkrts_get_nworkers());
+    const IT min_nnz = PARTITION_FACTOR * A->nnz / (PARTITION_FACTOR_INV * RT_WORKERS);
 
     partition->chunks = (IT *) malloc(INITPARTITION * sizeof(IT));
     partition->chunks[0] = start;
@@ -70,7 +62,7 @@ void partition_dump(BlockRowPartition<IT> * partition, IT blockrows)
  * Initialize partition datastruct for GSB matrix
  */
 template <typename T, typename IT, typename SIT,
-          template<typename, typename, typename> typename GSB>
+          template<typename, typename, typename> class GSB>
 void partition_init(GSB<T,IT,SIT> * A)
 {
     A->partition = (BlockRowPartition<IT> *) malloc(A->blockrows * sizeof(BlockRowPartition<IT>));
@@ -95,7 +87,7 @@ void partition_init(Csbr<T,IT> * A)
  *  Clean-up functions
  */
 template <typename T, typename IT, typename SIT,
-          template<typename, typename, typename> typename GSB>
+          template<typename, typename, typename> class GSB>
 void partition_destroy(GSB<T, IT, SIT> * A)
 {
     for (IT br=0; br<A->blockrows; br++) {

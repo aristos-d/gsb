@@ -6,7 +6,6 @@ TOOLDIR = src/tools/
 TESTBINDIR = bin/test/
 TOOLBINDIR = bin/tools/
 DEPDIR = dep/
-CSBDIR= dep/csb/
 
 OBJ = obj/common.o \
       obj/mm_io.o
@@ -14,8 +13,7 @@ OBJ = obj/common.o \
 TESTS = $(TESTBINDIR)result \
 		$(TESTBINDIR)structs \
 		$(TESTBINDIR)block \
-		$(TESTBINDIR)partition \
-		$(TESTBINDIR)mkl
+		$(TESTBINDIR)partition
 
 TOOLS = $(TOOLBINDIR)permute  \
 		$(TOOLBINDIR)sort \
@@ -31,30 +29,22 @@ TOOLS = $(TOOLBINDIR)permute  \
 INCFLAGS = -I$(INCDIR) -I$(DEPDIR)
 LINKFLAGS =
 
-INTELROOT = /opt/intel/parallel_studio
-INTELLINK = $(INTELROOT)/lib/intel64
-
-MATLABBIN = $(shell readlink -f $(shell which matlab))
-MATLABROOT = $(shell dirname $(shell dirname $(MATLABBIN)))
-MATLABINC = $(MATLABROOT)/extern/include
-
 # CC should be a C compiler and CXX a C++ compiler
-CC = icc
-CXX = icpc
-FLAGSOPT = -O3 -xHost -fno-rtti -fno-exceptions -fno-alias -funroll-loops -restrict 
-FLAGS = $(INCFLAGS) -std=c++11 -g $(FLAGSOPT)
-FLAGSDEBUG = $(INCFLAGS) -std=c++11 -g
-FLAGSSERIAL = $(FLAGS) -cilk-serialize
-FLAGSC = $(INCFLAGS)
+CC = clang
+CXX = clang++
+FLAGSOPT = -O3 -fno-rtti -fno-exceptions -funroll-loops 
+FLAGS = $(INCFLAGS) -std=c++11 -g -fopenmp $(FLAGSOPT)
+FLAGSDEBUG = $(INCFLAGS) -std=c++11 -g -fopenmp
+FLAGSC = $(INCFLAGS) -fopenmp
 HEADERS = $(INCDIR)*.h $(INCDIR)matrix/*.h $(INCDIR)io/*.h $(INCDIR)test/*.h
 
 # An ugly solution to generate output directories because git cannot keep track
 # of them
-IGNORE := $(shell mkdir -p obj obj/mex lib bin bin/test bin/tools bin/mex)
+IGNORE := $(shell mkdir -p obj obj lib bin bin/test bin/tools)
 
 all: test tools spmv
 
-spmv: csbr cgbr csr cswr csb mkl
+spmv: csbr cgbr csr cswr
 
 test: $(TESTS)
 
@@ -69,7 +59,7 @@ clean:
 
 $(TESTBINDIR)block: $(TESTDIR)block.cpp lib/common.a $(HEADERS)
 	$(CXX) $(FLAGS) -DITERATIONS=200 \
-		$< lib/common.a -o $@ -mkl=sequential
+		$< lib/common.a -o $@
 
 $(TESTBINDIR)structs: $(TESTDIR)structs.cpp $(INCDIR)typedefs.h
 	$(CXX) $(FLAGSDEBUG) $< -o $@
@@ -82,11 +72,6 @@ $(TESTBINDIR)partition: src/drivers/blocked.cpp lib/common.a $(HEADERS)
 		-DMATRIXTYPE="Cgbr<float,uint32_t,uint16_t>" -DPARTITION_DEBUG \
 		-DVALTYPE=float -DITYPE=uint32_t -DSITYPE=uint16_t \
 		$< lib/common.a -o $@
-
-$(TESTBINDIR)mkl: $(TESTDIR)mkl.cpp lib/common.a 
-	$(CXX) $(FLAGS) \
-		-DMKL_SPARSE -DMKL_DENSE \
-		$(TESTDIR)mkl.cpp lib/common.a -o $@ -mkl=sequential
 
 ###############################
 # Tools
@@ -187,61 +172,6 @@ $(BINDIR)pbench: src/drivers/pbench.cpp lib/common.a $(HEADERS)
 	$(CXX) $(FLAGS) \
 		 -DVALTYPE=float -DINDEXTYPE=uint32_t -DSINDEXTYPE=uint16_t \
 		$< lib/common.a -o $@
-
-###############################
-# Driver programs using Intel's MKL
-###############################
-
-mkl: $(BINDIR)csr_mkl $(BINDIR)cgbr_mkl $(BINDIR)cgbr_hyb $(BINDIR)cswr_mkl
-
-$(BINDIR)csr_mkl: src/drivers/csr.cpp lib/common.a $(HEADERS)
-	$(CXX) $(FLAGS) \
-		-DMKL_SPARSE -DMATRIXTYPE="Csr<float,int>" -DVALTYPE=float -DITYPE=int \
-		$< lib/common.a -o $@ -mkl=parallel
-
-$(BINDIR)cgbr_mkl: src/drivers/blocked.cpp lib/common.a $(HEADERS)
-	$(CXX) $(FLAGS) \
-	    -DMKL_DENSE -DMKL_SPARSE -DMATRIXTYPE="Cgbr<float,int,int>" -DVALTYPE=float -DITYPE=int \
-	    $< lib/common.a -o $@ -mkl=sequential
-
-$(BINDIR)cgbr2_hyb: src/drivers/blocked.cpp lib/common.a $(HEADERS)
-	$(CXX) $(FLAGS) \
-	    -DMKL_DENSE -DMATRIXTYPE="Cgbr2<float,int,uint16_t>" -DVALTYPE=float -DITYPE=int \
-	    $< lib/common.a -o $@ -mkl=sequential 
-
-$(BINDIR)cgbr_hyb: src/drivers/blocked.cpp lib/common.a $(HEADERS)
-	$(CXX) $(FLAGS) \
-	    -DMKL_DENSE -DMATRIXTYPE="Cgbr<float,int,uint16_t>" -DVALTYPE=float -DITYPE=int \
-	    $< lib/common.a -o $@ -mkl=sequential 
-
-$(BINDIR)cswr_mkl: src/drivers/cswr.cpp lib/common.a $(HEADERS)
-	$(CXX) $(FLAGS) \
-		-DMKL_SPARSE -DMATRIXTYPE="Cswr<float,int,int>" -DVALTYPE=float -DITYPE=int \
-		$< lib/common.a -o $@ -mkl=sequential
-
-###############################
-# Driver programs using CSB library
-###############################
-
-csb: $(BINDIR)bicsb
-
-$(BINDIR)bicsb: src/drivers/bicsb.cpp lib/common.a $(HEADERS)
-	$(CXX) $(FLAGS) \
-		-DVALTYPE=float -DITYPE=uint32_t \
-		$< lib/common.a -o $@
-
-###############################
-# MEX wrappers to use in MATLAB
-###############################
-
-mex: bin/mex/spmv.mexa64
-
-obj/mex/wrap.o: src/mex/wrap.cpp $(HEADERS)
-	$(CXX) -I$(MATLABINC) $(FLAGS) -Wall -c src/mex/wrap.cpp -fPIC -o $@
-	
-bin/mex/spmv.mexa64: src/mex/spmv.cpp obj/mex/wrap.o $(HEADERS)
-	mex -g -I$(MATLABINC) -I$(INCDIR) -L$(INTELLINK) -lcilkrts -lirc \
-	src/mex/spmv.cpp obj/mex/wrap.o -outdir ./bin/mex
 
 ###############################
 # Object files and libraries

@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <limits>
-#include <cilk/cilk.h>
+#include <omp.h>
 
 #include "typedefs.h"
 #include "utils.h"
@@ -54,10 +54,11 @@ void spmv_chunk(Csbr<T,IT> const * const A,
     } else {
 
         IT middle = (first+last) / 2;
+        
+        #pragma omp task
+        spmv_chunk(A, x, y, partition, first, middle, bsize);
 
-        cilk_spawn spmv_chunk(A, x, y, partition, first, middle, bsize);
-
-        if (__cilkrts_synched()) {
+        if (RT_SYNCHED) {
             spmv_chunk(A, x, y, partition, middle, last, bsize);
         } else {
             
@@ -65,9 +66,9 @@ void spmv_chunk(Csbr<T,IT> const * const A,
             T * temp = new T[bsize]();
 
             spmv_chunk(A, x, temp, partition, middle, last, bsize);
-            cilk_sync;
+            #pragma omp taskwait
 
-            #pragma simd
+            #pragma omp simd
             for (IT i=0; i<bsize; i++)
                 y[i] += temp[i];
 
@@ -88,7 +89,8 @@ void spmv(Csbr<T,IT> const * const A,
     IT const * const blockrow_offset = A->blockrow_offset;
 
     // For each block row
-    cilk_for(IT bi=0; bi<A->blockrows; bi++){
+    #pragma omp parallel for schedule(dynamic, 1)
+    for(IT bi=0; bi<A->blockrows; bi++){
 
       IT nchunks = A->partition[bi].nchunks;
       IT y_start = blockrow_offset[bi];
