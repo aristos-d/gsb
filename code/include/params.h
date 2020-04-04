@@ -5,8 +5,8 @@
 #include <math.h>
 
 // Type parameters
-#ifndef VALUETYPE
-#define VALUETYPE float
+#ifndef VALTYPE
+#define VALTYPE float
 #endif
 
 #ifndef INDEXTYPE

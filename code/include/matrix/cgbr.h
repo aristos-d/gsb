@@ -366,6 +366,23 @@ void Coo_to_Cgbr(Cgbr<T,IT,SIT> * A, Coo3<T,IT> * B,
 }
 
 /*
+ * Constructor wrapper
+ */
+template <typename T, typename IT, typename SIT>
+void Coo_to_Cgbr(Cgbr<T,IT,SIT> * A, Coo3<T,IT> * B, IT br_size, IT bc_size)
+{
+    Coo_to_Blocked(A, B, br_size, bc_size);
+}
+
+template <typename T, typename IT, typename SIT>
+void Coo_to_Blocked(Cgbr<T,IT,SIT> * A, Coo3<T,IT> * B,
+                IT *blockrow_offset, IT blockrows,
+                IT *blockcol_offset, IT blockcols)
+{
+    Coo_to_Cgbr(A, B, blockrow_offset, blockrows, blockcol_offset, blockcols);
+}
+
+/*
  * Release memory allocated for a generalized matrix block 
  */
 template <class T, class IT, class SIT>

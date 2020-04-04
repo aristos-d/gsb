@@ -259,6 +259,10 @@ struct Bcsr {
   IT blockrows;
   IT blockcols;
 
+  // Partitioning information
+  BlockRowPartition<IT> * partition;
+  bool balanced;
+
   // Original size
   IT rows;
   IT columns;

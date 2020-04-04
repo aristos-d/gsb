@@ -96,10 +96,9 @@ void spmv(GSB<T,IT,SIT> const * const A,
  * Final blocks in each dimension will be a little larger when block size is
  * not a divisor of total number of rows/columns.
  */
-template <class T, class IT, class SIT,
-          template <typename, typename, typename> class GSB,
+template <class T, class IT, class MATRIX,
           template <typename, typename> class COO>
-void Coo_to_Cgbr(GSB<T,IT,SIT> * A, COO<T,IT> * B, IT br_size, IT bc_size)
+void Coo_to_Blocked(MATRIX * A, COO<T,IT> * B, IT br_size, IT bc_size)
 {
     IT blockrows = B->rows / br_size;
     IT blockcols = B->columns / bc_size;
@@ -122,29 +121,7 @@ void Coo_to_Cgbr(GSB<T,IT,SIT> * A, COO<T,IT> * B, IT br_size, IT bc_size)
     }
     blockcol_offset[blockcols] = B->columns;
 
-    Coo_to_Cgbr(A, B, blockrow_offset, blockrows, blockcol_offset, blockcols);
-}
-
-/*
- * Wrappers around the constructors
- */
-template <class T, class IT, class SIT,
-          template <typename, typename, typename> class GSB,
-          template <typename, typename> class COO>
-void Coo_to_Blocked(GSB<T,IT,SIT> * A, COO<T,IT> * B,
-                    IT * blockrow_offset, IT blockrows, 
-                    IT * blockcol_offset, IT blockcols)
-{
-    Coo_to_Cgbr(A, B, blockrow_offset, blockrows, blockcol_offset, blockcols);
-}
-
-template <class T, class IT, class SIT,
-          template <typename, typename, typename> class GSB,
-          template <typename, typename> class COO>
-void Coo_to_Blocked(GSB<T,IT,SIT> * A, COO<T,IT> * B,
-                    IT row_block_size, IT col_block_size)
-{
-    Coo_to_Cgbr(A, B, row_block_size, col_block_size);
+    Coo_to_Blocked(A, B, blockrow_offset, blockrows, blockcol_offset, blockcols);
 }
 
 // ------------------------- Utilities -------------------------

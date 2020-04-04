@@ -54,14 +54,14 @@ void spmv_chunk(Csbr<T,IT> const * const A,
     } else {
 
         IT middle = (first+last) / 2;
-        
+
         #pragma omp task
         spmv_chunk(A, x, y, partition, first, middle, bsize);
 
         if (RT_SYNCHED) {
             spmv_chunk(A, x, y, partition, middle, last, bsize);
         } else {
-            
+
             // We need C++ style allocation to ensure proper initialization
             T * temp = new T[bsize]();
 
@@ -221,7 +221,7 @@ void Coo_to_Csbr(Csbr<T, IT> * A, Coo3<T, IT> * B,
   DEBUG(printf("Original COO matrix has %lu non-zeros\n", (unsigned long) B->nnz));
 
   // Sort triplets according to block-row, block-column, row, column
-  calculate_block_id(B->elements, B->nnz, blockrow_offset, blockrows, blockcol_offset, blockcols);  
+  calculate_block_id(B->elements, B->nnz, blockrow_offset, blockrows, blockcol_offset, blockcols);
   sort_elements_blocks(B->elements, B->nnz);
   DEBUG(puts("Sorting complete"));
 
@@ -232,7 +232,7 @@ void Coo_to_Csbr(Csbr<T, IT> * A, Coo3<T, IT> * B,
   A->blockcols = blockcols;
   A->blockrow_offset = blockrow_offset;
   A->blockcol_offset = blockcol_offset;
-  A->nnzblocks = count_blocks(B->elements, B->nnz); 
+  A->nnzblocks = count_blocks(B->elements, B->nnz);
 
   // Sanity checks on block sizes
   assert(blockrows <= B->rows);
@@ -265,7 +265,7 @@ void Coo_to_Csbr(Csbr<T, IT> * A, Coo3<T, IT> * B,
       bc_offset = blockcol_offset[bc];
       br_size = blockrow_offset[br + 1] - br_offset;
       bc_size = blockcol_offset[bc + 1] - bc_offset;
-      
+
       // Block meta data
       A->blockrow_ptr[br+1]++;
       A->blockcol_ind[block_index] = bc;
@@ -304,7 +304,7 @@ void Coo_to_Csbr(Csbr<T, IT> * A, Coo3<T, IT> * B,
   }
 
   assert(A->blockrow_ptr[blockrows] == A->nnzblocks);
-    
+
   partition_init(A);
 }
 
@@ -344,14 +344,8 @@ void Coo_to_Csbr(Csbr<T, IT> * A, COOTYPE * B, IT br_size, IT bc_size)
 }
 
 template <class T, class IT, template<typename, typename> class COO>
-void Coo_to_Blocked(Csbr<T,IT> * A, COO<T,IT> * B, IT br_size, IT bc_size)
-{
-    Coo_to_Csbr(A, B, br_size, bc_size);
-}
-
-template <class T, class IT, template<typename, typename> class COO>
 void Coo_to_Blocked(Csbr<T,IT> * A, COO<T,IT> * B,
-                    IT * blockrow_offset, IT blockrows, 
+                    IT * blockrow_offset, IT blockrows,
                     IT * blockcol_offset, IT blockcols)
 {
     Coo_to_Csbr(A, B, blockrow_offset, blockrows, blockcol_offset, blockcols);

@@ -10,6 +10,7 @@
 #include "typedefs.h"
 #include "utils.h"
 #include "matrix/coo.h"
+#include "matrix/csr.h"
 
 /*
  * Returns the number of non-zero elements of the matrix.
@@ -51,7 +52,7 @@ void spmv(const Csbr2<T, IT> * const A, const T * __restrict x, T * __restrict y
 Construct a CSBR2 matrix from a Coo3 matrix.
 */
 template <class T, class IT>
-void Coo_to_Csbr(Csbr2<T, IT> * A, Coo3<T, IT> * B,
+void Coo_to_Csbr(Csbr2<T,IT> * A, Coo3<T,IT> * B,
   IT * blockrow_offset, IT blockrows, IT * blockcol_offset, IT blockcols)
 {
   IT br, br_offset, br_size;
@@ -88,11 +89,11 @@ void Coo_to_Csbr(Csbr2<T, IT> * A, Coo3<T, IT> * B,
   block_index = std::numeric_limits<IT>::max();
   prev_b = std::numeric_limits<IT>::max();
 
-  for(IT i=0; i<A->nnz; i++){
+  for (IT i=0; i<A->nnz; i++) {
     b = B->elements[i].block;
 
     // Check if this is the begining of a new block
-    if(b != prev_b){
+    if (b != prev_b) {
       br = b / blockcols;
       bc = b % blockcols;
       br_offset = blockrow_offset[br];
@@ -118,14 +119,14 @@ void Coo_to_Csbr(Csbr2<T, IT> * A, Coo3<T, IT> * B,
     A->val[i] = B->elements[i].val;
   }
 
-  for(br=0; br<A->blockrows; br++){
+  for (br=0; br<A->blockrows; br++) {
     A->blockrow_ptr[br+1] = A->blockrow_ptr[br+1] + A->blockrow_ptr[br];
   }
 
   // Get row pointers by accumulating row non-zero counts
 
   IT nnz_count = 0;
-  for(IT br=0; br<blockrows; br++){
+  for (IT br=0; br<blockrows; br++) {
     IT block_size;
     IT blockrow_start, blockrow_end;
 
@@ -134,9 +135,9 @@ void Coo_to_Csbr(Csbr2<T, IT> * A, Coo3<T, IT> * B,
     blockrow_end = A->blockrow_ptr[br+1];
 
     // For every block in block row
-    for(IT k=blockrow_start; k<blockrow_end; k++){
+    for (IT k=blockrow_start; k<blockrow_end; k++) {
       A->row_ptr[k][0] = nnz_count;
-      for(IT i=0; i<block_size; i++){
+      for (IT i=0; i<block_size; i++) {
         A->row_ptr[k][i+1] = A->row_ptr[k][i+1] + A->row_ptr[k][i];
       }
       nnz_count = A->row_ptr[k][block_size];
@@ -151,37 +152,10 @@ void Coo_to_Csbr(Csbr2<T, IT> * A, Coo3<T, IT> * B,
  * Final blocks in each dimension will be a little larger when block size is
  * not a divisor of total number of rows/columns.
  */
-template <class T, class IT, class COOTYPE>
-void Coo_to_Csbr(Csbr2<T, IT> * A, COOTYPE * B, IT br_size, IT bc_size)
-{
-  IT blockrows = B->rows / br_size;
-  IT blockcols = B->columns / bc_size;
-  if(blockrows == 0) blockrows = 1;
-  if(blockcols == 0) blockcols = 1;
-  IT * blockrow_offset = (IT *) malloc( (blockrows + 1) * sizeof(IT));
-  IT * blockcol_offset = (IT *) malloc( (blockcols + 1) * sizeof(IT));
-
-  // Calculate block-row offsets
-  blockrow_offset[0] = 0;
-  for(IT i=0; i<(blockrows - 1); i++){
-    blockrow_offset[i+1] = blockrow_offset[i] + br_size;
-  }
-  blockrow_offset[blockrows] = B->rows;
-
-  // Calculate block-column offsets
-  blockcol_offset[0] = 0;
-  for(IT i=0; i<(blockcols - 1); i++){
-    blockcol_offset[i+1] = blockcol_offset[i] + bc_size;
-  }
-  blockcol_offset[blockcols] = B->columns;
-
-  Coo_to_Csbr(A, B, blockrow_offset, blockrows, blockcol_offset, blockcols);
-}
-
 template <class T, class IT, template<typename, typename> class COO>
-void Coo_to_Blocked(Csbr2<T,IT> * A, COO<T,IT> * B, IT br_size, IT bc_size)
+void Coo_to_Csbr(Csbr2<T, IT> * A, COO<T,IT> * B, IT br_size, IT bc_size)
 {
-    Coo_to_Csbr(A, B, br_size, bc_size);
+  Coo_to_Blocked(A, B, br_size, bc_size);
 }
 
 template <class T, class IT, template<typename, typename> class COO>
@@ -214,13 +188,13 @@ void print_info(Csbr2<T, IT> A)
 template <class T, class IT>
 void release(Csbr2<T, IT> A)
 {
-  for(IT i=0; i<A.nnzblocks; i++){
+  for (IT i=0; i<A.nnzblocks; i++) {
     free(A.row_ptr[i]);
   }
   // Block-row and block-column offsets may point to the same array
-  if(A.blockcol_offset == A.blockrow_offset){
+  if (A.blockcol_offset == A.blockrow_offset) {
     free(A.blockrow_offset);
-  }else{
+  } else {
     free(A.blockcol_offset);
     free(A.blockrow_offset);
   }

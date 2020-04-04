@@ -51,7 +51,7 @@ void benchmark_spmv(const Bcsr<T, IT> A, int iterations)
   T * x, * y;
 
   INIT(x, A.columns, y, A.rows);
-  
+
   printf("Threads   : %d\n", RT_WORKERS);
 
   BENCH( spmv(&A, x, y), iterations, nonzeros(A) )
@@ -71,7 +71,7 @@ void benchmark_spmv(const Cgbr<T,IT,SIT> A, int iterations)
   printf("Threads   : %d\n", RT_WORKERS);
 
   BENCH( spmv(&A, x, y), iterations, nonzeros(A));
-  
+
   // Free memory
   aligned_free(y);
   aligned_free(x);
@@ -87,7 +87,7 @@ void benchmark_spmv(const Cgbr2<T,IT,SIT> A, int iterations)
   printf("Threads   : %d\n", RT_WORKERS);
 
   BENCH( spmv(&A, x, y), iterations, A.nnz);
-  
+
   // Free memory
   aligned_free(y);
   aligned_free(x);
@@ -114,11 +114,11 @@ void benchmark_spmv(const Csr2<T, IT> A, int iterations)
 {
     T * x, * y;
     INIT(x, A.columns, y, A.rows);
-  
+
     printf("Threads   : %d\n", RT_WORKERS);
-  
+
     BENCH( spmv(&A, x, y), iterations, nonzeros(A) );
-  
+
     // Free memory
     aligned_free(y);
     aligned_free(x);

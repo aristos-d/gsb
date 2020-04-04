@@ -19,18 +19,18 @@ int main(int argc, char* argv[])
 {
   int ret;
   double t;
-  VALUETYPE *x, *y1, *y2;
+  VALTYPE *x, *y1, *y2;
 
-  Coo3<VALUETYPE, INDEXTYPE> coo3;
-  Csr<VALUETYPE, INDEXTYPE> csr;
-  Csr2<VALUETYPE, INDEXTYPE> csr2;
-  Cswr<VALUETYPE, INDEXTYPE, uint8_t> cswr;
-  Csbr<VALUETYPE, INDEXTYPE> csbr;
-  Csbr2<VALUETYPE, INDEXTYPE> csbr2;
-  Cgbr<VALUETYPE, INDEXTYPE, INDEXTYPE> cgbr;
-  Cgbr<VALUETYPE, INDEXTYPE, SMALLINDEXTYPE> cgbr_si;
-  Cgbr2<VALUETYPE, INDEXTYPE, SMALLINDEXTYPE> cgbr2;
-  Element<VALUETYPE, INDEXTYPE> * elements_bk;
+  Coo3<VALTYPE,INDEXTYPE> coo3;
+  Csr<VALTYPE,INDEXTYPE> csr;
+  Csr2<VALTYPE,INDEXTYPE> csr2;
+  Cswr<VALTYPE,INDEXTYPE, uint8_t> cswr;
+  Csbr<VALTYPE,INDEXTYPE> csbr;
+  Csbr2<VALTYPE,INDEXTYPE> csbr2;
+  Cgbr<VALTYPE,INDEXTYPE,INDEXTYPE> cgbr;
+  Cgbr<VALTYPE,INDEXTYPE,SMALLINDEXTYPE> cgbr_si;
+  Cgbr2<VALTYPE,INDEXTYPE,SMALLINDEXTYPE> cgbr2;
+  Element<VALTYPE,INDEXTYPE> *elements_bk;
 
   if (argc < 2){
     fprintf(stderr, "Usage: %s [martix-filename]\n", argv[0]);
@@ -44,19 +44,19 @@ int main(int argc, char* argv[])
     exit(1);
   }
 
-  INDEXTYPE b_size = pick_block_size<VALUETYPE,INDEXTYPE>(coo3.rows, coo3.columns, RT_WORKERS);
+  INDEXTYPE b_size = pick_block_size(coo3.rows, coo3.columns, sizeof(VALTYPE), RT_WORKERS);
   if(b_size > coo3.rows) b_size = coo3.rows;
   if(b_size > coo3.columns) b_size = coo3.columns;
   printf("Block size : %lu\n", (unsigned long) b_size);
 
   // Allocate memory for x, y and initialize x
-  x = new VALUETYPE[coo3.columns];
-  y1 = new VALUETYPE[coo3.rows];
-  y2 = new VALUETYPE[coo3.rows];
-  
+  x = new VALTYPE[coo3.columns];
+  y1 = new VALTYPE[coo3.rows];
+  y2 = new VALTYPE[coo3.rows];
+
   srand(0);
   for(INDEXTYPE i=0; i<coo3.columns; i++){
-    x[i] = ((VALUETYPE) rand())/RAND_MAX;
+    x[i] = ((VALTYPE) rand())/RAND_MAX;
   }
   printf("Random vector initialized.\n");
 
@@ -95,7 +95,7 @@ int main(int argc, char* argv[])
 
   // Check if results match
   check_results(y1, y2, coo3.rows);
-  for(INDEXTYPE i=0; i<coo3.rows; i++) y2[i] = (VALUETYPE) 0.0f;
+  for(INDEXTYPE i=0; i<coo3.rows; i++) y2[i] = (VALTYPE) 0.0f;
 
   /* ----------------------- Cswr ----------------------- */
   puts("----------------------- CSWR -----------------------");
@@ -117,8 +117,8 @@ int main(int argc, char* argv[])
 
   // Check if results match
   check_results(y1, y2, coo3.rows);
-  for(INDEXTYPE i=0; i<coo3.rows; i++) y2[i] = (VALUETYPE) 0.0f;
-  
+  for(INDEXTYPE i=0; i<coo3.rows; i++) y2[i] = (VALTYPE) 0.0f;
+
   /* ----------------------- Csbr ----------------------- */
   puts("----------------------- CSBR -----------------------");
   printf("Converting... "); fflush(stdout);
@@ -126,7 +126,7 @@ int main(int argc, char* argv[])
   Coo_to_Csbr(&csbr, &coo3, b_size, b_size);
   t = tock();
   printf("%f sec\n", t);
-  
+
   print_info(csbr);
 
   // Time spmv with CSBR matrix
@@ -137,7 +137,7 @@ int main(int argc, char* argv[])
 
   // Check if results match
   check_results(y1, y2, coo3.rows);
-  for(INDEXTYPE i=0; i<coo3.rows; i++) y2[i] = (VALUETYPE) 0.0f;
+  for(INDEXTYPE i=0; i<coo3.rows; i++) y2[i] = (VALTYPE) 0.0f;
 
   release(csbr);
 
@@ -148,7 +148,7 @@ int main(int argc, char* argv[])
   Coo_to_Csbr(&csbr2, &coo3, b_size, b_size);
   t = tock();
   printf("%f sec\n", t);
-  
+
   print_info(csbr2);
 
   // Time spmv with CSBR(2) matrix
@@ -157,17 +157,17 @@ int main(int argc, char* argv[])
   t = tock();
   printf("spmv : %f sec\n", t);
 
-  release(csbr2); 
-  
+  release(csbr2);
+
   // Check if results match
   check_results(y1, y2, coo3.rows);
-  for(INDEXTYPE i=0; i<coo3.rows; i++) y2[i] = (VALUETYPE) 0.0f;  
+  for(INDEXTYPE i=0; i<coo3.rows; i++) y2[i] = (VALTYPE) 0.0f;
 
   // Before creating the CGBR matrix we have to back up the data in coo3
   // because CGBR constructor will modify them but we still need original for
   // second CGBR matrix construction.
-  elements_bk = new Element<VALUETYPE,INDEXTYPE>[coo3.nnz];
-  memcpy(elements_bk, coo3.elements, coo3.nnz * sizeof(Element<VALUETYPE, INDEXTYPE>));
+  elements_bk = new Element<VALTYPE,INDEXTYPE>[coo3.nnz];
+  memcpy(elements_bk, coo3.elements, coo3.nnz * sizeof(Element<VALTYPE, INDEXTYPE>));
 
   /* ----------------------- Cgbr ----------------------- */
   puts("----------------------- CGBR -----------------------");
@@ -175,8 +175,8 @@ int main(int argc, char* argv[])
   tick();
   Coo_to_Cgbr(&cgbr, &coo3, b_size, b_size);
   t = tock();
-  printf("%f sec\n", t); 
-  
+  printf("%f sec\n", t);
+
   print_info(cgbr);
 
   // Time spmv with CGBR matrix
@@ -189,10 +189,10 @@ int main(int argc, char* argv[])
 
   // Check if results match
   check_results(y1, y2, coo3.rows);
-  for(INDEXTYPE i=0; i<coo3.rows; i++) y2[i] = (VALUETYPE) 0.0f;  
+  for(INDEXTYPE i=0; i<coo3.rows; i++) y2[i] = (VALTYPE) 0.0f;
 
   // Copy data back from back up.
-  memcpy(coo3.elements, elements_bk, coo3.nnz * sizeof(Element<VALUETYPE, INDEXTYPE>));
+  memcpy(coo3.elements, elements_bk, coo3.nnz * sizeof(Element<VALTYPE, INDEXTYPE>));
 
   /* -------------- Cgbr (with smaller index) ------------ */
   puts("--------------------- CGBR (SI) --------------------");
@@ -200,8 +200,8 @@ int main(int argc, char* argv[])
   tick();
   Coo_to_Cgbr(&cgbr_si, &coo3, b_size, b_size);
   t = tock();
-  printf("%f sec\n", t); 
-  
+  printf("%f sec\n", t);
+
   print_info(cgbr_si);
 
   // Time spmv with CGBR matrix
@@ -209,24 +209,24 @@ int main(int argc, char* argv[])
   spmv(&cgbr_si, x, y2);
   t = tock();
   printf("spmv : %f sec\n", t);
-  
+
   // Check if results match
   check_results(y1, y2, coo3.rows);
-  for(INDEXTYPE i=0; i<coo3.rows; i++) y2[i] = (VALUETYPE) 0.0f;  
+  for(INDEXTYPE i=0; i<coo3.rows; i++) y2[i] = (VALTYPE) 0.0f;
 
   release(cgbr_si);
 
   // Copy data back from back up again.
-  memcpy(coo3.elements, elements_bk, coo3.nnz * sizeof(Element<VALUETYPE, INDEXTYPE>));
-  
+  memcpy(coo3.elements, elements_bk, coo3.nnz * sizeof(Element<VALTYPE, INDEXTYPE>));
+
   /* -------------- Cgbr (2) ------------ */
   puts("--------------------- CGBR(2) --------------------");
   printf("Converting with block size %u... ", b_size); fflush(stdout);
   tick();
   Coo_to_Cgbr(&cgbr2, &coo3, b_size, b_size);
   t = tock();
-  printf("%f sec\n", t); 
-  
+  printf("%f sec\n", t);
+
   print_info(cgbr2);
 
   // Time spmv with CGBR matrix
@@ -234,14 +234,14 @@ int main(int argc, char* argv[])
   spmv(&cgbr2, x, y2);
   t = tock();
   printf("spmv : %f sec\n", t);
-  
+
   // Check if results match
   check_results(y1, y2, coo3.rows);
-  for(INDEXTYPE i=0; i<coo3.rows; i++) y2[i] = (VALUETYPE) 0.0f;  
- 
+  for(INDEXTYPE i=0; i<coo3.rows; i++) y2[i] = (VALTYPE) 0.0f;
+
   release(cgbr2);
 
-  // Clean up 
+  // Clean up
   release(coo3);
   delete [] elements_bk;
   delete [] y1;

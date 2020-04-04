@@ -139,7 +139,7 @@ bcsr: $(BINDIR)bcsr
 
 $(BINDIR)bcsr: src/drivers/blocked.cpp lib/common.a $(HEADERS)
 	$(CXX) $(FLAGS) \
-		-DMATRIXTYPE="Bcsr<float,uint32_t>" \
+		-DMATRIXTYPE="Bcsr<float,uint32_t>" -DVALTYPE=float -DITYPE=uint32_t \
 		$< lib/common.a -o $@
 
 csr: $(BINDIR)csr $(BINDIR)csr2

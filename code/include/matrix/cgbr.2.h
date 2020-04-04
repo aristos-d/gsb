@@ -131,6 +131,20 @@ void Coo_to_Cgbr (Cgbr2<T,IT,SIT> * A, Coo3<T,IT> * B,
     Coo_to_Cgbr (A, B, blockrow_offsets, blockrows, blockcol_offsets, blockcols, factory);
 }
 
+template <typename T, typename IT, typename SIT>
+void Coo_to_Cgbr(Cgbr2<T,IT,SIT> * A, Coo3<T,IT> * B, IT br_size, IT bc_size)
+{
+    Coo_to_Blocked(A, B, br_size, bc_size);
+}
+
+template <typename T, typename IT, typename SIT>
+void Coo_to_Blocked (Cgbr2<T,IT,SIT> * A, Coo3<T,IT> * B,
+                  IT * blockrow_offsets, IT blockrows,
+                  IT * blockcol_offsets, IT blockcols)
+{
+    Coo_to_Cgbr(A, B, blockrow_offsets, blockrows, blockcol_offsets, blockcols);
+}
+
 /* ------------------- Utillities ------------------- */
 
 /*
