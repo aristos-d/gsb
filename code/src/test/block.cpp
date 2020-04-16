@@ -54,7 +54,8 @@ int main(int argc, char* argv[])
     }
 
     sscanf(basename(argv[f]), "size%luratio%f%*s", &N, &nnzratio);
-    printf("%lu, %6lu, %f, ", N, coo2.nnz, nnzratio); fflush(stdout);
+    printf("%lu, %6lu, %f, ", (unsigned long) N, (unsigned long) coo2.nnz, nnzratio);
+    fflush(stdout);
 
     // Allocate memory for x, y and initialize x
     x = (VALUETYPE *) alligned_malloc(coo2.columns * sizeof(VALUETYPE));

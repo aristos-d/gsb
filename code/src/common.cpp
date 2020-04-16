@@ -45,20 +45,20 @@ void aligned_free( void *ptr )
 /*
  * Print execution time and FLOPs/second
  */
-void print_timing(char *mode, unsigned nnz, int iterations, double ts, double te)
+void print_timing(char const *mode, unsigned nnz, int iterations, double ts, double te)
 {
     double tm = (te - ts) / iterations;
     printf("Execution time %s : %.6f\n", mode, tm);
     printf("Flops/second   %s : %.0f\n", mode, 2.0*nnz/tm);
 }
 
-void print_timing(char *mode, unsigned nnz, double tm)
+void print_timing(char const *mode, unsigned nnz, double tm)
 {
     printf("Execution time %s : %.6f\n", mode, tm);
     printf("Flops/second   %s : %.0f\n", mode, 2.0*nnz/tm);
 }
 
-void print_timing(char *method, char *mode, unsigned nnz, double tm)
+void print_timing(char const *method, char const *mode, unsigned nnz, double tm)
 {
     printf("Execution time %s (%s): %.6f\n", method, mode, tm);
     printf("Flops/second   %s (%s): %.0f\n", method, mode, 2.0*nnz/tm);

@@ -3,15 +3,14 @@
 #include <stdint.h>
 #include <string.h>
 
-/*
-Tool to read binary files in some of the formats used in this project
-WARNING : Always pipe results somewhere (eg. to 'less')
-*/
-
 #define INDEXTYPE uint32_t
 #define VALUETYPE float
 
-int main(int argc, char * argv[])
+/*
+ * Tool to read binary files in some of the formats used in this project
+ * WARNING : Always pipe results somewhere (eg. to 'less')
+*/
+int main (int argc, char * argv[])
 {   
     unsigned long i;
     int mode;
@@ -19,19 +18,19 @@ int main(int argc, char * argv[])
     VALUETYPE v;
     FILE * f;
 
-    if(argc < 2){
+    if (argc < 2) {
         fprintf(stderr, "Usage: %s [matrix-file] mode\n", argv[0]);
         fprintf(stderr, "\twhere 'mode' is either 'triples', 'blocks' or 'vector' (default is blocks)\n");
         return 1;
     }
 
-    if(argc == 3 && strncmp(argv[2], "triples", 8) == 0){
+    if (argc == 3 && strncmp(argv[2], "triples", 8) == 0) {
         mode = 0;
-    }else if(argc == 3 && strncmp(argv[2], "blocks", 7) == 0){
+    } else if (argc == 3 && strncmp(argv[2], "blocks", 7) == 0) {
         mode = 1;
-    }else if(argc == 3 && strncmp(argv[2], "vector", 7) == 0){
+    } else if (argc == 3 && strncmp(argv[2], "vector", 7) == 0) {
         mode = 2;
-    }else{
+    } else {
         printf("Assuming input is in blocked format.\n");
         mode = 1;
     }
@@ -41,26 +40,27 @@ int main(int argc, char * argv[])
         fprintf(stderr, "Could not open file.\n");
     }
 
-    switch(mode){
+    switch(mode) {
         case 0:  // Binary triples file
         fread(&r, sizeof(INDEXTYPE), 1, f);
         fread(&c, sizeof(INDEXTYPE), 1, f);
         fread(&nnz, sizeof(INDEXTYPE), 1, f);
-        printf("%lu rows x %lu columns, %lu non-zeros\n", r, c, nnz);
+        printf("%lu rows x %lu columns, %lu non-zeros\n",
+                (unsigned long) r, (unsigned long) c, (unsigned long) nnz);
 
-        for(i=0; i<nnz; i++){
+        for (i=0; i<nnz; i++) {
             fread(&n, sizeof(INDEXTYPE), 1, f);
             printf("%12lu\n", (unsigned long) n);  
         }
         printf("---------------------------------------\n"); 
 
-        for(i=0; i<nnz; i++){
+        for (i=0; i<nnz; i++) {
             fread(&n, sizeof(INDEXTYPE), 1, f);
             printf("%12lu\n", (unsigned long) n);  
         }
         printf("---------------------------------------\n");
 
-        for(i=0; i<nnz; i++){
+        for (i=0; i<nnz; i++) {
             fread(&v, sizeof(VALUETYPE), 1, f);
             printf("%12f\n", (double) v);  
         }
@@ -74,7 +74,7 @@ int main(int argc, char * argv[])
         fread(&n, sizeof(INDEXTYPE), 1, f);
         fread(&n, sizeof(INDEXTYPE), 1, f);
 
-        for(i=0; i<nnz; i++){
+        for (i=0; i<nnz; i++) {
             fread(&n, sizeof(INDEXTYPE), 1, f);
             printf("%12u\t", n);
             fread(&n, sizeof(INDEXTYPE), 1, f);

@@ -42,7 +42,9 @@ int main(int argc, char * argv[]){
   A.blockrows = (INDEXTYPE) blocks;
   A.blockcols = (INDEXTYPE) blocks;
 
-  printf("Matrix info :\n\t%lu rows x %lu columns\n\t%lu blocks\n", A.rows, A.columns, A.blockrows);
+  printf("Matrix info :\n\t%lu rows x %lu columns\n\t%lu blocks\n",
+          (unsigned long) A.rows, (unsigned long) A.columns,
+          (unsigned long) A.blockrows);
 
   printf("Reading matrix from disk..."); fflush(stdout);
   read_bin_COO(&A, argv[1], argv[2], argv[3]);
