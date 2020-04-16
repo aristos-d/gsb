@@ -20,9 +20,8 @@
 
 int main(int argc, char * argv[])
 {
-    int ret, type;
+    int ret;
     double t;
-    bool bin;
     ITYPE *block_sizes, *block_offsets_row;
     ITYPE *block_offsets_col;
     size_t num_blocks_row, num_blocks_col;

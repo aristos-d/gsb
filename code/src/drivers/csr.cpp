@@ -18,7 +18,6 @@ int main (int argc, char * argv[])
 {
   int ret;
   double t;
-  bool binary;
   VALTYPE *x, *y;
   MATRIXTYPE A;
   Coo2<VALTYPE,ITYPE> B;

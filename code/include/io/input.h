@@ -134,7 +134,6 @@ int read_mm_COO(COO<T,IT> * A, const char * filename)
 template <class T, class IT>
 int read_bin_COO(Coo<T, IT> * A, const char * file_row, const char * file_col, const char * file_val)
 {
-  int ret;
   T val;
   IT size, r, c;
   IT max_row = 0, max_col = 0;
@@ -205,7 +204,6 @@ int read_bin_COO(COO<T, IT> * A, const char * file_row, const char * file_col, c
   T vbuffer;
   IT size, counter, buffer;
   IT max_row, max_col;
-  int ret;
   FILE *fr, *fc, *fv;
 
   // Read values file to the end to get size

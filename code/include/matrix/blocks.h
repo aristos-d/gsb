@@ -272,7 +272,6 @@ class BlockFactoryDefault : public BlockFactory<T,IT> {
                            Element<T,IT> * array, IT rows, IT columns, IT nnz)
         {
             float coo, csr, dense, density;
-            int workers = RT_WORKERS;
 
             coo = (float) nnz * (2 * sizeof(SIT) + sizeof(T));
             csr = (float) rows * sizeof(IT) + nnz * (sizeof(SIT) + sizeof(T));
