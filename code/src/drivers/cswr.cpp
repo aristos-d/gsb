@@ -57,13 +57,13 @@ int main(int argc, char * argv[])
 
   print_info(A);
 
-  //benchmark_spmv(A, ITERATIONS);
-  
-  #define T VALTYPE
-  INIT(x, B.columns, y, B.rows);
-  #undef T
+  vector_init(&x, B.columns);
+  vector_init(&y, B.rows);
 
   BENCH_CSV( spmv(&A, x, y), ITERATIONS, nonzeros(A), "CSWR");
+
+  vector_release(x);
+  vector_release(y);
 
   release(A);
   release(B);

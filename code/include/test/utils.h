@@ -9,13 +9,6 @@
 #include "typedefs.h"
 #include "common.h"
 
-#define INIT( X, Nx, Y, Ny ) \
-  srand(0); \
-  X = (T *) aligned_alloc(64, Nx * sizeof(T)); \
-  Y = (T *) aligned_alloc(64, Ny * sizeof(T)); \
-  for(unsigned long i=0; i<Nx; i++) X[i] = ((T) rand())/RAND_MAX; \
-  for(unsigned long i=0; i<Ny; i++) Y[i] = 0.0f;
-
 #define BENCH( EXP, TIMES, NNZ ) \
 {\
     double * t = new double[TIMES]; \
@@ -206,7 +199,7 @@ int check_results(T * vec1, T * vec2, IT size)
         printf("\tMaximum error : %g\n", max_diff);
         return -1;
     } else {
-        printf("\tCalculations produced the same result\n");
+        printf("Calculations produced the same result\n");
         return 0;
     }
 }

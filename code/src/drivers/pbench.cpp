@@ -78,9 +78,8 @@ int main(int argc, char * argv[])
     delete [] permutation;
     
     // Intitialize y and x
-    #define T VALTYPE
-    INIT(x, coo.columns, y, coo.rows);
-    #undef T
+    vector_init(&x, coo.columns);
+    vector_init(&y, coo.rows);
 
     // CSR - start
     printf("Converting to CSR format..."); fflush(stdout);
@@ -109,8 +108,8 @@ int main(int argc, char * argv[])
     // GSB - end
   
     // Free memory
-    aligned_free(x);
-    aligned_free(y);
+    vector_release(x);
+    vector_release(y);
     release(coo);
     return 0;
 }

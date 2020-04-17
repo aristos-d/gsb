@@ -11,12 +11,7 @@
 #include "io/input.h"
 #include "io/blocked.h"
 #include "common.h"
-
-#ifdef BENCH_THREADS
-#include "test/threads.h"
-#else
-#include "test/single.h"
-#endif
+#include "test/utils.h"
 
 int main(int argc, char * argv[])
 {
@@ -25,6 +20,7 @@ int main(int argc, char * argv[])
     ITYPE *block_sizes, *block_offsets_row;
     ITYPE *block_offsets_col;
     size_t num_blocks_row, num_blocks_col;
+    VALTYPE *x, *y;
     Coo3<VALTYPE, ITYPE> B;
     MATRIXTYPE A;
 
@@ -114,10 +110,14 @@ int main(int argc, char * argv[])
     partition_dump(A.partition, A.blockrows);
 
     #else
+    vector_init(&x, B.columns);
+    vector_init(&y, B.rows);
 
     // Benchmarking happens here
-    benchmark_spmv(A, ITERATIONS);
+    BENCH_CSV( spmv(&A, x, y), ITERATIONS, nonzeros(A), "GSB");
 
+    vector_release(x);
+    vector_release(y);
     #endif
 
     // Free memory

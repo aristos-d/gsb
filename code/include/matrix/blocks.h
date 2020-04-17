@@ -79,7 +79,7 @@ class Cgbr2 : public BlockBase<T,IT> {
         IT rows;
         IT columns;
         
-        Cgbr2(){}
+        Cgbr2() {}
         Cgbr2(Element<T,IT> * array, IT _rows, IT _columns, IT nnz,
               IT * _blockrow_offset, IT _blockrows,
               IT * _blockcol_offset, IT _blockcols,
@@ -91,9 +91,9 @@ class Cgbr2 : public BlockBase<T,IT> {
         ~Cgbr2() {}
 
         void spmv_block (T const * const __restrict x, T * const __restrict y) const
-	{
+	    {
             spmv(this, x, y);
-	}
+	    }
 };
 
 /* -------------------- Types of blocks -------------------- */

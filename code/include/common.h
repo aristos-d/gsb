@@ -2,16 +2,15 @@
 #define _CSBR_COMMON_
 
 #include <stdint.h>
+#include <stdlib.h>
 
 // Timer API.
 void tick();
 double tock();
 
 // Aligned memory API
-#ifndef _NO_CSBR_UTILS_
-void * aligned_malloc( size_t size );
-void aligned_free( void *ptr );
-#endif
+void * aligned_malloc(size_t size);
+void aligned_free(void *ptr);
 
 void print_timing(char const *mode, unsigned nnz, int iterations, double ts, double te);
 void print_timing(char const *mode, unsigned nnz, double tm);
@@ -27,4 +26,21 @@ int64_t highest_bit_set(int64_t v);
 unsigned int highest_bit_set(unsigned int v);
 int highest_bit_set(int v);
 
+/*
+ * Vector initialization with random data
+ */
+template <class T, class IT>
+void vector_init (T **x, IT size)
+{
+    *x = (T *) aligned_malloc(size * sizeof(T));
+
+    for (IT i=0; i<size; i++)
+        (*x)[i] = (T) (rand() / RAND_MAX);
+}
+
+template <class T>
+void vector_release (T *x)
+{
+    aligned_free(x);
+}
 #endif

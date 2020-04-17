@@ -25,7 +25,7 @@ double tock()
  * Aligned memory allocation and de-alocation, copied (and modified) from CSB
  * library. aligned_malloc is in C11 but not C++11
  */
-void * aligned_malloc( size_t size )
+void * aligned_malloc(size_t size)
 {
   unsigned char *ret_ptr = (unsigned char *) malloc( size + 16 );
   int temp = (unsigned long)ret_ptr & 0xF;
@@ -35,11 +35,11 @@ void * aligned_malloc( size_t size )
   return (void *) ret_ptr;
 }
 
-void aligned_free( void *ptr )
+void aligned_free(void *ptr)
 {
   unsigned char *real_ptr = (unsigned char *) ptr;
   real_ptr -= real_ptr[ -1 ];
-  free( real_ptr );
+  free(real_ptr);
 }
 
 /*
