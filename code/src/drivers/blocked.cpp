@@ -114,7 +114,7 @@ int main(int argc, char * argv[])
     vector_init(&y, B.rows);
 
     // Benchmarking happens here
-    BENCH_CSV( spmv(&A, x, y), ITERATIONS, nonzeros(A), "GSB");
+    BENCH( spmv(&A, x, y), ITERATIONS, nonzeros(A), "GSB");
 
     vector_release(x);
     vector_release(y);

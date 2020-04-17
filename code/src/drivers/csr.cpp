@@ -51,7 +51,7 @@ int main (int argc, char * argv[])
   vector_init(&x, B.columns);
   vector_init(&y, B.rows);
 
-  BENCH_CSV( spmv(&A, x, y), ITERATIONS, nonzeros(A), "CSR");
+  BENCH( spmv(&A, x, y), ITERATIONS, nonzeros(A), "CSR");
 
   vector_release(x);
   vector_release(y);

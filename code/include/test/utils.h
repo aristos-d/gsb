@@ -9,7 +9,7 @@
 #include "typedefs.h"
 #include "common.h"
 
-#define BENCH( EXP, TIMES, NNZ ) \
+#define BENCH_VERBOSE( EXP, TIMES, NNZ, METH) \
 {\
     double * t = new double[TIMES]; \
     EXP; \
@@ -21,10 +21,10 @@
         t[i] = lap.count(); \
     } \
     std::sort(t, t+TIMES); \
-    print_timing("min", NNZ, t[0]);  \
-    print_timing("median", NNZ, t[TIMES/2]); \
-    print_timing("mean", NNZ, std::accumulate(t, t+(TIMES), 0.0) / (TIMES) ); \
-    print_timing("max", NNZ, t[TIMES-1]); \
+    print_timing(METH, "min", NNZ, t[0]);  \
+    print_timing(METH, "median", NNZ, t[TIMES/2]); \
+    print_timing(METH, "mean", NNZ, std::accumulate(t, t+(TIMES), 0.0) / (TIMES) ); \
+    print_timing(METH, "max", NNZ, t[TIMES-1]); \
     delete [] t; \
 }
 
@@ -57,6 +57,12 @@
     std::chrono::duration<double> lap = end - start; \
     T_AVG = lap.count() / (TIMES);\
 }
+
+#ifndef FORMAT_CSV
+#define BENCH BENCH_VERBOSE
+#else
+#define BENCH BENCH_CSV
+#endif
 
 template <class T>
 void show(T * x, int size)
