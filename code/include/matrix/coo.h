@@ -2,10 +2,11 @@
 #define _COO_H_
 
 #include <stdlib.h>
-#include <stdint.h>
 #include <assert.h>
+
 #include "typedefs.h"
 #include "utils.h"
+#include "spmv/coo.h"
 
 /*
  * Getters/Setters for Coo
@@ -182,23 +183,6 @@ inline void set_point(Coo3<T, IT> * A, IT index, IT row, IT col, T val)
  * Sparse matrix - vector multiplication. Result is stored in y. Memory for y
  * should already be allocated and initialized.
  */
-template <class T, class IT, class RIT, class CIT>
-inline void spmv_coo(T const * const v, RIT const * const ri, CIT const * const ci, IT const nnz,
-                     T const * const __restrict x, T * const __restrict y)
-{   
-    for (IT i=0; i<nnz; i++) {
-        y[ri[i]] += v[i] * x[ci[i]];
-    }
-}
-
-template <class NONZERO, class T, class IT>
-inline void spmv_coo(NONZERO const * const nonzeros, IT nnz, T const * const __restrict x, T * const __restrict y)
-{   
-    for (IT i=0; i<nnz; i++) {
-        y[nonzeros[i].row] += nonzeros[i].val * x[nonzeros[i].col];
-    }
-}
-
 template <class T, class IT, class RIT, class CIT>
 inline void spmv_coo(T const * const v, RIT const * const ri, CIT const * const ci,
                      IT const rows, IT const columns, IT const nnz,

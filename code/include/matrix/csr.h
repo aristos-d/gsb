@@ -3,13 +3,13 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <assert.h>
-#include <omp.h>
 
 #include "typedefs.h"
 #include "utils.h"
 #include "matrix/coo.h"
+#include "spmv/csr.h"
+#include "spmv/omp/csr.h"
 
 /*
  * Returns the number of non-zero elements of the matrix.
@@ -25,43 +25,6 @@ inline IT nonzeros(BlockCsr<T,IT,SIT> const * const A){ return A->row_ptr[A->row
 
 template <class T, class IT, class SIT>
 inline IT nonzeros(BlockCsr<T,IT,SIT> const A){ return A.row_ptr[A.rows]; }
-
-/*
- * Sparse matrix - vector multiplication. Result is stored in y. Memory for y
- * should already be allocated and initialized.
- */
-template <class T, class RIT, class CIT>
-inline void spmv_csr (RIT const * const row_ptr, CIT const * const col_ind, T const * const val, RIT const M,
-                      T const * const __restrict x, T * const __restrict y)
-{
-    // For every row, in parallel
-    #pragma omp parallel for schedule(dynamic,16)
-    for (RIT i=0; i<M; i++) {
-        RIT row_start = row_ptr[i];
-        RIT row_end = row_ptr[i+1];
-        for (RIT k=row_start; k<row_end; k++) {
-            y[i] += val[k] * x[col_ind[k]];
-        }
-    }
-}
-
-template <class T, class RIT, class CIT>
-inline void spmv_csr_serial (RIT const * const row_ptr, CIT const * const col_ind, T const * const val,
-                             RIT const M, T const * const __restrict x, T * const __restrict y)
-{
-    RIT row_start, row_end;
-    
-    row_end = row_ptr[0];
-  
-    // For every row
-    for (RIT i=0; i<M; i++) {
-        row_start = row_end;
-        row_end = row_ptr[i+1];
-        for (RIT j=row_start; j < row_end; j++) {
-            y[i] += val[j] * x[col_ind[j]];
-        }
-    }
-}
 
 template <class T, class IT>
 inline void spmv (Csr<T,IT> const * const A,
