@@ -2,6 +2,7 @@
 #define _GSB_H_
 
 #include "rt.h"
+#include "spmv/omp/gsb.h"
 
 /*
  * Returns the number of non-zero elements of the matrix.
@@ -22,72 +23,6 @@ template <class T, class IT, class SIT,
           template <typename, typename, typename> class GSB>
 inline IT block_nonzeros (const GSB<T,IT,SIT> * A, IT block) { return nonzeros(A->blocks[block]); }
 
-// ------------------------- SpMV -------------------------
-
-template <class T, class IT, class SIT,
-          template <typename, typename, typename> class GSB>
-void spmv_chunk (
-	    GSB<T,IT,SIT> const * const A,
-        T const * const __restrict x, T * const __restrict y,
-        BlockRowPartition<IT> const * const partition,
-        IT const first, IT const last, IT const bsize)
-{
-    if (last - first == 1) {
-
-        IT x_offset;
-        IT bstart = partition->chunks[first];
-        IT bend = partition->chunks[last];
-
-        for (IT k=bstart; k<bend; k++) {
-            x_offset = A->blockcol_offset[A->blockcol_ind[k]];
-            spmv(A->blocks[k], x + x_offset, y);
-        }
-
-    } else {
-
-        IT middle = (first+last) / 2;
-
-        #pragma omp task
-        spmv_chunk(A, x, y, partition, first, middle, bsize);
-
-        if (RT_SYNCHED) {
-            spmv_chunk(A, x, y, partition, middle, last, bsize);
-        } else {
-            
-            // We need C++ style allocation to ensure proper initialization
-            T * temp = new T[bsize]();
-
-            spmv_chunk(A, x, temp, partition, middle, last, bsize);
-            #pragma omp taskwait
-
-            #pragma omp simd
-            for (IT i=0; i<bsize; i++)
-                y[i] += temp[i];
-
-            delete [] temp;
-        }
-    }
-}
-
-/*
- * SpMV routine for matrices in GSB format. y vector MUST be already initialized.
- */
-template <typename T, typename IT, typename SIT,
-          template <typename, typename, typename> class GSB>
-void spmv(GSB<T,IT,SIT> const * const A,
-          T const * const __restrict x, T * const __restrict y)
-{
-    // For each block row
-    #pragma omp parallel for schedule(dynamic,1)
-    for (IT bi=0; bi<A->blockrows; bi++) {
-
-        IT nchunks = A->partition[bi].nchunks;
-        IT y_start = A->blockrow_offset[bi];
-        IT y_end = A->blockrow_offset[bi+1];
-
-        spmv_chunk(A, x, y + y_start, A->partition + bi, (IT) 0, nchunks, y_end - y_start);
-    }
-}
 
 // ------------------------- Constructors -------------------------
 

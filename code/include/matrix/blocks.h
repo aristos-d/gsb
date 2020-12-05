@@ -35,66 +35,17 @@ inline IT nonzeros(BlockBase<T,IT> const block)
 }
 
 template <typename T, typename IT>
-inline void spmv(BlockBase<T,IT> const * const block, T const * const x, T * const y)
+inline void spmv (BlockBase<T,IT> const * const block, T const * const x, T * const y)
 {
     block->spmv_block(x, y);
 }
 
-/*
- * Block Factory
- */ 
 template <typename T, typename IT>
-class BlockFactory {
-    public:
-        virtual MatrixType create (BlockBase<T,IT> ** target, Element<T,IT> * array,
-                                   IT rows, IT columns, IT nnz) = 0;
-};
-
-/*
- * Version 2 of CGBR using abstract blocks 
- */
-template <typename T, typename IT, typename SIT>
-class Cgbr2 : public BlockBase<T,IT> {
-    public:
-        BlockBase<T,IT> ** blocks;
-        IT * blockrow_ptr;         // Indexes for blocks array
-        IT * blockcol_ind;
-      
-        // Report statistics
-        IT type_block_count[MATRIX_TYPE_NUM];
-        IT type_nnz_count[MATRIX_TYPE_NUM];
-      
-        // Partitioning information
-        BlockRowPartition<IT> * partition;
-        bool balanced;
-      
-        // Block size information
-        IT * blockrow_offset;
-        IT * blockcol_offset;
-        IT blockrows;
-        IT blockcols;
-        IT nnzblocks;
-      
-        // Original size
-        IT rows;
-        IT columns;
-        
-        Cgbr2() {}
-        Cgbr2(Element<T,IT> * array, IT _rows, IT _columns, IT nnz,
-              IT * _blockrow_offset, IT _blockrows,
-              IT * _blockcol_offset, IT _blockcols,
-              BlockFactory<T,IT> & factory);
-        int create(Element<T,IT> * array, IT _rows, IT _columns, IT nnz,
-              IT * _blockrow_offset, IT _blockrows,
-              IT * _blockcol_offset, IT _blockcols,
-              BlockFactory<T,IT> & factory);
-        ~Cgbr2() {}
-
-        void spmv_block (T const * const __restrict x, T * const __restrict y) const
-	    {
-            spmv(this, x, y);
-	    }
-};
+inline void spmv_serial (BlockBase<T,IT> const * const block, T const * const x, T * const y)
+{
+    // Serial vs parallel SpMV is determined when the block is constructed.
+    block->spmv_block(x, y);
+}
 
 /* -------------------- Types of blocks -------------------- */
 
@@ -263,7 +214,16 @@ class BlockExtDense : public BlockBase<T,IT> {
         }
 };
 
-/* ----------------- Default Block Factory ----------------- */
+/* ----------------- Block Factory ----------------- */
+
+template <typename T, typename IT>
+class BlockFactory {
+    public:
+        virtual MatrixType create (
+                BlockBase<T,IT> ** target,
+                Element<T,IT> * array,
+                IT rows, IT columns, IT nnz) = 0;
+};
 
 template <typename T, typename IT, typename SIT>
 class BlockFactoryDefault : public BlockFactory<T,IT> {

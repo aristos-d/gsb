@@ -22,7 +22,7 @@ template <class T, class IT, class SIT>
 inline IT block_nonzeros(const Cgbr<T, IT, SIT> * A, IT i)
 {
     const MatrixBlock<T, IT, SIT> * block = A->blocks + i;
-    
+
     switch(block->type)
     {
         case BLOCK_COO :
@@ -30,7 +30,7 @@ inline IT block_nonzeros(const Cgbr<T, IT, SIT> * A, IT i)
         case BLOCK_CSR :
             return nonzeros(block->matrix.csr);
         case BLOCK_DENSE :
-            return block->matrix.dense.rows * block->matrix.dense.columns;      
+            return block->matrix.dense.rows * block->matrix.dense.columns;
         default:
             fprintf(stderr, "Invalid block found!\n");
             return 0;
@@ -63,14 +63,21 @@ bool is_balanced(Cgbr<T,IT,SIT> const * const A)
     return true;
 }
 
+template <class T, class IT, class SIT>
+inline MatrixBlock<T, IT, SIT> * block (Cgbr<T,IT,SIT> const * const A, IT i)
+{
+    return A->blocks + i;
+}
+
 /*
  * SpMV routine for a block of a CSBR matrix. It only calls the appropriate spmv
  * implementation based on the block matrix type.
  */
 template <class T, class IT, class SIT>
-inline void spmv(MatrixBlock<T,IT,SIT> const * const A,
-                 T const * const __restrict x,
-                 T * const __restrict y)
+inline void spmv (
+        MatrixBlock<T,IT,SIT> const * const A,
+        T const * const __restrict x,
+        T * const __restrict y)
 {
     switch(A->type){
         case BLOCK_COO :
@@ -81,20 +88,21 @@ inline void spmv(MatrixBlock<T,IT,SIT> const * const A,
             break;
         case BLOCK_DENSE :
             spmv(&(A->matrix.dense), x, y);
-            break;      
+            break;
         default:
             DEBUG(fprintf(stderr, "Invalid block found!\n"));
     }
 }
 
 /*
- * SpMV routine for a block of a CSBR matrix. It only calls the appropriate spmv
+ * SpMV routine for a block of a CGBR matrix. It only calls the appropriate spmv
  * (serial) implementation based on the block matrix type.
  */
 template <class T, class IT, class SIT>
-inline void spmv_serial(MatrixBlock<T,IT,SIT> const * const A,
-                        T const * const __restrict x,
-                        T * const __restrict y)
+inline void spmv_serial (
+        MatrixBlock<T,IT,SIT> const * const A,
+        T const * const __restrict x,
+        T * const __restrict y)
 {
     switch(A->type){
         case BLOCK_COO :
@@ -105,109 +113,12 @@ inline void spmv_serial(MatrixBlock<T,IT,SIT> const * const A,
             break;
         case BLOCK_DENSE :
             spmv_serial(&(A->matrix.dense), x, y);
-            break;      
+            break;
         default:
             DEBUG(fprintf(stderr, "Invalid block found!\n"));
     }
 }
 
-template <class T, class IT, class SIT>
-void spmv_chunk(Cgbr<T,IT,SIT> const * const A,
-                T const * const __restrict x, T * const __restrict y,
-                BlockRowPartition<IT> const * const partition,
-                IT const first, IT const last, IT const bsize)
-{
-    if (last - first == 1) {
-
-        IT x_offset;
-        IT bstart = partition->chunks[first];
-        IT bend = partition->chunks[last];
-
-        for (IT k=bstart; k<bend; k++) {
-            x_offset = A->blockcol_offset[A->blockcol_ind[k]];
-            spmv_serial(A->blocks + k, x + x_offset, y);
-        }
-
-    } else {
-
-        IT middle = (first+last) / 2;
-
-        #pragma omp task
-        spmv_chunk(A, x, y, partition, first, middle, bsize);
-
-        if (RT_SYNCHED) {
-            spmv_chunk(A, x, y, partition, middle, last, bsize);
-        } else {
-            
-            // We need C++ style allocation to ensure proper initialization
-            T * temp = new T[bsize]();
-
-            spmv_chunk(A, x, temp, partition, middle, last, bsize);
-            #pragma omp taskwait
-
-            #pragma omp simd
-            for (IT i=0; i<bsize; i++)
-                y[i] += temp[i];
-
-            delete [] temp;
-        }
-    }
-}
-
-/*
- * SpMV routine for matrices in CGBR format with "balanced" block-rows.
- * Parallelism within the block-row is unnecessary. y vector MUST be already
- * initialized.
- */
-template <class T, class IT, class SIT>
-void spmv_balanced(Cgbr<T,IT,SIT> const * const A,
-                   T const * const __restrict x, T * const __restrict y)
-{
-    // For each block row
-    #pragma omp parallel for schedule(dynamic,1)
-    for (IT bi=0; bi<A->blockrows; bi++) {
-        IT x_offset, y_offset;
-        IT blockrow_start, blockrow_end;
-        IT col_index;
-
-        blockrow_start = A->blockrow_ptr[bi];
-        blockrow_end = A->blockrow_ptr[bi+1];
-        y_offset = A->blockrow_offset[bi];
-
-        // For every block in block row
-        for (IT k=blockrow_start; k<blockrow_end; k++) {
-            col_index = A->blockcol_ind[k];
-            x_offset = A->blockcol_offset[col_index];
-            spmv_serial(A->blocks + k, x + x_offset, y + y_offset);
-        }
-    }
-}
-
-/*
- * SpMV routine for matrices in CGBR format. y vector MUST be already initialized.
- */
-template <class T, class IT, class SIT>
-void spmv(Cgbr<T,IT,SIT> const * const A,
-          T const * const __restrict x, T * const __restrict y)
-{
-    if (A->balanced) {
-        
-        spmv_balanced(A, x, y);
-    
-    } else {
-        
-        // For each block row
-        #pragma omp parallel for schedule(dynamic,1)
-        for (IT bi=0; bi<A->blockrows; bi++) {
-  
-            IT nchunks = A->partition[bi].nchunks;
-            IT y_start = A->blockrow_offset[bi];
-            IT y_end = A->blockrow_offset[bi+1];
-  
-            spmv_chunk(A, x, y + y_start, A->partition + bi, (IT) 0, nchunks, y_end - y_start);
-        }
-    }
-}
 
 /*
  * SpMV routine for matrices in CGBR format. y vector MUST be already initialized.
@@ -238,8 +149,10 @@ void spmv_serial(Cgbr<T,IT,SIT> const * const A,
 /* ------------------ Constructors begin ------------------ */
 
 template <class T, class IT, class SIT>
-MatrixType Coo_to_MatrixBlock(MatrixBlock<T, IT, SIT> * block, IT rows, IT columns,
-  Element<T, IT> * source, IT nnz)
+MatrixType Coo_to_MatrixBlock (
+        MatrixBlock<T, IT, SIT> * block,
+        IT rows, IT columns,
+        Element<T, IT> * source, IT nnz)
 {
     float coo, csr, nnzratio;
 
@@ -255,7 +168,7 @@ MatrixType Coo_to_MatrixBlock(MatrixBlock<T, IT, SIT> * block, IT rows, IT colum
         // CSR block
         Coo_to_Csr(&(block->matrix.csr), source, rows, columns, nnz);
         block->type = BLOCK_CSR;
-    } else {    
+    } else {
         // Dense block
         Coo_to_Dense(&(block->matrix.dense), source, rows, columns, nnz);
         block->type = BLOCK_DENSE;
@@ -277,11 +190,11 @@ void Coo_to_Cgbr(Cgbr<T,IT,SIT> * A, Coo3<T,IT> * B,
   IT b;
   MatrixType block_type;
 
-  DEBUG(fprintf(stderr, "Small index size %u, maximum value %u\n", 
+  DEBUG(fprintf(stderr, "Small index size %u, maximum value %u\n",
               sizeof(SIT), 1 << (8 * sizeof(SIT))));
 
   // Sort triplets according to block-row, block-column, row, column
-  calculate_block_id(B->elements, B->nnz, blockrow_offset, blockrows, blockcol_offset, blockcols);  
+  calculate_block_id(B->elements, B->nnz, blockrow_offset, blockrows, blockcol_offset, blockcols);
   sort_elements_blocks(B->elements, B->nnz);
   DEBUG(puts("Sorting complete"));
 
@@ -326,7 +239,7 @@ void Coo_to_Cgbr(Cgbr<T,IT,SIT> * A, Coo3<T,IT> * B,
     bc_offset = blockcol_offset[bc];
     br_size = blockrow_offset[br + 1] - br_offset;
     bc_size = blockcol_offset[bc + 1] - bc_offset;
-    
+
     // Block meta data
     A->blockrow_ptr[br+1]++;
     A->blockcol_ind[block_index] = bc;
@@ -358,7 +271,7 @@ void Coo_to_Cgbr(Cgbr<T,IT,SIT> * A, Coo3<T,IT> * B,
   assert(A->blockrow_ptr[blockrows] == A->nnzblocks);
 
   A->balanced = is_balanced(A);
-  
+
   if (!A->balanced) {
       // Unbalanced block-rows. We need within-block-row parallelism.
       partition_init(A);
@@ -383,7 +296,7 @@ void Coo_to_Blocked(Cgbr<T,IT,SIT> * A, Coo3<T,IT> * B,
 }
 
 /*
- * Release memory allocated for a generalized matrix block 
+ * Release memory allocated for a generalized matrix block
  */
 template <class T, class IT, class SIT>
 void release(MatrixBlock<T,IT,SIT> *A)
@@ -391,7 +304,7 @@ void release(MatrixBlock<T,IT,SIT> *A)
     switch(A->type){
         case BLOCK_COO :
             release(A->matrix.coo);
-            break;      
+            break;
         case BLOCK_CSR :          // Block is a matrix in classic CSR format
             release(A->matrix.csr);
             break;
@@ -419,7 +332,7 @@ void release(Cgbr<T,IT,SIT> A)
 
     delete [] A.blocks;
     delete [] A.blockrow_ptr;
-    delete [] A.blockcol_ind;  
+    delete [] A.blockcol_ind;
 }
 
 #endif

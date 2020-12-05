@@ -8,10 +8,63 @@
 #include "matrix/blocks.h"
 #include "matrix/gsb.h"
 
+/*
+ * Version 2 of CGBR using abstract blocks
+ */
+template <typename T, typename IT, typename SIT>
+class Cgbr2 : public BlockBase<T,IT> {
+    public:
+        BlockBase<T,IT> ** blocks;
+        IT * blockrow_ptr;         // Indexes for blocks array
+        IT * blockcol_ind;
+
+        // Report statistics
+        IT type_block_count[MATRIX_TYPE_NUM];
+        IT type_nnz_count[MATRIX_TYPE_NUM];
+
+        // Partitioning information
+        BlockRowPartition<IT> * partition;
+        bool balanced;
+
+        // Block size information
+        IT * blockrow_offset;
+        IT * blockcol_offset;
+        IT blockrows;
+        IT blockcols;
+        IT nnzblocks;
+
+        // Original size
+        IT rows;
+        IT columns;
+
+        Cgbr2() {}
+        Cgbr2(Element<T,IT> * array, IT _rows, IT _columns, IT nnz,
+              IT * _blockrow_offset, IT _blockrows,
+              IT * _blockcol_offset, IT _blockcols,
+              BlockFactory<T,IT> & factory);
+        int create(Element<T,IT> * array, IT _rows, IT _columns, IT nnz,
+                   IT * _blockrow_offset, IT _blockrows,
+                   IT * _blockcol_offset, IT _blockcols,
+                   BlockFactory<T,IT> & factory);
+        ~Cgbr2() {}
+
+        void spmv_block (T const * const __restrict x, T * const __restrict y) const
+	    {
+            spmv(this, x, y);
+	    }
+};
+
+template <class T, class IT, class SIT>
+inline BlockBase<T,IT> * block (Cgbr2<T,IT,SIT> const * const A, IT i)
+{
+    return A->blocks[i];
+}
+
 // --------------------- Constructor ---------------------
 
 template <class T, class IT, class SIT>
-int Cgbr2<T,IT,SIT>::create (Element<T,IT> * array, IT _rows, IT _columns, IT nnz,
+int Cgbr2<T,IT,SIT>::create (
+        Element<T,IT> * array, IT _rows, IT _columns, IT nnz,
         IT * _blockrow_offset, IT _blockrows,
         IT * _blockcol_offset, IT _blockcols,
         BlockFactory<T,IT> & factory)
