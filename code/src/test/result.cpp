@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "common.h"
 #include "matrix/coo.h"
@@ -55,8 +56,8 @@ int main(int argc, char* argv[])
   y2 = new VALTYPE[coo3.rows];
 
   srand(0);
-  for(INDEXTYPE i=0; i<coo3.columns; i++){
-    x[i] = ((VALTYPE) rand())/RAND_MAX;
+  for (INDEXTYPE i=0; i<coo3.columns; i++) {
+    x[i] = ((VALTYPE) rand())/ (VALTYPE) RAND_MAX;
   }
   printf("Random vector initialized.\n");
 

@@ -1,6 +1,5 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
 
 #define _NO_CSB_ALIGNED_MALLOC_
 #include "common.h"

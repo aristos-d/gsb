@@ -2,7 +2,6 @@
 #define _CSR_H_
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <assert.h>
 
 #include "typedefs.h"
@@ -12,48 +11,55 @@
 #include "spmv/omp/csr.h"
 
 /*
- * Returns the number of non-zero elements of the matrix.
+ * Get the number of non-zero elements of the matrix.
  */
 template <class T, class IT>
-inline IT nonzeros(Csr<T,IT> const * const A){ return A->row_ptr[A->rows]; }
+inline IT nonzeros (Csr<T,IT> const * const A) { return A->row_ptr[A->rows]; }
 
 template <class T, class IT>
-inline IT nonzeros(Csr<T,IT> const A){ return A.row_ptr[A.rows]; }
+inline IT nonzeros (Csr<T,IT> const A) { return A.row_ptr[A.rows]; }
 
 template <class T, class IT, class SIT>
-inline IT nonzeros(BlockCsr<T,IT,SIT> const * const A){ return A->row_ptr[A->rows]; }
+inline IT nonzeros (BlockCsr<T,IT,SIT> const * const A) { return A->row_ptr[A->rows]; }
 
 template <class T, class IT, class SIT>
-inline IT nonzeros(BlockCsr<T,IT,SIT> const A){ return A.row_ptr[A.rows]; }
+inline IT nonzeros (BlockCsr<T,IT,SIT> const A) { return A.row_ptr[A.rows]; }
 
+/*
+ * SpMV routine wrappers
+ */
 template <class T, class IT>
-inline void spmv (Csr<T,IT> const * const A,
-                  T const * const __restrict x,
-                  T * const __restrict y)
+inline void spmv (
+        Csr<T,IT> const * const A,
+        T const * const __restrict x,
+        T * const __restrict y)
 {
     spmv_csr(A->row_ptr, A->col_ind, A->val, A->rows, x, y);
 }
 
 template <class T, class IT>
-inline void spmv_serial (Csr<T,IT> const * const A,
-                         T const * const __restrict x,
-                         T * const __restrict y)
+inline void spmv_serial (
+        Csr<T,IT> const * const A,
+        T const * const __restrict x,
+        T * const __restrict y)
 {
     spmv_csr_serial(A->row_ptr, A->col_ind, A->val, A->rows, x, y);
 }
 
 template <class T, class IT, class SIT>
-inline void spmv (BlockCsr<T,IT,SIT> const * const A,
-                  T const * const __restrict x,
-                  T * const __restrict y)
+inline void spmv (
+        BlockCsr<T,IT,SIT> const * const A,
+        T const * const __restrict x,
+        T * const __restrict y)
 {
     spmv_csr(A->row_ptr, A->col_ind, A->val, A->rows, x, y);
 }
 
 template <class T, class IT, class SIT>
-inline void spmv_serial (BlockCsr<T,IT,SIT> const * const A,
-                         T const * const __restrict x,
-                         T * const __restrict y)
+inline void spmv_serial (
+        BlockCsr<T,IT,SIT> const * const A,
+        T const * const __restrict x,
+        T * const __restrict y)
 {
     spmv_csr_serial(A->row_ptr, A->col_ind, A->val, A->rows, x, y);
 }
@@ -138,7 +144,7 @@ int Coo_to_Csr(BlockCsr<T,IT,SIT> * A, NONZERO * nonzeros,
 
   if(!isSorted) sort_triplets(nonzeros, nnz);
 
-  // Allocate memory 
+  // Allocate memory
   A->val = new T[nnz];
   A->col_ind = new SIT[nnz];
   A->row_ptr = new IT[rows+1]();
@@ -158,6 +164,9 @@ int Coo_to_Csr(BlockCsr<T,IT,SIT> * A, NONZERO * nonzeros,
   return 0;
 }
 
+/*
+ * Constructor wrappers
+ */
 template <class NONZERO, class T, class IT>
 int Coo_to_Csr(Csr<T, IT> *A, NONZERO *nonzeros, IT rows, IT columns, IT nnz)
 {

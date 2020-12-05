@@ -2,7 +2,6 @@
 #define _CSR_2_H_
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <assert.h>
 
 #include "typedefs.h"
@@ -12,30 +11,31 @@
 #include "spmv/omp/csr.h"
 
 /*
- * Returns the number of non-zero elements of the matrix.
+ * Get the number of non-zero elements of the matrix.
  */
 template <class T, class IT>
-inline IT nonzeros(const Csr2<T, IT> * A){ return A->row_ptr[A->rows]; }
+inline IT nonzeros (const Csr2<T, IT> * A) { return A->row_ptr[A->rows]; }
 
 template <class T, class IT>
-inline IT nonzeros(const Csr2<T, IT> A){ return A.row_ptr[A.rows]; }
+inline IT nonzeros (const Csr2<T, IT> A) { return A.row_ptr[A.rows]; }
 
 /*
- * Sparse matrix - vector multiplication. Result is stored in y. Memory for y
- * should already be allocated and initialized.
+ * SpMV routine wrappers
  */
 template <class T, class IT>
-void spmv(Csr2<T, IT> const * const A,
-          T const * const __restrict x,
-          T * const __restrict y)
+void spmv (
+        Csr2<T, IT> const * const A,
+        T const * const __restrict x,
+        T * const __restrict y)
 {
     spmv_csr2(A->row_ptr, A->nonzeros, A->rows, x, y);
 }
 
 template <class T, class IT>
-void spmv_serial(Csr2<T, IT> const * const A,
-                 T const * const __restrict x,
-                 T * const __restrict y)
+void spmv_serial (
+        Csr2<T, IT> const * const A,
+        T const * const __restrict x,
+        T * const __restrict y)
 {
     spmv_csr2_serial(A->row_ptr, A->nonzeros, A->rows, x, y);
 }
@@ -47,7 +47,8 @@ void spmv_serial(Csr2<T, IT> const * const A,
  * Construct a CSR2 matrix by processing a matrix in COO format. Triplets of
  * original matrix get sorted but then data is copied. Return 0 on success.
  * WARNING : This function requires that the original COO and the produced CSR2
- * matrices can both fit in memory at the same time if allocate is true.
+ *           matrices can both fit in memory at the same time if allocate is
+ *           true.
  */
 template <class NONZERO, class T, class IT>
 int Coo_to_Csr(Csr2<T, IT> * A, NONZERO * nonzeros,
@@ -81,6 +82,9 @@ int Coo_to_Csr(Csr2<T, IT> * A, NONZERO * nonzeros,
   return 0;
 }
 
+/*
+ * Constructor wrappers
+ */
 template <class T, class IT>
 int Coo_to_Csr(Csr2<T, IT> * A, Coo2<T, IT> * B)
 {

@@ -12,36 +12,36 @@
  * Getters/Setters for Coo
  */
 template <class T, class IT>
-inline IT nonzeros(const Coo<T, IT> * const A){ return A->nnz; }
+inline IT nonzeros (const Coo<T,IT> * const A){ return A->nnz; }
 
 template <class T, class IT>
-inline IT nonzeros(const Coo<T, IT> A){ return A.nnz; }
+inline IT nonzeros (const Coo<T,IT> A){ return A.nnz; }
 
 template <class T, class IT>
-inline IT get_row_index(Coo<T, IT> * A, IT index){ return A->I[index]; }
+inline IT get_row_index (Coo<T,IT> * A, IT i){ return A->I[i]; }
 
 template <class T, class IT>
-inline IT get_column_index(Coo<T, IT> * A, IT index){ return A->I[index]; }
+inline IT get_column_index (Coo<T,IT> * A, IT i){ return A->I[i]; }
 
 template <class T, class IT>
-inline T get_value(Coo<T, IT> * A, IT index){ return A->val[index]; }
+inline T get_value (Coo<T,IT> * A, IT i){ return A->val[i]; }
 
 template <class T, class IT>
-inline void set_row_index(Coo<T, IT> * A, IT index, IT row)
+inline void set_row_index (Coo<T,IT> * A, IT i, IT row)
 {
-    A->I[index] = row;
+    A->I[i] = row;
 }
 
 template <class T, class IT>
-inline void set_column_index(Coo<T, IT> * A, IT index, IT column)
+inline void set_column_index (Coo<T,IT> * A, IT i, IT column)
 {
-    A->J[index] = column;
+    A->J[i] = column;
 }
 
 template <class T, class IT>
-inline void set_value(Coo<T, IT> * A, IT index, T val)
+inline void set_value (Coo<T,IT> * A, IT i, T val)
 {
-    A->val[index] = val;
+    A->val[i] = val;
 }
 
 /*
@@ -156,27 +156,27 @@ inline void set_value(BlockCoo<T,IT,SIT> * A, IT index, T val)
  * Set a point in a COO matrix. Implemented for Coo, Coo2 and Coo3
  */
 template <class T, class IT>
-inline void set_point(Coo<T, IT> * A, IT index, IT row, IT col, T val)
+inline void set_point (Coo<T, IT> * A, IT i, IT row, IT col, T val)
 {
-  A->I[index] = row;
-  A->J[index] = col;
-  A->val[index] = val;
+  A->I[i] = row;
+  A->J[i] = col;
+  A->val[i] = val;
 }
 
 template <class T, class IT>
-inline void set_point(Coo2<T, IT> * A, IT index, IT row, IT col, T val)
+inline void set_point (Coo2<T, IT> * A, IT i, IT row, IT col, T val)
 {
-  A->triplets[index].row = row;
-  A->triplets[index].col = col;
-  A->triplets[index].val = val;
+  A->triplets[i].row = row;
+  A->triplets[i].col = col;
+  A->triplets[i].val = val;
 }
 
 template <class T, class IT>
-inline void set_point(Coo3<T, IT> * A, IT index, IT row, IT col, T val)
+inline void set_point (Coo3<T, IT> * A, IT i, IT row, IT col, T val)
 {
-  A->elements[index].row = row;
-  A->elements[index].col = col;
-  A->elements[index].val = val;
+  A->elements[i].row = row;
+  A->elements[i].col = col;
+  A->elements[i].val = val;
 }
 
 /*
@@ -184,40 +184,57 @@ inline void set_point(Coo3<T, IT> * A, IT index, IT row, IT col, T val)
  * should already be allocated and initialized.
  */
 template <class T, class IT, class RIT, class CIT>
-inline void spmv_coo(T const * const v, RIT const * const ri, CIT const * const ci,
-                     IT const rows, IT const columns, IT const nnz,
-                     T const * const __restrict x, T * const __restrict y)
+inline void spmv_coo(
+        T const * const v, RIT const * const ri, CIT const * const ci,
+        IT const rows, IT const columns, IT const nnz,
+        T const * const __restrict x,
+        T * const __restrict y)
 {
     spmv_coo(v, ri, ci, nnz, x, y);
 }
 
 
 template <class T, class IT>
-inline void spmv(Coo<T,IT> const * const A, T const * const __restrict x, T * const __restrict y)
+inline void spmv (
+        Coo<T,IT> const * const A,
+        T const * const __restrict x,
+        T * const __restrict y)
 {
     spmv_coo(A->val, A->I, A->J, A->nnz, x, y);
 }
 
 template <class T, class IT>
-inline void spmv(const Coo2<T,IT> * const A, const T * __restrict x, T * __restrict y)
+inline void spmv (
+        const Coo2<T,IT> * const A,
+        const T * __restrict x,
+        T * __restrict y)
 {
     spmv_coo(A->triplets, A->nnz, x, y);
 }
 
 template <class T, class IT>
-inline void spmv(const Coo3<T,IT> * const A, const T * __restrict x, T * __restrict y)
+inline void spmv (
+        const Coo3<T,IT> * const A,
+        const T * __restrict x,
+        T * __restrict y)
 {
     spmv_coo(A->elements, A->nnz, x, y);
 }
 
 template <class T, class IT, class SIT>
-inline void spmv(const BlockCoo<T,IT,SIT> * const A, const T * __restrict x, T * __restrict y)
+inline void spmv (
+        const BlockCoo<T,IT,SIT> * const A,
+        const T * __restrict x,
+        T * __restrict y)
 {
     spmv_coo(A->val, A->I, A->J, A->nnz, x, y);
 }
 
 template <class T, class IT, class SIT>
-inline void spmv(const BlockCoo2<T,IT,SIT> * const A, const T * __restrict x, T * __restrict y)
+inline void spmv (
+        const BlockCoo2<T,IT,SIT> * const A,
+        const T * __restrict x,
+        T * __restrict y)
 {
     spmv_coo(A->triplets, A->nnz, x, y);
 }
@@ -225,9 +242,11 @@ inline void spmv(const BlockCoo2<T,IT,SIT> * const A, const T * __restrict x, T 
 #ifdef MKL_SPARSE
 #include <mkl.h>
 template <>
-inline void spmv_coo(float const * const v, int const * const ri, int const * const ci,
-                     int const rows, int const columns, int const nnz,
-                     float const * const __restrict x, float * const __restrict y)
+inline void spmv_coo(
+        float const * const v, int const * const ri, int const * const ci,
+        int const rows, int const columns, int const nnz,
+        float const * const __restrict x,
+        float * const __restrict y)
 {
     DEBUG_USE_MKL( fprintf(stderr, "MKL COO in use\n") );
     const float alpha = 1.0f;
@@ -240,7 +259,7 @@ inline void spmv_coo(float const * const v, int const * const ri, int const * co
 /*
  * Heavily overloaded constructors for COO matrices
  */
-template <typename T, typename IT, 
+template <typename T, typename IT,
           template <typename, typename> class COOSRC,
           template <typename, typename> class COODST>
 int Coo_to_Coo(COODST<T,IT> * A, COOSRC<T,IT> * B)
@@ -249,10 +268,10 @@ int Coo_to_Coo(COODST<T,IT> * A, COOSRC<T,IT> * B)
     A->columns = B->columns;
 
     allocate(A, nonzeros(B));
-  
+
     for (IT i=0; i<nonzeros(B); i++)
         set_point(A, i, get_row_index(B,i), get_column_index(B,i), get_value(B, i));
-  
+
     return 0;
 }
 
@@ -294,7 +313,7 @@ int Coo_to_Coo(BlockCoo<T,IT,SIT> * A, NONZERO * array, IT nnz)
 {
   allocate(A, nnz);
 
-  if (sizeof(IT) > sizeof(SIT)) { 
+  if (sizeof(IT) > sizeof(SIT)) {
     IT max_index = 1 << (8 * sizeof(SIT));
     for (IT i=0; i<nnz; i++) {
         assert(array[i].row < max_index && array[i].col < max_index);
@@ -317,7 +336,7 @@ int Coo_to_Coo(BlockCoo2<T,IT,SIT> * A, NONZERO * array, IT nnz)
 {
   allocate(A, nnz);
 
-  if (sizeof(IT) > sizeof(SIT)) { 
+  if (sizeof(IT) > sizeof(SIT)) {
     IT max_index = 1 << (8 * sizeof(SIT));
     for (IT i=0; i<nnz; i++) {
         assert(array[i].row < max_index && array[i].col < max_index);
@@ -342,7 +361,7 @@ template <class T, class IT>
 void allocate(Coo<T, IT> *A, IT nnz)
 {
     A->nnz = nnz;
-    A->I = new IT[nnz]; 
+    A->I = new IT[nnz];
     A->J = new IT[nnz];
     A->val = new T[nnz];
 }

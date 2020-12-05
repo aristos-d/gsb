@@ -62,7 +62,7 @@ template <class T, class IT>
 struct Coo3 {
   Element<T, IT> * elements;
   IT rows, columns, nnz;
-  IT blockrows, blockcols, nnzblocks; 
+  IT blockrows, blockcols, nnzblocks;
 };
 
 /*
@@ -125,31 +125,6 @@ struct BlockCsr {
 };
 
 /*
- * CSR matrix with compressed row pointers. Only pointers for non-empty rows
- * are stored. Non-empty row indexes are stored in additional array.
- */
-template <class T, class IT>
-struct CompRowCsr {
-  T * val;
-  IT * col_ind;
-  IT * row_ptr;
-  IT * nnz_rows;
-  IT nnz_rows_num;
-};
-
-/*
- * Compressed Sparse Wide Rows. This is a failure.
- */
-template <class T, class IT, class SIT>
-struct Cswr {
-  T *val;
-  SIT *row;
-  IT *col;
-  IT *wrow_ptr;
-  IT rows, columns, nwrows, width, nnz;
-};
-
-/*
  * Enumeration of all matrix types used for blocks.
  */
 enum MatrixType {
@@ -208,7 +183,7 @@ struct Csbr {
   IT blockrows;
   IT blockcols;
   IT nnzblocks;
-  
+
   // Partitioning information
   BlockRowPartition<IT> * partition;
 
@@ -275,35 +250,6 @@ struct Bcsr {
   // Pointers to the large arrays
   IT * col_ind;
   T * val;
-};
-
-/*
- * CSR matrix containing blocks of variable size and type or Compressed
- * Generalized Block Rows
- */
-template <class T, class IT, class SIT>
-struct Cgbr {
-  MatrixBlock<T,IT,SIT> * blocks;
-  IT * blockrow_ptr;         // Indexes for blocks array
-  IT * blockcol_ind;
-  IT type_block_count[MATRIX_TYPE_NUM];
-  IT type_nnz_count[MATRIX_TYPE_NUM];
-
-  // Partitioning information
-  BlockRowPartition<IT> * partition;
-  bool balanced;
-
-  // Block size information
-  IT * blockrow_offset;
-  IT * blockcol_offset;
-  IT blockrows;
-  IT blockcols;
-  IT nnzblocks;
-
-  // Original size
-  IT rows;
-  IT columns;
-  IT nnz;
 };
 
 /*

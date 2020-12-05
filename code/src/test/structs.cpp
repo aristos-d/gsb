@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 #include "typedefs.h"
+#include "matrix/crcsr.h"
 
 int main(int argc, char * argv[])
 {
@@ -29,8 +30,12 @@ int main(int argc, char * argv[])
   printf("Size of Csr2<double, uint32_t> : %lu\n", sizeof(Csr2<double, uint32_t>));
   printf("Size of CompRowCsr<float, uint32_t> : %lu\n", sizeof(CompRowCsr<float, uint32_t>));
   printf("Size of CompRowCsr<double, uint32_t> : %lu\n", sizeof(CompRowCsr<double, uint32_t>));
-  printf("Size of MatrixBlock<float, uint32_t, uint32_t> : %lu\n", sizeof(MatrixBlock<float, uint32_t, uint32_t>));
-  printf("Size of MatrixBlock<float, uint32_t, uint16_t> : %lu\n", sizeof(MatrixBlock<float, uint32_t, uint16_t>));
-  printf("Size of MatrixBlock<float, uint32_t, uint8_t> : %lu\n", sizeof(MatrixBlock<float, uint32_t, uint8_t>));
-  printf("Size of MatrixBlock<double, uint32_t, uint32_t> : %lu\n", sizeof(MatrixBlock<double, uint32_t, uint32_t>)); 
+  printf("Size of MatrixBlock<float, uint32_t, uint32_t> : %lu\n",
+          sizeof(MatrixBlock<float, uint32_t, uint32_t>));
+  printf("Size of MatrixBlock<float, uint32_t, uint16_t> : %lu\n",
+          sizeof(MatrixBlock<float, uint32_t, uint16_t>));
+  printf("Size of MatrixBlock<float, uint32_t, uint8_t> : %lu\n",
+          sizeof(MatrixBlock<float, uint32_t, uint8_t>));
+  printf("Size of MatrixBlock<double, uint32_t, uint32_t> : %lu\n",
+          sizeof(MatrixBlock<double, uint32_t, uint32_t>));
 }

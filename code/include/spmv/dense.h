@@ -2,8 +2,11 @@
 #define _SPMV_DENSE_H_
 
 template <class T, class IT>
-inline void spmv_dense_serial(T const * const val, IT const M, IT const N,
-                              T const * const __restrict x, T * const __restrict y)
+inline void spmv_dense_serial (
+        T const * const val,
+        IT const M, IT const N,
+        T const * const __restrict x,
+        T * const __restrict y)
 {
     for (IT i=0; i<M; i++) {
         T temp = y[i];

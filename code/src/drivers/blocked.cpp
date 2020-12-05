@@ -1,6 +1,5 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
 
 #include "matrix/coo.h"
 #include "matrix/csbr.h"

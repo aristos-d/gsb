@@ -4,26 +4,60 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
-#include <omp.h>
 
 #include "typedefs.h"
 #include "utils.h"
 #include "partition.h"
 #include "matrix/coo.h"
 #include "matrix/csr.h"
-#include "matrix/crcsr.h"
 #include "matrix/dense.h"
 #include "matrix/gsb.h"
+
+/*
+ * CSR matrix containing blocks of variable size and type or Compressed
+ * Generalized Block Rows
+ */
+template <class T, class IT, class SIT>
+struct Cgbr {
+  MatrixBlock<T,IT,SIT> * blocks;
+  IT * blockrow_ptr;         // Indexes for blocks array
+  IT * blockcol_ind;
+  IT type_block_count[MATRIX_TYPE_NUM];
+  IT type_nnz_count[MATRIX_TYPE_NUM];
+
+  // Partitioning information
+  BlockRowPartition<IT> * partition;
+  bool balanced;
+
+  // Block size information
+  IT * blockrow_offset;
+  IT * blockcol_offset;
+  IT blockrows;
+  IT blockcols;
+  IT nnzblocks;
+
+  // Original size
+  IT rows;
+  IT columns;
+  IT nnz;
+};
+
+/*
+ * Get pointer to block i
+ */
+template <class T, class IT, class SIT>
+inline MatrixBlock<T,IT,SIT> * block (Cgbr<T,IT,SIT> const * const A, IT i)
+{
+    return A->blocks + i;
+}
 
 /*
  * Returns the number of non-zeros in the `i`th block
  */
 template <class T, class IT, class SIT>
-inline IT block_nonzeros(const Cgbr<T, IT, SIT> * A, IT i)
+inline IT nonzeros (MatrixBlock<T,IT,SIT> const * const block)
 {
-    const MatrixBlock<T, IT, SIT> * block = A->blocks + i;
-
-    switch(block->type)
+    switch (block->type)
     {
         case BLOCK_COO :
             return nonzeros(block->matrix.coo);
@@ -37,8 +71,11 @@ inline IT block_nonzeros(const Cgbr<T, IT, SIT> * A, IT i)
     }
 }
 
+/*
+ * Are the non-zeros distributed (almost) equally among rows?
+ */
 template <class T, class IT, class SIT>
-bool is_balanced(Cgbr<T,IT,SIT> const * const A)
+bool is_balanced (Cgbr<T,IT,SIT> const * const A)
 {
     float mean_nnz = A->nnz / (float) A->blockrows;
     float br_nnz;
@@ -63,12 +100,6 @@ bool is_balanced(Cgbr<T,IT,SIT> const * const A)
     return true;
 }
 
-template <class T, class IT, class SIT>
-inline MatrixBlock<T, IT, SIT> * block (Cgbr<T,IT,SIT> const * const A, IT i)
-{
-    return A->blocks + i;
-}
-
 /*
  * SpMV routine for a block of a CSBR matrix. It only calls the appropriate spmv
  * implementation based on the block matrix type.
@@ -79,7 +110,8 @@ inline void spmv (
         T const * const __restrict x,
         T * const __restrict y)
 {
-    switch(A->type){
+    switch (A->type)
+    {
         case BLOCK_COO :
             spmv(&(A->matrix.coo), x, y);
             break;
@@ -104,7 +136,8 @@ inline void spmv_serial (
         T const * const __restrict x,
         T * const __restrict y)
 {
-    switch(A->type){
+    switch (A->type)
+    {
         case BLOCK_COO :
             spmv(&(A->matrix.coo), x, y);
             break;
@@ -119,13 +152,14 @@ inline void spmv_serial (
     }
 }
 
-
 /*
  * SpMV routine for matrices in CGBR format. y vector MUST be already initialized.
  */
 template <class T, class IT, class SIT>
-void spmv_serial(Cgbr<T,IT,SIT> const * const A,
-                 T const * const __restrict x, T * const __restrict y)
+void spmv_serial (
+        Cgbr<T,IT,SIT> const * const A,
+        T const * const __restrict x,
+        T * const __restrict y)
 {
     // For each block row
     for (IT bi=0; bi<A->blockrows; bi++) {
@@ -180,9 +214,11 @@ MatrixType Coo_to_MatrixBlock (
  * Construct a CGBR matrix from a COO matrix.
  */
 template <class T, class IT, class SIT>
-void Coo_to_Cgbr(Cgbr<T,IT,SIT> * A, Coo3<T,IT> * B,
-                IT *blockrow_offset, IT blockrows,
-                IT *blockcol_offset, IT blockcols)
+void Coo_to_Cgbr(
+        Cgbr<T,IT,SIT> * A,
+        Coo3<T,IT> * B,
+        IT *blockrow_offset, IT blockrows,
+        IT *blockcol_offset, IT blockcols)
 {
   IT br, br_offset, br_size;
   IT bc, bc_offset, bc_size;
@@ -282,15 +318,20 @@ void Coo_to_Cgbr(Cgbr<T,IT,SIT> * A, Coo3<T,IT> * B,
  * Constructor wrapper
  */
 template <typename T, typename IT, typename SIT>
-void Coo_to_Cgbr(Cgbr<T,IT,SIT> * A, Coo3<T,IT> * B, IT br_size, IT bc_size)
+void Coo_to_Cgbr (
+        Cgbr<T,IT,SIT> * A,
+        Coo3<T,IT> * B,
+        IT br_size, IT bc_size)
 {
     Coo_to_Blocked(A, B, br_size, bc_size);
 }
 
 template <typename T, typename IT, typename SIT>
-void Coo_to_Blocked(Cgbr<T,IT,SIT> * A, Coo3<T,IT> * B,
-                IT *blockrow_offset, IT blockrows,
-                IT *blockcol_offset, IT blockcols)
+void Coo_to_Blocked (
+        Cgbr<T,IT,SIT> * A,
+        Coo3<T,IT> * B,
+        IT *blockrow_offset, IT blockrows,
+        IT *blockcol_offset, IT blockcols)
 {
     Coo_to_Cgbr(A, B, blockrow_offset, blockrows, blockcol_offset, blockcols);
 }
@@ -299,9 +340,10 @@ void Coo_to_Blocked(Cgbr<T,IT,SIT> * A, Coo3<T,IT> * B,
  * Release memory allocated for a generalized matrix block
  */
 template <class T, class IT, class SIT>
-void release(MatrixBlock<T,IT,SIT> *A)
+void release (MatrixBlock<T,IT,SIT> *A)
 {
-    switch(A->type){
+    switch (A->type)
+    {
         case BLOCK_COO :
             release(A->matrix.coo);
             break;

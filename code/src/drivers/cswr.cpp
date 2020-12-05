@@ -1,7 +1,6 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
 
 #include "matrix/coo.h"
 #include "matrix/cswr.h"

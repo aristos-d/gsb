@@ -54,6 +54,9 @@ class Cgbr2 : public BlockBase<T,IT> {
 	    }
 };
 
+/*
+ * Get pointer to block i
+ */
 template <class T, class IT, class SIT>
 inline BlockBase<T,IT> * block (Cgbr2<T,IT,SIT> const * const A, IT i)
 {

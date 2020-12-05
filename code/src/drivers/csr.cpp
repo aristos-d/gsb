@@ -1,7 +1,6 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
 
 #include "matrix/coo.h"
 #include "matrix/csr.h"
@@ -28,7 +27,7 @@ int main (int argc, char * argv[])
   }
 
   printf("Reading matrix from disk..."); fflush(stdout);
-  
+
   tick();
   ret = read_COO(&B, argv[1]);
   t = tock();
@@ -44,7 +43,7 @@ int main (int argc, char * argv[])
   tick();
   Coo_to_Csr(&A, &B);
   t = tock();
-  printf(" done in %f sec\n", t);    
+  printf(" done in %f sec\n", t);
 
   print_info(A);
 

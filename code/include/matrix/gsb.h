@@ -17,11 +17,11 @@ inline IT nonzeros (const GSB<T,IT,SIT> A) { return A.nnz; }
 
 template <class T, class IT, class SIT,
           template <typename, typename, typename> class GSB>
-inline IT block_nonzeros (const GSB<T,IT,SIT> A, IT block) { return nonzeros(A.blocks[block]); }
+inline IT block_nonzeros (const GSB<T,IT,SIT> A, IT i) { return nonzeros(block(&A, i)); }
 
 template <class T, class IT, class SIT,
           template <typename, typename, typename> class GSB>
-inline IT block_nonzeros (const GSB<T,IT,SIT> * A, IT block) { return nonzeros(A->blocks[block]); }
+inline IT block_nonzeros (const GSB<T,IT,SIT> * A, IT i) { return nonzeros(block(A, i)); }
 
 
 // ------------------------- Constructors -------------------------
@@ -69,29 +69,29 @@ template <class T, class IT, class SIT,
 void print_info(GSB<T,IT,SIT> A)
 {
     printf("Matrix info : \n");
-    printf("\t%lu rows x %lu columns\n", 
-            (unsigned long) A.rows, 
+    printf("\t%lu rows x %lu columns\n",
+            (unsigned long) A.rows,
             (unsigned long) A.columns);
-    printf("\t%lu block-rows x %lu block-columns\n", 
-            (unsigned long) A.blockrows, 
+    printf("\t%lu block-rows x %lu block-columns\n",
+            (unsigned long) A.blockrows,
             (unsigned long) A.blockcols);
-    printf("\t%lu non-zeros in %lu blocks\n", 
-            (unsigned long) A.nnz, 
+    printf("\t%lu non-zeros in %lu blocks\n",
+            (unsigned long) A.nnz,
             (unsigned long) A.nnzblocks);
-    printf("\t%.4f%% non-zeros\n", 
+    printf("\t%.4f%% non-zeros\n",
             100 * (float) A.nnz / ( (float) A.rows * (float) A.columns));
-    printf("\t%.4f%% non-zero blocks\n", 
+    printf("\t%.4f%% non-zero blocks\n",
             100 * (float) A.nnzblocks / ( (float) A.blockrows * (float) A.blockcols));
     if (A.balanced) printf("\tBalanced block-rows\n");
     else            printf("\tUnbalanced block-rows\n");
     printf("\tBlocks : %lu COO, ", (unsigned long) A.type_block_count[BLOCK_COO]);
     printf("%lu CSR, ", (unsigned long) A.type_block_count[BLOCK_CSR]);
     printf("%lu CSR (parallel), ", (unsigned long) A.type_block_count[BLOCK_CSR_PAR]);
-    printf("%lu dense\n", (unsigned long) A.type_block_count[BLOCK_DENSE]);  
+    printf("%lu dense\n", (unsigned long) A.type_block_count[BLOCK_DENSE]);
     printf("\tNon-Zeros : %lu COO, ", (unsigned long) A.type_nnz_count[BLOCK_COO]);
     printf("%lu CSR, ", (unsigned long) A.type_nnz_count[BLOCK_CSR]);
     printf("%lu CSR (parallel), ", (unsigned long) A.type_nnz_count[BLOCK_CSR_PAR]);
-    printf("%lu dense\n", (unsigned long) A.type_nnz_count[BLOCK_DENSE]);  
+    printf("%lu dense\n", (unsigned long) A.type_nnz_count[BLOCK_DENSE]);
 }
 
 #endif
