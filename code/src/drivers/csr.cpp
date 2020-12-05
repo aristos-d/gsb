@@ -1,5 +1,3 @@
-#include <stdint.h>
-#include <stdlib.h>
 #include <stdio.h>
 
 #include "matrix/coo.h"
@@ -7,7 +5,7 @@
 #include "matrix/csr.2.h"
 #include "io/input.h"
 #include "common.h"
-#include "test/utils.h"
+#include "test/bench.h"
 
 #ifndef MATRIXTYPE
 #define MATRIXTYPE Csr<VALTYPE,ITYPE> A;
@@ -17,7 +15,6 @@ int main (int argc, char * argv[])
 {
   int ret;
   double t;
-  VALTYPE *x, *y;
   MATRIXTYPE A;
   Coo2<VALTYPE,ITYPE> B;
 
@@ -47,13 +44,8 @@ int main (int argc, char * argv[])
 
   print_info(A);
 
-  vector_init(&x, B.columns);
-  vector_init(&y, B.rows);
+  benchmark_spmv(A, ITERATIONS, "CSR");
 
-  BENCH( spmv(&A, x, y), ITERATIONS, nonzeros(A), "CSR");
-
-  vector_release(x);
-  vector_release(y);
   release(A);
   return 0;
 }

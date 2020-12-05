@@ -57,11 +57,9 @@ int main(int argc, char* argv[])
     printf("%lu, %6lu, %f, ", (unsigned long) N, (unsigned long) coo2.nnz, nnzratio);
     fflush(stdout);
 
-    // Allocate memory for x, y and initialize x
-    x = (VALUETYPE *) alligned_malloc(coo2.columns * sizeof(VALUETYPE));
-    y = (VALUETYPE *) alligned_malloc(coo2.rows * sizeof(VALUETYPE));
-    for(INDEXTYPE i=0; i<coo2.rows; i++) y[i] = (VALUETYPE) 0.0f;
-    for(INDEXTYPE i=0; i<coo2.columns; i++) x[i] = ((VALUETYPE) rand())/RAND_MAX;
+    // Initialize x and y vectors
+    vector_zero(&x, coo2.columns);
+    vector_random(&y, coo2.rows);
 
     /* ----------------------- Coo ----------------------- */
     Coo_to_Coo(&coo, &coo2);
@@ -113,10 +111,9 @@ int main(int argc, char* argv[])
     BENCH_AVG( spmv_serial(&dense, x, y), ITERATIONS, t_avg );
     printf("%e, ", t_avg); fflush(stdout);
 
-
     // Clean up
-    aligned_free(y);
-    aligned_free(x);
+    vector_release(y);
+    vector_release(x);
     release(coo2);
   }
   

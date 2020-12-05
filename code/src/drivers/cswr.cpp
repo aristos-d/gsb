@@ -6,7 +6,7 @@
 #include "matrix/cswr.h"
 #include "io/input.h"
 #include "common.h"
-#include "test/utils.h"
+#include "test/bench.h"
 
 #ifndef MATRIXTYPE
 #define MATRIXTYPE Cswr<VALTYPE,ITYPE,SITYPE>
@@ -18,7 +18,6 @@ int main(int argc, char * argv[])
   double t;
   bool binary;
   MATRIXTYPE A;
-  VALTYPE *x, *y;
   Coo2<VALTYPE,ITYPE> B;
   ITYPE width;
 
@@ -56,13 +55,7 @@ int main(int argc, char * argv[])
 
   print_info(A);
 
-  vector_init(&x, B.columns);
-  vector_init(&y, B.rows);
-
-  BENCH( spmv(&A, x, y), ITERATIONS, nonzeros(A), "CSWR");
-
-  vector_release(x);
-  vector_release(y);
+  benchmark_spmv(A, ITERATIONS, "CSWR");
 
   release(A);
   release(B);

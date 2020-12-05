@@ -9,45 +9,6 @@
 #include "typedefs.h"
 #include "common.h"
 
-#define BENCH_VERBOSE( EXP, TIMES, NNZ, METH) \
-{\
-    double * t = new double[TIMES]; \
-    EXP; \
-    for(unsigned i=0; i<TIMES; i++){ \
-        auto start = std::chrono::high_resolution_clock::now(); \
-        EXP; \
-        auto end = std::chrono::high_resolution_clock::now(); \
-        std::chrono::duration<double> lap = end - start; \
-        t[i] = lap.count(); \
-    } \
-    std::sort(t, t+TIMES); \
-    print_timing(METH, "min", NNZ, t[0]);  \
-    print_timing(METH, "median", NNZ, t[TIMES/2]); \
-    print_timing(METH, "mean", NNZ, std::accumulate(t, t+(TIMES), 0.0) / (TIMES) ); \
-    print_timing(METH, "max", NNZ, t[TIMES-1]); \
-    delete [] t; \
-}
-
-#define BENCH_CSV( EXP, TIMES, NNZ, METH) \
-{\
-    double t[TIMES]; \
-    EXP; \
-    for(unsigned i=0; i<TIMES; i++){ \
-        auto start = std::chrono::high_resolution_clock::now(); \
-        EXP; \
-        auto end = std::chrono::high_resolution_clock::now(); \
-        std::chrono::duration<double> lap = end - start; \
-        t[i] = lap.count(); \
-    } \
-    std::sort(t, t+TIMES); \
-    printf("%s,%.0f,%.0f,%.0f,%.0f\n", \
-            METH, \
-            (2.0 * NNZ / t[0]), \
-            (2.0 * NNZ / t[TIMES/2]), \
-            (2.0 * NNZ / (std::accumulate(t, t+(TIMES), 0.0) / (TIMES))), \
-            (2.0 * NNZ / t[TIMES-1])); \
-}
-
 #define BENCH_AVG( EXP, TIMES, T_AVG ) \
 {\
     EXP; \
@@ -58,22 +19,16 @@
     T_AVG = lap.count() / (TIMES);\
 }
 
-#ifndef FORMAT_CSV
-#define BENCH BENCH_VERBOSE
-#else
-#define BENCH BENCH_CSV
-#endif
-
 template <class T>
-void show(T * x, int size)
+void show (T * x, int size)
 {
-  for(int i=0; i<size; i++){
+  for (int i=0; i<size; i++) {
     std::cout << i << ": " << x[i] << '\n';
   }
 }
 
 template <class T, class IT>
-void show(Triplet<T, IT> x)
+void show (Triplet<T, IT> x)
 {   
   std::cout << "(" << x.row << ", " << x.col << ", " << x.val << ")\n";
 }
@@ -82,11 +37,11 @@ void show(Triplet<T, IT> x)
  * Prints the matrix in a readable format. For debugging purposes only.
  */
 template <class T, class IT>
-void show(Csr<T, IT> A)
+void show (Csr<T, IT> A)
 {
-  if(A.rows > 20){
+  if (A.rows > 20) {
     std::cout << "Printing a matrix with more than 20 rows is a bad idea.\n";
-  }else{
+  } else {
     for(IT i=0; i<A.rows; i++){
       std::cout << i << ": ";
       IT row_start, next_row;
@@ -104,26 +59,23 @@ void show(Csr<T, IT> A)
  * Prints the matrix in a readable format. For debugging purposes only.
  */
 template <class T, class IT>
-void show(Coo<T, IT> A)
+void show (Coo<T, IT> A)
 {
-  if(A.nnz > 20){
+  if (A.nnz > 20) {
     std::cout << "Printing a matrix with more than 20 non-zeros is a bad idea.\n";
-  }else{
-    for(IT i=0; i<A.nnz; i++)
+  } else {
+    for (IT i=0; i<A.nnz; i++)
         std::cout << '(' << A.I[i] << ", " << A.J[i] << ", " << A.val[i] << ')' << '\n';
     std::cout << '\n';
   }
 }
 
-/*
- * Prints the matrix in a readable format. For debugging purposes only.
- */
 template <class T, class IT>
-void show(Coo2<T, IT> A)
+void show (Coo2<T, IT> A)
 {
-  if(A.nnz > 20){
+  if (A.nnz > 20) {
     std::cout << "Printing a matrix with more than 20 non-zeros is a bad idea.\n";
-  }else{
+  } else {
     for(IT i=0; i<A.nnz; i++)
         show(A.triplets[i]);
     std::cout << '\n';
@@ -131,10 +83,10 @@ void show(Coo2<T, IT> A)
 }
 
 /*
- * Compute the mean value of data in an array
+ * Compute some statistics on timing data
  */
 template <class T, class IT>
-T mean(T * data, IT n)
+T mean (T * data, IT n)
 {
     T sum = 0;
     for (IT i=0; i<n; i++)
@@ -142,11 +94,8 @@ T mean(T * data, IT n)
     return sum / (T) n;
 }
 
-/*
- *
- */
 template <class T, class IT>
-T median(T * data, IT n)
+T median (T * data, IT n)
 {
     std::sort(data, data + n);
     if(n % 2)
@@ -155,11 +104,8 @@ T median(T * data, IT n)
         return (data[(n/2)-1] + data[n/2]) / 2.0;
 }
 
-/*
- * Compute standard deviation of data in an array
- */
 template <class T, class IT>
-T standard_deviation(T * data, IT n)
+T standard_deviation (T * data, IT n)
 {
     T m = mean(data, n);
     T sum = 0;
@@ -173,7 +119,7 @@ T standard_deviation(T * data, IT n)
  * Returns 0 if results are identical, -1 otherwise.
  */
 template <class T, class IT>
-int check_results(T * vec1, T * vec2, IT size)
+int check_results (T * vec1, T * vec2, IT size)
 {
     T diff, mse, nmse;
     T max_diff = (T) 0;

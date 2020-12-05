@@ -10,7 +10,7 @@
 #include "io/input.h"
 #include "io/blocked.h"
 #include "common.h"
-#include "test/utils.h"
+#include "test/bench.h"
 
 int main(int argc, char * argv[])
 {
@@ -19,7 +19,6 @@ int main(int argc, char * argv[])
     ITYPE *block_sizes, *block_offsets_row;
     ITYPE *block_offsets_col;
     size_t num_blocks_row, num_blocks_col;
-    VALTYPE *x, *y;
     Coo3<VALTYPE, ITYPE> B;
     MATRIXTYPE A;
 
@@ -104,19 +103,12 @@ int main(int argc, char * argv[])
     print_info(A);
 
     #ifdef PARTITION_DEBUG
-
     printf("\n\n");
     partition_dump(A.partition, A.blockrows);
 
     #else
-    vector_init(&x, B.columns);
-    vector_init(&y, B.rows);
-
     // Benchmarking happens here
-    BENCH( spmv(&A, x, y), ITERATIONS, nonzeros(A), "GSB");
-
-    vector_release(x);
-    vector_release(y);
+    benchmark_spmv(A, ITERATIONS, "GSB");
     #endif
 
     // Free memory

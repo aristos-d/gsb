@@ -12,9 +12,10 @@ double tock();
 void * aligned_malloc(size_t size);
 void aligned_free(void *ptr);
 
-void print_timing(char const *mode, unsigned nnz, int iterations, double ts, double te);
-void print_timing(char const *mode, unsigned nnz, double tm);
-void print_timing(char const *method, char const *mode, unsigned nnz, double tm);
+void print_timing(char const *mode, unsigned long nnz, double tm);
+void print_timing(char const *method, char const *mode, unsigned long nnz, double tm);
+void print_timing_verbose (char const *method, unsigned long nnz, unsigned long iter, double *t);
+void print_timing_csv (char const *method, unsigned long nnz, unsigned long iter, double *t);
 
 int string_ends_with(const char * str, const char * suffix);
 size_t get_file_size(const char * filename);
@@ -30,12 +31,23 @@ int highest_bit_set(int v);
  * Vector initialization with random data
  */
 template <class T, class IT>
-void vector_init (T **x, IT size)
+void vector_random (T **x, IT size)
 {
     *x = (T *) aligned_malloc(size * sizeof(T));
 
     for (IT i=0; i<size; i++)
-        (*x)[i] = (T) (rand() / RAND_MAX);
+        (*x)[i] = ((T) rand()) / ((T) RAND_MAX);
+}
+
+template <class T, class IT>
+void vector_zero (T **x, IT size)
+{
+    *x = (T *) aligned_malloc(size * sizeof(T));
+
+    for (IT i=0; i<size; i++)
+        // This is slower than memset but safer in case we have to deal with a
+        // data type whose 0 representation in not all-zero bytes.
+        (*x)[i] = (T) 0;
 }
 
 template <class T>

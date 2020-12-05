@@ -10,7 +10,7 @@
 #include "matrix/cgbr.2.h"
 #include "io/input.h"
 #include "common.h"
-#include "test/utils.h"
+#include "test/bench.h"
 
 int main(int argc, char * argv[])
 {
@@ -20,7 +20,6 @@ int main(int argc, char * argv[])
     size_t perm_size;
     INDEXTYPE * permutation, * inv_permutation;
     INDEXTYPE beta;
-    VALTYPE * x, * y;
   
     Coo<VALTYPE,INDEXTYPE> triplets;
     Coo3<VALTYPE,INDEXTYPE> coo;
@@ -77,10 +76,6 @@ int main(int argc, char * argv[])
     printf(" done in %.4f sec\n", t);
     delete [] permutation;
     
-    // Intitialize y and x
-    vector_init(&x, coo.columns);
-    vector_init(&y, coo.rows);
-
     // CSR - start
     printf("Converting to CSR format..."); fflush(stdout);
     tick();
@@ -88,7 +83,7 @@ int main(int argc, char * argv[])
     t = tock();
     printf(" done in %.4f sec\n", t);
     
-    BENCH_CSV( spmv(&csr, x, y), ITERATIONS, nonzeros(csr), "CSR");
+    benchmark_spmv_csv(csr, ITERATIONS, "CSR");
     
     release(csr);
     // CSR - end
@@ -102,14 +97,12 @@ int main(int argc, char * argv[])
 
     print_info(cgbr);
     
-    BENCH_CSV( spmv(&cgbr, x, y), ITERATIONS, nonzeros(cgbr), "GSB");
+    benchmark_spmv_csv(cgbr, ITERATIONS, "GSB");
     
     release(cgbr);
     // GSB - end
   
     // Free memory
-    vector_release(x);
-    vector_release(y);
     release(coo);
     return 0;
 }

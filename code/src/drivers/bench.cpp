@@ -4,17 +4,17 @@
 #define _NO_CSB_ALIGNED_MALLOC_
 #include "common.h"
 #include "matrix/coo.h"
+#include "matrix/csr.h"
 #include "matrix/cgbr.2.h"
 #include "io/input.h"
-#include "test/utils.h"
+#include "test/bench.h"
 
-int main(int argc, char * argv[])
+int main (int argc, char * argv[])
 {
     int ret;
     double t;
     bool bin;
     INDEXTYPE beta;
-    VALTYPE * x, * y;
   
     Coo3<VALTYPE,INDEXTYPE> coo;
     Csr<VALTYPE,INDEXTYPE> csr;   // Don't use MKL for this one!
@@ -43,10 +43,6 @@ int main(int argc, char * argv[])
     beta = pick_block_size(coo.rows, coo.columns, sizeof(VALTYPE), RT_WORKERS);
     printf("Beta = %u\n", beta);
 
-    // Intitialize y and x
-    vector_init(&x, coo.columns);
-    vector_init(&y, coo.rows);
-    
     // CSR - start
     printf("Converting to CSR format..."); fflush(stdout);
     tick();
@@ -54,7 +50,7 @@ int main(int argc, char * argv[])
     t = tock();
     printf(" done in %.4f sec\n", t);
     
-    BENCH_CSV( spmv(&csr, x, y), ITERATIONS, nonzeros(csr), "CSR");
+    benchmark_spmv(csr, ITERATIONS, "CSR");
     
     release(csr);
     // CSR - end
@@ -66,14 +62,12 @@ int main(int argc, char * argv[])
     t = tock();
     printf(" done in %.4f sec\n", t);
     
-    BENCH_CSV( spmv(&cgbr, x, y), ITERATIONS, nonzeros(cgbr), "GSB");
+    benchmark_spmv(cgbr, ITERATIONS, "GSB");
     
     release(cgbr);
     // GSB - end
   
     // Free memory
-    vector_release(x);
-    vector_release(y);
     release(coo);
     return 0;
 }

@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <chrono>
+#include <algorithm>
+#include <numeric>
 
 /*
  * Timer code
@@ -45,23 +47,42 @@ void aligned_free(void *ptr)
 /*
  * Print execution time and FLOPs/second
  */
-void print_timing(char const *mode, unsigned nnz, int iterations, double ts, double te)
+static float mflops (unsigned long nnz, float t)
 {
-    double tm = (te - ts) / iterations;
-    printf("Execution time %s : %.6f\n", mode, tm);
-    printf("MFlops/second  %s : %.0f\n", mode, 2.0*nnz/(tm*1000000.0));
+    return 2.0 * nnz / (t * 1000000.0);
 }
 
-void print_timing(char const *mode, unsigned nnz, double tm)
+void print_timing (char const *mode, unsigned long nnz, float t)
 {
-    printf("Execution time %s : %.6f\n", mode, tm);
-    printf("MFlops/second  %s : %.0f\n", mode, 2.0*nnz/(tm*1000000.0));
+    printf("Execution time %s : %.6f\n", mode, t);
+    printf("MFLOP/s        %s : %.0f\n", mode, mflops(nnz, t));
 }
 
-void print_timing(char const *method, char const *mode, unsigned nnz, double tm)
+void print_timing (char const *method, char const *mode, unsigned long nnz, float t)
 {
-    printf("Execution time %s (%s): %.6f\n", method, mode, tm);
-    printf("MFlops/second  %s (%s): %.0f\n", method, mode, 2.0*nnz/(tm*1000000.0));
+    printf("Execution time %s (%s): %.6f\n", method, mode, t);
+    printf("MFLOP/s        %s (%s): %.0f\n", method, mode, mflops(nnz, t));
+}
+
+void print_timing_verbose (char const *method, unsigned long nnz, unsigned long iter, double *t)
+{
+    std::sort(t, t+iter);
+    print_timing(method, "best", nnz, t[0]);
+    print_timing(method, "median", nnz, t[iter/2]);
+    print_timing(method, "mean", nnz, std::accumulate(t, t + iter, 0.0) / iter);
+    print_timing(method, "worst", nnz, t[iter-1]);
+}
+
+void print_timing_csv (char const *method, unsigned long nnz, unsigned long iter, double *t)
+{
+    std::sort(t, t+iter);
+    // The format is: method, best, median, mean, worst in MFLOP/s
+    printf("%s,%.0f,%.0f,%.0f,%.0f\n",
+            method,
+            mflops(nnz, t[0]),
+            mflops(nnz, t[iter/2]),
+            mflops(nnz, std::accumulate(t, t+iter, 0.0) / iter),
+            mflops(nnz, t[iter-1]));
 }
 
 /*
@@ -174,7 +195,7 @@ unsigned int highest_bit_set(unsigned int v)
 
 int highest_bit_set(int v)
 {
-	if(v < 0) {
+	if (v < 0) {
 		return -1;
 	} else {	
 		unsigned int uv = static_cast<unsigned int> (v);
