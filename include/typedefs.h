@@ -25,52 +25,13 @@ struct Element {
 };
 
 /*
- * Structure representing a dense matrix, stored in clasic C way.
+ * Structure representing a dense matrix, stored in classic C way.
  */
 template <class T, class IT>
 struct Dense {
   T * val;
   IT rows;
   IT columns;
-};
-
-/*
- * CSR matrix represented as an array of row pointers and two arrays for
- * non-zero values and column indexes.
- */
-template <class T, class IT>
-struct Csr {
-  T * val;
-  IT * col_ind;
-  IT * row_ptr;
-  IT rows, columns;
-  // In 64-bit machine, with 32-bit indeces, adding column information does not
-  // increase struct size due to padding. It is not technically neccesary.
-};
-
-/*
- * CSR matrix represented as an array of row pointers an array of value -
- * column index pairs.
- */
-template <class T, class IT>
-struct Csr2 {
-  NonZero<T, IT> * nonzeros;
-  IT * row_ptr;
-  IT rows, columns;
-};
-
-/*
- * CSR matrix represented as an array of row pointers and two arrays for
- * non-zero values and column indexes.
- */
-template <class T, class IT, class SIT>
-struct BlockCsr {
-  T * val;
-  SIT * col_ind;
-  IT * row_ptr;
-  IT rows, columns;
-  // In 64-bit machine, with 32-bit indeces, adding column information does not
-  // increase struct size due to padding. It is not technically neccesary.
 };
 
 /*
@@ -97,90 +58,6 @@ struct BlockRowPartition {
   IT nchunks;  // Number of chunks in partition ( nchunks <= size )
 };
 
-/*
- * CSR matrix containing CSR blocks of variable size or Compressed Sparse
- * Block-Rows.
- */
-template <class T, class IT>
-struct Csbr {
-  Csr<T,IT> * blocks;
-  IT * blockrow_ptr;         // Indeces for blocks array
-  IT * blockcol_ind;
-
-  // Block information
-  IT * blockrow_offset;
-  IT * blockcol_offset;
-  IT blockrows;
-  IT blockcols;
-  IT nnzblocks;
-
-  // Partitioning information
-  BlockRowPartition<IT> * partition;
-
-  // Original size
-  IT rows;
-  IT columns;
-  IT nnz;
-
-  // Pointers to the large arrays
-  IT * col_ind;
-  T * val;
-};
-
-/*
- * CSR matrix containing CSR blocks of variable size.
- */
-template <class T, class IT>
-struct Csbr2 {
-  IT * blockrow_ptr;         // Indexes for row_ptr array
-
-  // Block information
-  IT * blockrow_offset;
-  IT * blockcol_offset;
-  IT blockrows;
-  IT blockcols;
-  IT nnzblocks;
-
-  // Original size
-  IT rows;
-  IT columns;
-  IT nnz;
-
-  // Pointers to the large arrays
-  IT ** row_ptr;
-  IT * col_ind;
-  T * val;
-};
-
-/*
- * Dense matrix of CSR blocks of variable size or Blocked Compressed Sparse
- * Rows
- */
-template <class T, class IT>
-struct Bcsr {
-  // Block information
-  IT * blockrow_offset;
-  IT * blockcol_offset;
-  IT blockrows;
-  IT blockcols;
-
-  // Partitioning information
-  BlockRowPartition<IT> * partition;
-  bool balanced;
-
-  // Original size
-  IT rows;
-  IT columns;
-  IT nnz;
-
-  // Actual block array
-  Csr<T,IT> * blocks;
-  IT nnzblocks;
-
-  // Pointers to the large arrays
-  IT * col_ind;
-  T * val;
-};
 
 /*
  * CSR matrix containing blocks of variable size and type BUT ONLY ONE TYPE or

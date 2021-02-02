@@ -9,9 +9,40 @@
 
 #include "typedefs.h"
 #include "utils.h"
-#include "matrix/coo.h"
-#include "matrix/csr.h"
+#include "matrix/coo.2.h"
+#include "matrix/coo.3.h"
+#include "matrix/csr.1.h"
 #include "partition.h"
+
+/*
+ * CSR matrix containing CSR blocks of variable size or Compressed Sparse
+ * Block-Rows.
+ */
+template <class T, class IT>
+struct Csbr {
+  Csr<T,IT> * blocks;
+  IT * blockrow_ptr;         // Indices for blocks array
+  IT * blockcol_ind;
+
+  // Block information
+  IT * blockrow_offset;
+  IT * blockcol_offset;
+  IT blockrows;
+  IT blockcols;
+  IT nnzblocks;
+
+  // Partitioning information
+  BlockRowPartition<IT> * partition;
+
+  // Original size
+  IT rows;
+  IT columns;
+  IT nnz;
+
+  // Pointers to the large arrays
+  IT * col_ind;
+  T * val;
+};
 
 /*
  * Returns the number of non-zero elements in a block of the matrix.

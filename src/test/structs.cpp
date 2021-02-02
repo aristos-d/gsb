@@ -4,6 +4,8 @@
 #include "typedefs.h"
 #include "matrix/coo.1.h"
 #include "matrix/block_coo.1.h"
+#include "matrix/csr.1.h"
+#include "matrix/csr.2.h"
 #include "matrix/crcsr.h"
 #include "matrix/cgbr.h"
 

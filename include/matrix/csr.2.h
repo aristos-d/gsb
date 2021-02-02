@@ -11,6 +11,17 @@
 #include "spmv/omp/csr.h"
 
 /*
+ * CSR matrix represented as an array of row pointers an array of value -
+ * column index pairs.
+ */
+template <class T, class IT>
+struct Csr2 {
+  NonZero<T, IT> * nonzeros;
+  IT * row_ptr;
+  IT rows, columns;
+};
+
+/*
  * Get the number of non-zero elements of the matrix.
  */
 template <class T, class IT>
@@ -39,9 +50,6 @@ void spmv_serial (
 {
     spmv_csr2_serial(A->row_ptr, A->nonzeros, A->rows, x, y);
 }
-
-
-/* ------------------ Constructors begin ------------------ */
 
 /*
  * Construct a CSR2 matrix by processing a matrix in COO format. Triplets of
@@ -80,31 +88,6 @@ int Coo_to_Csr(Csr2<T, IT> * A, NONZERO * nonzeros,
 
   assert(A->row_ptr[A->rows] == nnz);
   return 0;
-}
-
-/*
- * Constructor wrappers
- */
-template <class T, class IT>
-int Coo_to_Csr(Csr2<T, IT> * A, Coo2<T, IT> * B)
-{
-  return Coo_to_Csr(A, B->triplets, B->rows, B->columns, B->nnz, false, true);
-}
-
-template <class T, class IT>
-int Coo_to_Csr(Csr2<T, IT> * A, Coo3<T, IT> * B)
-{
-  return Coo_to_Csr(A, B->elements, B->rows, B->columns, B->nnz, false, true);
-}
-
-/*
- * Print information about the matrix
- */
-template <class T, class IT>
-void print_info(Csr2<T, IT> A)
-{
-    printf("Csr2 matrix : ");
-    printf("%lu rows, %lu non-zeros\n", (unsigned long) A.rows, (unsigned long) A.row_ptr[A.rows]);
 }
 
 /*

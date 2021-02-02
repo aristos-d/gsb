@@ -1,5 +1,6 @@
 #ifndef _COO_1_H_
 #define _COO_1_H_
+#include <iostream>
 
 #include "matrix/coo.h"
 
@@ -61,6 +62,21 @@ inline void spmv (
         T * const __restrict y)
 {
     spmv_coo(A->val, A->I, A->J, A->nnz, x, y);
+}
+
+/*
+ * Prints the matrix in a readable format. For debugging purposes only.
+ */
+template <class T, class IT>
+void show (Coo<T, IT> A)
+{
+    if (A.nnz > 20) {
+        std::cout << "Printing a matrix with more than 20 non-zeros is a bad idea.\n";
+    } else {
+        for (IT i=0; i<A.nnz; i++)
+            std::cout << '(' << A.I[i] << ", " << A.J[i] << ", " << A.val[i] << ')' << '\n';
+        std::cout << '\n';
+    }
 }
 
 /*

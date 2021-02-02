@@ -359,11 +359,22 @@ void sort_triplets_widerows(Element<T, IT> * array, IT size, IT width)
  */
 template <class T, class IT>
 void calculate_block_id(Element<T, IT> * elements, IT size,
-  IT * blockrow_offset, IT blockrows, IT * blockcol_offset, IT blockcols)
+        IT * blockrow_offset, IT blockrows, IT * blockcol_offset, IT blockcols)
 {
     for (IT i=0; i<size; i++) {
         IT br = index_to_blockindex(blockrow_offset, blockrows, elements[i].row );
         IT bc = index_to_blockindex(blockcol_offset, blockcols, elements[i].col );
+        elements[i].block = br * blockcols + bc;
+    }
+}
+
+template <class T, class IT>
+void calculate_block_id(Element<T, IT> * elements, IT size,
+        IT blockrow_size, IT blockcol_size, IT blockcols)
+{
+    for (IT i=0; i<size; i++) {
+        IT br = elements[i].row / blockrow_size;
+        IT bc = elements[i].col / blockcol_size;
         elements[i].block = br * blockcols + bc;
     }
 }

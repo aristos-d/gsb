@@ -6,8 +6,9 @@
 
 #include "mm_io/mm_io.h"
 #include "common.h"
-#include "matrix/coo.h"
-#include "matrix/csr.h"
+#include "matrix/coo.1.h"
+#include "matrix/csr.1.h"
+#include "matrix/csr.2.h"
 
 /*
  * Read binary data from file. Used to read block sizes.

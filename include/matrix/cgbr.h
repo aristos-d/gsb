@@ -8,10 +8,9 @@
 #include "typedefs.h"
 #include "utils.h"
 #include "partition.h"
-#include "matrix/coo.h"
 #include "matrix/coo.3.h"
 #include "matrix/block_coo.1.h"
-#include "matrix/csr.h"
+#include "matrix/block_csr.h"
 #include "matrix/dense.h"
 #include "matrix/gsb.h"
 

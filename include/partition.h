@@ -5,6 +5,7 @@
 
 #include "typedefs.h"
 #include "rt.h"
+#include "matrix/csbr.h"
 
 /*
  * Partition the blockrow into chunks. Return number of chunks
@@ -74,8 +75,9 @@ void partition_init(GSB<T,IT,SIT> * A)
 /*
  * Initialize partition datastruct for CSBR matrix
  */
-template <class T, class IT>
-void partition_init(Csbr<T,IT> * A)
+template <typename T, typename IT,
+          template<typename, typename> class GSB>
+void partition_init(GSB<T,IT> * A)
 {
     A->partition = (BlockRowPartition<IT> *) malloc(A->blockrows * sizeof(BlockRowPartition<IT>));
     for (IT br=0; br<A->blockrows; br++) {
@@ -84,7 +86,7 @@ void partition_init(Csbr<T,IT> * A)
 }
 
 /*
- *  Clean-up functions
+ * Clean-up functions
  */
 template <typename T, typename IT, typename SIT,
           template<typename, typename, typename> class GSB>
@@ -96,8 +98,9 @@ void partition_destroy(GSB<T, IT, SIT> * A)
     free(A->partition);
 }
 
-template <class T, class IT>
-void partition_destroy(Csbr<T,IT> * A)
+template <typename T, typename IT,
+          template<typename, typename> class GSB>
+void partition_destroy(GSB<T, IT> * A)
 {
     for (IT br=0; br<A->blockrows; br++) {
         partition_destroy(A->partition + br);

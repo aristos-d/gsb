@@ -13,6 +13,31 @@
 #include "matrix/csr.h"
 
 /*
+ * CSR matrix containing CSR blocks of variable size.
+ */
+template <class T, class IT>
+struct Csbr2 {
+  IT * blockrow_ptr;         // Indices for row_ptr array
+
+  // Block information
+  IT * blockrow_offset;
+  IT * blockcol_offset;
+  IT blockrows;
+  IT blockcols;
+  IT nnzblocks;
+
+  // Original size
+  IT rows;
+  IT columns;
+  IT nnz;
+
+  // Pointers to the large arrays
+  IT ** row_ptr;
+  IT * col_ind;
+  T * val;
+};
+
+/*
  * Returns the number of non-zero elements of the matrix.
  */
 template <class T, class IT>
@@ -45,8 +70,6 @@ void spmv(const Csbr2<T, IT> * const A, const T * __restrict x, T * __restrict y
     }
   }
 }
-
-/* ------------------ Constructors begin ------------------ */
 
 /*
 Construct a CSBR2 matrix from a Coo3 matrix.

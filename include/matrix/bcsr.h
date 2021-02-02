@@ -8,8 +8,38 @@
 
 #include "typedefs.h"
 #include "utils.h"
-#include "matrix/coo.h"
-#include "matrix/csr.h"
+#include "matrix/coo.3.h"
+#include "matrix/csr.1.h"
+
+/*
+ * Dense matrix of CSR blocks of variable size or Blocked Compressed Sparse
+ * Rows
+ */
+template <class T, class IT>
+struct Bcsr {
+  // Block information
+  IT * blockrow_offset;
+  IT * blockcol_offset;
+  IT blockrows;
+  IT blockcols;
+
+  // Partitioning information
+  BlockRowPartition<IT> * partition;
+  bool balanced;
+
+  // Original size
+  IT rows;
+  IT columns;
+  IT nnz;
+
+  // Actual block array
+  Csr<T,IT> * blocks;
+  IT nnzblocks;
+
+  // Pointers to the large arrays
+  IT * col_ind;
+  T * val;
+};
 
 /*
  * Returns the number of non-zero elements of the matrix.

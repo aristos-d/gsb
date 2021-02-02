@@ -4,6 +4,7 @@
 #include "matrix/coo.h"
 #include "matrix/csbr.h"
 #include "matrix/csbr.2.h"
+#include "matrix/csbr.3.h"
 #include "matrix/bcsr.h"
 #include "matrix/cgbr.h"
 #include "matrix/cgbr.2.h"
@@ -112,8 +113,6 @@ int main(int argc, char * argv[])
     #endif
 
     // Free memory
-    delete [] A.blockrow_offset;
-    delete [] A.blockcol_offset;
     release(A);
     return 0;
 }

@@ -35,29 +35,33 @@ void benchmark_spmv_core (
 
 template <class T, class IT,
           template <typename, typename> class MATRIX>
-void benchmark_spmv (MATRIX<T,IT> const A, unsigned iterations, char const *method)
+void benchmark_spmv (MATRIX<T,IT> const A, unsigned iterations,
+                     char const *method)
 {
-    benchmark_spmv_core<MATRIX<T,IT>, T>(A, iterations, method, print_timing_verbose);
+    benchmark_spmv_core<MATRIX<T,IT>,T>(A, iterations, method, print_timing_verbose);
 }
 
 template <class T, class IT, class SIT,
           template <typename, typename, typename> class MATRIX>
-void benchmark_spmv (const MATRIX<T,IT,SIT> A, int iterations, char const *method)
+void benchmark_spmv (MATRIX<T,IT,SIT> const A, unsigned iterations,
+                     char const *method)
 {
-    benchmark_spmv_core<MATRIX<T,IT,SIT>, T>(A, iterations, method, print_timing_verbose);
+    benchmark_spmv_core<MATRIX<T,IT,SIT>,T>(A, iterations, method, print_timing_verbose);
 }
 
 template <class T, class IT,
           template <typename, typename> class MATRIX>
-void benchmark_spmv_csv (MATRIX<T,IT> const A, unsigned iterations, char const *method)
+void benchmark_spmv_csv (MATRIX<T,IT> const A, unsigned iterations,
+                         char const *method)
 {
-    benchmark_spmv_core<MATRIX<T,IT>, T>(A, iterations, method, print_timing_csv);
+    benchmark_spmv_core<MATRIX<T,IT>,T>(A, iterations, method, print_timing_csv);
 }
 
 template <class T, class IT, class SIT,
           template <typename, typename, typename> class MATRIX>
-void benchmark_spmv_csv (const MATRIX<T,IT,SIT> A, int iterations, char const *method)
+void benchmark_spmv_csv (MATRIX<T,IT,SIT> const A, unsigned iterations,
+                         char const *method)
 {
-    benchmark_spmv_core<MATRIX<T,IT,SIT>, T>(A, iterations, method, print_timing_csv);
+    benchmark_spmv_core<MATRIX<T,IT,SIT>,T>(A, iterations, method, print_timing_csv);
 }
 

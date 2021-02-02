@@ -9,7 +9,9 @@
 #include "matrix/coo.h"
 #include "matrix/csr.h"
 #include "matrix/csbr.h"
+#include "matrix/csbr.2.h"
 #include "matrix/cgbr.h"
+#include "matrix/bcsr.h"
 
 /*
  * Function to perform initial steps of reading a matrix in blocked format.

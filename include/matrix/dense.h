@@ -4,6 +4,8 @@
 #include <assert.h>
 
 #include "typedefs.h"
+#include "matrix/coo.2.h"
+#include "matrix/coo.3.h"
 #include "spmv/dense.h"
 #include "spmv/omp/dense.h"
 

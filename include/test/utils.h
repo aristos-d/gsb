@@ -1,6 +1,5 @@
 #ifndef _TEST_UTILS_H_
 #define _TEST_UTILS_H_
-
 #include <iostream>
 #include <algorithm>
 #include <chrono>
@@ -31,55 +30,6 @@ template <class T, class IT>
 void show (Triplet<T, IT> x)
 {   
   std::cout << "(" << x.row << ", " << x.col << ", " << x.val << ")\n";
-}
-
-/*
- * Prints the matrix in a readable format. For debugging purposes only.
- */
-template <class T, class IT>
-void show (Csr<T, IT> A)
-{
-  if (A.rows > 20) {
-    std::cout << "Printing a matrix with more than 20 rows is a bad idea.\n";
-  } else {
-    for(IT i=0; i<A.rows; i++){
-      std::cout << i << ": ";
-      IT row_start, next_row;
-      row_start = A.row_ptr[i];
-      next_row = A.row_ptr[i+1];
-      for(IT k=row_start; k < next_row; k++){
-          std::cout << '(' << A.col_ind[k] << ',' << A.val[k] << ')' << '\t';
-      }
-      std::cout << '\n';
-    }
-  }
-}
-
-/*
- * Prints the matrix in a readable format. For debugging purposes only.
- */
-template <class T, class IT>
-void show (Coo<T, IT> A)
-{
-  if (A.nnz > 20) {
-    std::cout << "Printing a matrix with more than 20 non-zeros is a bad idea.\n";
-  } else {
-    for (IT i=0; i<A.nnz; i++)
-        std::cout << '(' << A.I[i] << ", " << A.J[i] << ", " << A.val[i] << ')' << '\n';
-    std::cout << '\n';
-  }
-}
-
-template <class T, class IT>
-void show (Coo2<T, IT> A)
-{
-  if (A.nnz > 20) {
-    std::cout << "Printing a matrix with more than 20 non-zeros is a bad idea.\n";
-  } else {
-    for(IT i=0; i<A.nnz; i++)
-        show(A.triplets[i]);
-    std::cout << '\n';
-  }
 }
 
 /*

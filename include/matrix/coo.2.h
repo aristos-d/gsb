@@ -1,7 +1,9 @@
 #ifndef _COO_2_H_
 #define _COO_2_H_
+#include <iostream>
 
 #include "typedefs.h"
+#include "test/utils.h"
 #include "matrix/coo.h"
 
 /*
@@ -55,11 +57,25 @@ inline void set_value(Coo2<T, IT> * A, IT index, T val)
  */
 template <class T, class IT>
 inline void spmv (
-        const Coo2<T,IT> * const A,
+        const Coo2<T, IT> * const A,
         const T * __restrict x,
         T * __restrict y)
 {
     spmv_coo(A->triplets, A->nnz, x, y);
+}
+
+/*
+ * Prints the matrix in a readable format. For debugging purposes only.
+ */
+template <class T, class IT>
+void show (Coo2<T, IT> A)
+{
+    if (A.nnz > 20) {
+      std::cout << "Printing a matrix with more than 20 non-zeros is a bad idea.\n";
+    } else {
+      for (IT i=0; i<A.nnz; i++) show(A.triplets[i]);
+      std::cout << '\n';
+  }
 }
 
 /*
