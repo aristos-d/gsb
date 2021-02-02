@@ -9,9 +9,30 @@
 #include "utils.h"
 #include "partition.h"
 #include "matrix/coo.h"
+#include "matrix/coo.3.h"
+#include "matrix/block_coo.1.h"
 #include "matrix/csr.h"
 #include "matrix/dense.h"
 #include "matrix/gsb.h"
+
+/*
+ * Union of all matrix types used for blocks.
+ */
+template <class T, class IT, class SIT>
+union Matrix{
+  Dense<T,IT> dense;
+  BlockCsr<T,IT,SIT> csr;
+  BlockCoo<T,IT,SIT> coo;
+};
+
+/*
+ * Generic matrix representing a block of a larger sparse matrix.
+ */
+template <class T, class IT, class SIT>
+struct MatrixBlock{
+  Matrix<T,IT,SIT> matrix;
+  MatrixType type;
+};
 
 /*
  * CSR matrix containing blocks of variable size and type or Compressed

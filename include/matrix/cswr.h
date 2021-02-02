@@ -6,7 +6,8 @@
 
 #include "typedefs.h"
 #include "utils.h"
-#include "matrix/coo.h"
+#include "matrix/coo.2.h"
+#include "matrix/coo.3.h"
 
 /*
  * Compressed Sparse Wide Rows. This is a failure.
@@ -112,4 +113,3 @@ void release(Cswr<T,IT,SIT> A)
 }
 
 #endif
-

@@ -9,7 +9,9 @@
 
 #include "typedefs.h"
 #include "common.h"
-#include "matrix/coo.h"
+#include "matrix/coo.1.h"
+#include "matrix/coo.2.h"
+#include "matrix/block_coo.1.h"
 #include "matrix/csr.h"
 #include "matrix/csr.2.h"
 #include "matrix/dense.h"

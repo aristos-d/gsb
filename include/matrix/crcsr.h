@@ -6,7 +6,8 @@
 
 #include "typedefs.h"
 #include "utils.h"
-#include "matrix/coo.h"
+#include "matrix/coo.2.h"
+#include "matrix/coo.3.h"
 
 /*
  * CSR matrix with compressed row pointers. Only pointers for non-empty rows
@@ -37,8 +38,6 @@ inline IT nonzeros (CompRowCsr<T,IT> const A)
 {
     return A.row_ptr[A.nnz_rows_num];
 }
-
-/* ------------------ Constructors begin ------------------ */
 
 /*
  * Construct a CSRCSR matrix from an array of type NONZERO. Type NONZERO must

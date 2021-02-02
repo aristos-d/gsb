@@ -35,57 +35,6 @@ struct Dense {
 };
 
 /*
- * COO matrix as three arrays.
- */
-template <class T, class IT>
-struct Coo {
-  T * val;
-  IT * I;
-  IT * J;
-  IT rows, columns, nnz;
-};
-
-/*
- * COO matrix as an array of triplets.
- */
-template <class T, class IT>
-struct Coo2 {
-  Triplet<T, IT> * triplets;
-  IT rows, columns, nnz;
-};
-
-/*
- * Special COO structure for easier/faster conversion to blocked
- * representations.
- */
-template <class T, class IT>
-struct Coo3 {
-  Element<T, IT> * elements;
-  IT rows, columns, nnz;
-  IT blockrows, blockcols, nnzblocks;
-};
-
-/*
- * Minimalistic version of COO to serve as a block of a larger matrix.
- */
-template <class T, class IT, class SIT>
-struct BlockCoo {
-  T * val;
-  SIT * I;
-  SIT * J;
-  IT nnz;
-};
-
-/*
- * Minimalistic version of COO (Coo2) to serve as a block of a larger matrix.
- */
-template <class T, class IT, class SIT>
-struct BlockCoo2 {
-  Triplet<T,SIT> * triplets;
-  IT nnz;
-};
-
-/*
  * CSR matrix represented as an array of row pointers and two arrays for
  * non-zero values and column indexes.
  */
@@ -140,25 +89,6 @@ enum MatrixType {
   BLOCK_CUSTOM_4        = 9
 };
 #define MATRIX_TYPE_NUM 10
-
-/*
- * Union of all matrix types used for blocks.
- */
-template <class T, class IT, class SIT>
-union Matrix{
-  Dense<T,IT> dense;
-  BlockCsr<T,IT,SIT> csr;
-  BlockCoo<T,IT,SIT> coo;
-};
-
-/*
- * Generic matrix representing a block of a larger sparse matrix.
- */
-template <class T, class IT, class SIT>
-struct MatrixBlock{
-  Matrix<T,IT,SIT> matrix;
-  MatrixType type;
-};
 
 template <class IT>
 struct BlockRowPartition {
@@ -262,8 +192,6 @@ struct Sgsb {
   BLOCK<T,IT,SIT> * blocks;
   IT * blockrow_ptr;         // Indexes for blocks array
   IT * blockcol_ind;
-  IT type_block_count[MATRIX_TYPE_NUM];
-  IT type_nnz_count[MATRIX_TYPE_NUM];
 
   // Partitioning information
   BlockRowPartition<IT> * partition;

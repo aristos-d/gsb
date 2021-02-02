@@ -6,7 +6,9 @@
 
 #include "typedefs.h"
 #include "utils.h"
-#include "matrix/coo.h"
+#include "matrix/coo.1.h"
+#include "matrix/coo.2.h"
+#include "matrix/coo.3.h"
 #include "spmv/csr.h"
 #include "spmv/omp/csr.h"
 

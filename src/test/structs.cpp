@@ -2,7 +2,10 @@
 #include <stdio.h>
 
 #include "typedefs.h"
+#include "matrix/coo.1.h"
+#include "matrix/block_coo.1.h"
 #include "matrix/crcsr.h"
+#include "matrix/cgbr.h"
 
 int main(int argc, char * argv[])
 {
