@@ -45,7 +45,7 @@ inline void spmv_coo(
     DEBUG_USE_MKL( fprintf(stderr, "MKL COO in use\n") );
     const float alpha = 1.0f;
     const float beta = 1.0f;
-    mkl_scoomv ("N", &rows, &columns, &alpha, "G__C", v, ri, ci, &nnz, x, &beta, y );
+    mkl_scoomv ("N", &rows, &columns, &alpha, "G__C", v, ri, ci, &nnz, x, &beta, y);
 }
 
 #endif

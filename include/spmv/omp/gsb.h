@@ -21,7 +21,7 @@ void spmv_chunk (
         IT bend = partition->chunks[last];
 
         for (IT k=bstart; k<bend; k++) {
-            x_offset = A->blockcol_offset[A->blockcol_ind[k]];
+            x_offset = get_block_column_offset(A, A->blockcol_ind[k]);
             spmv(block(A, k), x + x_offset, y);
         }
 
@@ -66,8 +66,8 @@ void spmv_unbalanced (
     for (IT bi=0; bi<A->blockrows; bi++) {
 
         IT nchunks = A->partition[bi].nchunks;
-        IT y_start = A->blockrow_offset[bi];
-        IT y_end = A->blockrow_offset[bi+1];
+        IT y_start = get_block_row_offset(A, bi);
+        IT y_end = get_block_row_offset(A, bi+1);
 
         spmv_chunk(A, x, y + y_start, A->partition + bi, (IT) 0, nchunks, y_end - y_start);
     }
@@ -93,12 +93,12 @@ void spmv_balanced (
 
         blockrow_start = A->blockrow_ptr[bi];
         blockrow_end = A->blockrow_ptr[bi+1];
-        y_offset = A->blockrow_offset[bi];
+        y_offset = get_block_row_offset(A, bi);
 
         // For every block in block row
         for (IT k=blockrow_start; k<blockrow_end; k++) {
             col_index = A->blockcol_ind[k];
-            x_offset = A->blockcol_offset[col_index];
+            x_offset = get_block_column_offset(A, A->blockcol_ind[k]); //A->blockcol_offset[col_index];
             spmv_serial(block(A, k), x + x_offset, y + y_offset);
         }
     }
@@ -125,10 +125,14 @@ void spmv (
         for (IT bi=0; bi<A->blockrows; bi++) {
 
             IT nchunks = A->partition[bi].nchunks;
-            IT y_start = A->blockrow_offset[bi];
-            IT y_end = A->blockrow_offset[bi+1];
+            IT y_start = get_block_row_offset(A, bi);
+            IT y_end = get_block_row_offset(A, bi+1);
 
-            spmv_chunk(A, x, y + y_start, A->partition + bi, (IT) 0, nchunks, y_end - y_start);
+            spmv_chunk(A, x, y + y_start,
+                       A->partition + bi,
+                       (IT) 0,
+                       nchunks,
+                       y_end - y_start);
         }
     }
 }

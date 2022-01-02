@@ -72,6 +72,21 @@ inline MatrixBlock<T,IT,SIT> * block (Cgbr<T,IT,SIT> const * const A, IT i)
 }
 
 /*
+ * Return the offset of block column "i"
+ */
+template <class T, class IT, class SIT>
+inline IT get_block_column_offset(const Cgbr<T,IT,SIT> * A, IT i)
+{
+    return A->blockcol_offset[i];
+}
+
+template <class T, class IT, class SIT>
+inline IT get_block_row_offset(const Cgbr<T,IT,SIT> * A, IT i)
+{
+    return A->blockrow_offset[i];
+}
+
+/*
  * Returns the number of non-zeros in the `i`th block
  */
 template <class T, class IT, class SIT>

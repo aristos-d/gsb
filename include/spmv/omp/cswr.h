@@ -9,7 +9,7 @@ void spmv(
         T const * const __restrict x,
         T * const __restrict y)
 {
-    #pragma omp parallel for schedule(dynamic,1)
+    #pragma omp parallel for
     for (IT i=0; i<A->nwrows; i++) {
         IT wrow_offset = A->width * i;
         IT wrow_start = A->wrow_ptr[i];

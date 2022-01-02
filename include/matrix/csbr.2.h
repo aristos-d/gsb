@@ -47,6 +47,22 @@ template <class T, class IT>
 inline IT nonzeros(const Csbr2<T, IT> A){ return A.nnz; }
 
 /*
+ * Return the offset of block column "i"
+ */
+template <class T, class IT>
+inline IT get_block_column_offset(const Csbr2<T,IT> * A, IT i)
+{
+    return A->blockcol_offset[i];
+}
+
+template <class T, class IT>
+inline IT get_block_row_offset(const Csbr2<T,IT> * A, IT i)
+{
+    return A->blockrow_offset[i];
+}
+
+
+/*
  * SpMV routine for matrices in CSBR2 format. y vector MUST be already initialized.
  */
 template <class T, class IT>
