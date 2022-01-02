@@ -123,6 +123,11 @@ $(BINDIR)csbr2: src/drivers/blocked.cpp lib/common.a $(HEADERS)
 		-DMATRIXTYPE="Csbr2<float,uint32_t>" -DVALTYPE=float -DITYPE=uint32_t \
 		$< lib/common.a -o $@
 
+$(BINDIR)csbr3: src/drivers/block_static.cpp lib/common.a $(HEADERS)
+	$(CXX) $(FLAGS) \
+		-DMATRIXTYPE="Csbr3<float,uint32_t,uint8_t>" -DVALTYPE=float -DITYPE=uint32_t \
+		$< lib/common.a -o $@
+
 cgbr: $(BINDIR)cgbr $(BINDIR)cgbr2
 
 $(BINDIR)cgbr: src/drivers/blocked.cpp lib/common.a $(HEADERS)
