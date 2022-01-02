@@ -15,8 +15,8 @@ could probably be sufficient but no other compiler has been tested.
 ## License
 
 The licensing terms of this software library are described in LICENSE. These
-terms do not apply to the files in the subdirectories of code/dep/. The files
-in these subdirectories are works of others and are redistributed according to
+terms do not apply to the files in the subdirectories of dep/. The files in
+these subdirectories are works of others and are redistributed according to
 terms of their respective copyright owners. They are:
 
 * Intel for the parallel stable sort library
