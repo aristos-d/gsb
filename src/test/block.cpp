@@ -28,7 +28,7 @@ int main(int argc, char* argv[])
   float alpha = 1.0f, beta = 1.0f;
   VALUETYPE *x, *y;
 
-  Coo<VALUETYPE,INDEXTYPE> coo;
+  Coo<VALUETYPE,INDEXTYPE,INDEXTYPE> coo;
   Coo2<VALUETYPE,INDEXTYPE> coo2;
   BlockCoo<VALUETYPE,INDEXTYPE,SMALLINDEXTYPE> coo_si;
   Csr <VALUETYPE,INDEXTYPE> csr;

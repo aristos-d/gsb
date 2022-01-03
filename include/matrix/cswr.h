@@ -24,15 +24,6 @@ struct Cswr {
 #include "spmv/omp/cswr.h"
 
 /*
- * Get number of non-zeros
- */
-template <class T, class IT, class SIT>
-IT nonzeros (const Cswr<T,IT,SIT> * const A) { return A->nnz; }
-
-template <class T, class IT, class SIT>
-IT nonzeros (const Cswr<T,IT,SIT> A) { return A.nnz; }
-
-/*
  * Constructor from COO matrix
  */
 template <class NONZERO, class T, class IT, class SIT>

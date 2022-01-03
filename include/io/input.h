@@ -133,7 +133,7 @@ int read_mm_COO(COO<T,IT> * A, const char * filename)
  * negative number otherwise.
  */
 template <class T, class IT>
-int read_bin_COO(Coo<T, IT> * A, const char * file_row, const char * file_col, const char * file_val)
+int read_bin_COO(Coo<T,IT,IT> * A, const char * file_row, const char * file_col, const char * file_val)
 {
   T val;
   IT size, r, c;

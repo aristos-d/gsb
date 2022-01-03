@@ -25,16 +25,6 @@ struct Element {
 };
 
 /*
- * Structure representing a dense matrix, stored in classic C way.
- */
-template <class T, class IT>
-struct Dense {
-  T * val;
-  IT rows;
-  IT columns;
-};
-
-/*
  * Enumeration of all matrix types used for blocks.
  */
 enum MatrixType {

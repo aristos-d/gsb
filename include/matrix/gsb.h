@@ -2,19 +2,12 @@
 #define _GSB_H_
 
 #include "rt.h"
+#include "nonzeros.h"
 #include "spmv/omp/gsb.h"
 
 /*
- * Returns the number of non-zero elements of the matrix.
+ * Returns the number of non-zero elements of a block
  */
-template <class T, class IT, class SIT,
-          template <typename, typename, typename> class GSB>
-inline IT nonzeros (const GSB<T,IT,SIT> * A) { return A->nnz; }
-
-template <class T, class IT, class SIT,
-          template <typename, typename, typename> class GSB>
-inline IT nonzeros (const GSB<T,IT,SIT> A) { return A.nnz; }
-
 template <class T, class IT, class SIT,
           template <typename, typename, typename> class GSB>
 inline IT block_nonzeros (const GSB<T,IT,SIT> A, IT i) { return nonzeros(block(&A, i)); }

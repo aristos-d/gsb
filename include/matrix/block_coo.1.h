@@ -18,12 +18,6 @@ struct BlockCoo {
  * Getters/Setters
  */
 template <class T, class IT, class SIT>
-inline IT nonzeros(const BlockCoo<T,IT,SIT> * const A){ return A->nnz; }
-
-template <class T, class IT, class SIT>
-inline IT nonzeros(const BlockCoo<T,IT,SIT> A){ return A.nnz; }
-
-template <class T, class IT, class SIT>
 inline IT get_row_index(BlockCoo<T,IT,SIT> * A, IT index){ return A->I[index]; }
 
 template <class T, class IT, class SIT>

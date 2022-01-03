@@ -19,12 +19,6 @@ struct Coo3 {
  * Getters/Setters
  */
 template <class T, class IT>
-inline IT nonzeros(const Coo3<T, IT> * const A){ return A->nnz; }
-
-template <class T, class IT>
-inline IT nonzeros(const Coo3<T, IT> A){ return A.nnz; }
-
-template <class T, class IT>
 inline IT get_row_index(Coo3<T, IT> * A, IT index){ return A->elements[index].row; }
 
 template <class T, class IT>

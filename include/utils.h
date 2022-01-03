@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <numeric>
 #include <limits>
+#include <cassert>
 
 #include "typedefs.h"
 #include "common.h"

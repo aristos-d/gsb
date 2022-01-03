@@ -126,7 +126,7 @@ int Coo_to_Csr(Csr<T, IT> *A, NONZERO *nonzeros, IT rows, IT columns, IT nnz)
 }
 
 template <class T, class IT>
-int Coo_to_Csr(Csr<T, IT> *A, Coo<T, IT> * B)
+int Coo_to_Csr(Csr<T, IT> *A, Coo<T,IT,IT> * B)
 {
     return Coo_to_Csr(A, B->val, B->I, B->J, B->rows, B->columns, B->nnz);
 }

@@ -6,7 +6,7 @@
 #define _NO_CSB_ALIGNED_MALLOC_
 #include "common.h"
 #include "permute.h"
-#include "matrix/coo.h"
+#include "matrix/coo.3.h"
 #include "matrix/cgbr.2.h"
 #include "io/input.h"
 #include "common.h"
@@ -21,7 +21,6 @@ int main(int argc, char * argv[])
     INDEXTYPE * permutation, * inv_permutation;
     INDEXTYPE beta;
   
-    Coo<VALTYPE,INDEXTYPE> triplets;
     Coo3<VALTYPE,INDEXTYPE> coo;
     Csr<VALTYPE,INDEXTYPE> csr;   // Don't use MKL for this one!
     Cgbr2<VALTYPE,INDEXTYPE,SINDEXTYPE> cgbr;

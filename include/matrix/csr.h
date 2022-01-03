@@ -2,10 +2,7 @@
 #define _CSR_H_
 
 #include <stdio.h>
-#include <assert.h>
 
-#include "typedefs.h"
-#include "utils.h"
 #include "matrix/coo.1.h"
 #include "matrix/coo.2.h"
 #include "matrix/coo.3.h"

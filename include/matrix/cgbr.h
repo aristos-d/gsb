@@ -19,7 +19,7 @@
  */
 template <class T, class IT, class SIT>
 union Matrix{
-  Dense<T,IT> dense;
+  BlockDense<T,IT> dense;
   BlockCsr<T,IT,SIT> csr;
   BlockCoo<T,IT,SIT> coo;
 };

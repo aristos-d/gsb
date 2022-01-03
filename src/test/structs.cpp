@@ -25,8 +25,9 @@ int main(int argc, char * argv[])
   printf("Size of Triplet<double, uint16_t> : %lu\n", sizeof(Triplet<double, uint16_t>));
   printf("Size of Element<float, uint32_t> : %lu\n", sizeof(Element<float, uint32_t>));
   printf("Size of Element<double, uint32_t> : %lu\n", sizeof(Element<double, uint32_t>));
-  printf("Size of Coo<float, uint32_t> : %lu\n", sizeof(Coo<float, uint32_t>));
-  printf("Size of Coo<double, uint32_t> : %lu\n", sizeof(Coo<double, uint32_t>));
+  printf("Size of Coo<float, uint32_t, uint32_t> : %lu\n", sizeof(Coo<float, uint32_t, uint32_t>));
+  printf("Size of Coo<float, uint32_t, uint16_t> : %lu\n", sizeof(Coo<float, uint32_t, uint16_t>));
+  printf("Size of Coo<double, uint32_t, uint32_t> : %lu\n", sizeof(Coo<double, uint32_t, uint32_t>));
   printf("Size of BlockCoo<float, uint32_t> : %lu\n", sizeof(BlockCoo<float, uint32_t, uint32_t>));
   printf("Size of BlockCoo<double, uint32_t> : %lu\n", sizeof(BlockCoo<double, uint32_t, uint32_t>));
   printf("Size of Csr<float, uint32_t> : %lu\n", sizeof(Csr<float, uint32_t>));

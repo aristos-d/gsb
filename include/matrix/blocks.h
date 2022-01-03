@@ -3,90 +3,13 @@
 
 #include "typedefs.h"
 #include "utils.h"
-#include "matrix/coo.h"
+#include "matrix/base.h"
 #include "matrix/csr.h"
 #include "matrix/dense.h"
 #include "matrix/gsb.h"
-
-/*
- * Abstract block
- */
-template <typename T, typename IT>
-class BlockBase {
-    protected:
-        BlockBase() {}
-        BlockBase(IT _nnz) : nnz(_nnz) {}
-    public:
-        virtual ~BlockBase() {}
-        virtual void spmv_block (T const * const x, T * const y) const = 0;
-        IT nnz;
-};
-
-template <typename T, typename IT>
-inline IT nonzeros(BlockBase<T,IT> const * const block)
-{
-    return block->nnz;
-}
-
-template <typename T, typename IT>
-inline IT nonzeros(BlockBase<T,IT> const block)
-{
-    return block.nnz;
-}
-
-template <typename T, typename IT>
-inline void spmv (BlockBase<T,IT> const * const block, T const * const x, T * const y)
-{
-    block->spmv_block(x, y);
-}
-
-template <typename T, typename IT>
-inline void spmv_serial (BlockBase<T,IT> const * const block, T const * const x, T * const y)
-{
-    // Serial vs parallel SpMV is determined when the block is constructed.
-    block->spmv_block(x, y);
-}
+#include "matrix/coo.1.h"
 
 /* -------------------- Types of blocks -------------------- */
-
-/*
- *  COO block
- */
-template <typename T, typename IT, typename SIT>
-class BlockExtCoo : public BlockBase<T,IT> {
-    private:
-        SIT * ri;
-        SIT * ci;
-        T * v;
-
-    public:
-        BlockExtCoo(Element<T,IT> * array, IT nnz) : BlockBase<T,IT>(nnz)
-        {
-            ri = new SIT[nnz];
-            ci = new SIT[nnz];
-            v = new T[nnz];
-
-            sort_triplets_morton(array, nnz);
-
-            for (IT i=0; i<nnz; i++) {
-                ri[i] = array[i].row;
-                ci[i] = array[i].col;
-                v[i]  = array[i].val;
-            }
-        }
-
-        ~BlockExtCoo()
-        {
-            delete [] ri;
-            delete [] ci;
-            delete [] v;
-        }
-
-        void spmv_block (T const * const x, T * const y) const
-        {
-            spmv_coo (v, ri, ci, this->nnz, x, y);
-        }
-};
 
 /*
  *  CSR block
@@ -180,40 +103,6 @@ class BlockExtCsrCilk : public BlockBase<T,IT> {
         }
 };
 
-/*
- *  Dense block
- */
-template <typename T, typename IT>
-class BlockExtDense : public BlockBase<T,IT> {
-    private:
-        T * val;
-        IT M, N;
-
-    public:
-        BlockExtDense(Element<T,IT> * array, IT rows, IT columns, IT nnz)
-            : M(rows), N(columns), BlockBase<T,IT>(nnz)
-        {
-            IT pos;
-
-            val = new T[M*N]();
-
-            for (IT i=0; i<nnz; i++) {
-                pos = array[i].row * N + array[i].col;
-                val[pos] = array[i].val;
-            }
-        }
-
-        ~BlockExtDense()
-        {
-            delete [] val;
-        }
-
-        void spmv_block (T const * const x, T * const y) const
-        {
-            spmv_dense (val, M, N, x, y);
-        }
-};
-
 /* ----------------- Block Factory ----------------- */
 
 template <typename T, typename IT>
@@ -240,7 +129,7 @@ class BlockFactoryDefault : public BlockFactory<T,IT> {
         
             if (coo < 1.0f * csr) { 
                 // COO block
-                *target =  new BlockExtCoo<T,IT,SIT>(array, nnz);
+                *target =  new Coo<T,IT,SIT>(array, nnz);
                 return BLOCK_COO;
             } else if (csr < dense) { 
                 // CSR block
@@ -253,7 +142,7 @@ class BlockFactoryDefault : public BlockFactory<T,IT> {
                 }
             } else {    
                 // Dense block
-                *target = new BlockExtDense<T,IT>(array, rows, columns, nnz);
+                *target = new Dense<T,IT>(array, rows, columns, nnz);
                 return BLOCK_DENSE;
             }
         }

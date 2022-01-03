@@ -1,14 +1,15 @@
 #ifndef _COO_H_
 #define _COO_H_
 
+#include "nonzeros.h"
 #include "spmv/coo.h"
 
 /*
  * Generic method to set a point on any COO matrix
  */
 template <typename T, typename IT,
-          template <typename, typename> class COO>
-inline void set_point (COO<T, IT> * A, IT i, IT row, IT col, T val)
+          typename COO>
+inline void set_point (COO * A, IT i, IT row, IT col, T val)
 {
   set_row_index(A, i, row);
   set_column_index(A, i, col);
@@ -55,8 +56,8 @@ inline void spmv_coo(
  */
 template <typename T, typename IT,
           template <typename, typename> class COOSRC,
-          template <typename, typename> class COODST>
-int Coo_to_Coo(COODST<T,IT> * A, COOSRC<T,IT> * B)
+          typename COODST>
+int Coo_to_Coo(COODST * A, COOSRC<T,IT> * B)
 {
     A->rows = B->rows;
     A->columns = B->columns;
