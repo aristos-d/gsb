@@ -4,8 +4,8 @@
 #include <string.h>
 
 #include "common.h"
-#include "matrix/coo.h"
-#include "matrix/csr.h"
+#include "matrix/coo.3.h"
+#include "matrix/csr.1.h"
 #include "matrix/csr.2.h"
 #include "matrix/cswr.h"
 #include "matrix/csbr.h"

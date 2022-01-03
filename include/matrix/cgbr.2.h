@@ -5,8 +5,8 @@
 #include "blocks.h"
 #include "utils.h"
 #include "partition.h"
+#include "generic/gsb.h"
 #include "matrix/blocks.h"
-#include "matrix/gsb.h"
 
 /*
  * Version 2 of CGBR using abstract blocks

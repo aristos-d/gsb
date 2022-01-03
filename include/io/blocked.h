@@ -1,13 +1,11 @@
 #ifndef _IO_BLOCKED_H_
 #define _IO_BLOCKED_H_
-
-#include <assert.h>
-#include <stdio.h>
-#include <limits.h>
+#include <cassert>
+#include <cstdio>
+#include <climits>
 
 #include "common.h"
-#include "matrix/coo.h"
-#include "matrix/csr.h"
+#include "matrix/csr.1.h"
 #include "matrix/csbr.h"
 #include "matrix/csbr.2.h"
 #include "matrix/cgbr.h"

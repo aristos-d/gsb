@@ -1,12 +1,10 @@
 #ifndef _CSR_2_H_
 #define _CSR_2_H_
-
-#include <stdio.h>
-#include <assert.h>
+#include <cassert>
 
 #include "typedefs.h"
 #include "utils.h"
-#include "matrix/coo.h"
+#include "generic/coo.h"
 #include "spmv/csr.h"
 #include "spmv/omp/csr.h"
 

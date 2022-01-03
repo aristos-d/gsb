@@ -1,8 +1,10 @@
 #ifndef _CSBR_3_H_
 #define _CSBR_3_H_
 #include <limits>
-#include <assert.h>
+#include <cassert>
+#include <cstdio>
 
+#include "generic/nonzeros.h"
 #include "matrix/coo.3.h"
 
 /*
@@ -34,15 +36,6 @@ struct Csbr3 {
     bool balanced;
     BlockRowPartition<IT> * partition;
 };
-
-/*
- * Return the number of non-zero elements of the matrix
- */
-template <class T, class IT, class SIT>
-inline IT nonzeros (const Csbr3<T,IT,SIT> * A){ return A->nnz; }
-
-template <class T, class IT, class SIT>
-inline IT nonzeros (const Csbr3<T,IT,SIT> A){ return A.nnz; }
 
 /*
  * Return the offset of block column "i"

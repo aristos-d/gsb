@@ -1,16 +1,14 @@
 #ifndef _CSBR_2_H_
 #define _CSBR_2_H_
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cassert>
 #include <limits>
 #include <omp.h>
 
-#include "typedefs.h"
 #include "utils.h"
-#include "matrix/coo.h"
-#include "matrix/csr.h"
+#include "generic/csr.h"
+#include "matrix/coo.3.h"
 
 /*
  * CSR matrix containing CSR blocks of variable size.
@@ -36,15 +34,6 @@ struct Csbr2 {
   IT * col_ind;
   T * val;
 };
-
-/*
- * Returns the number of non-zero elements of the matrix.
- */
-template <class T, class IT>
-inline IT nonzeros(const Csbr2<T, IT> * A){ return A->nnz; }
-
-template <class T, class IT>
-inline IT nonzeros(const Csbr2<T, IT> A){ return A.nnz; }
 
 /*
  * Return the offset of block column "i"

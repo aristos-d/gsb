@@ -2,7 +2,7 @@
 #define _COO_3_H_
 
 #include "typedefs.h"
-#include "matrix/coo.h"
+#include "generic/coo.h"
 
 /*
  * Special COO structure for easier/faster conversion to blocked

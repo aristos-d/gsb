@@ -1,18 +1,18 @@
 #ifndef _CGBR_H_
 #define _CGBR_H_
-
-#include <stdlib.h>
-#include <stdio.h>
-#include <assert.h>
+#include <cstdlib>
+#include <cstdio>
+#include <cassert>
 
 #include "typedefs.h"
 #include "utils.h"
 #include "partition.h"
+#include "generic/gsb.h"
+#include "generic/nonzeros.h"
 #include "matrix/coo.3.h"
 #include "matrix/block_coo.1.h"
 #include "matrix/block_csr.h"
 #include "matrix/dense.h"
-#include "matrix/gsb.h"
 
 /*
  * Union of all matrix types used for blocks.

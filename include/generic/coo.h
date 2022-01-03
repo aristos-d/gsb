@@ -1,7 +1,7 @@
 #ifndef _COO_H_
 #define _COO_H_
 
-#include "nonzeros.h"
+#include "generic/nonzeros.h"
 #include "spmv/coo.h"
 
 /*

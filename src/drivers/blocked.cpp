@@ -1,7 +1,7 @@
-#include <stdlib.h>
-#include <stdio.h>
+#include <cstdlib>
+#include <cstdio>
 
-#include "matrix/coo.h"
+#include "matrix/coo.3.h"
 #include "matrix/csbr.h"
 #include "matrix/csbr.2.h"
 #include "matrix/csbr.3.h"

@@ -1,8 +1,8 @@
 #ifndef _GSB_H_
 #define _GSB_H_
+#include <cstdio>
 
-#include "rt.h"
-#include "nonzeros.h"
+#include "generic/nonzeros.h"
 #include "spmv/omp/gsb.h"
 
 /*

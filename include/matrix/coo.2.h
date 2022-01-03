@@ -4,7 +4,7 @@
 
 #include "typedefs.h"
 #include "test/utils.h"
-#include "matrix/coo.h"
+#include "generic/coo.h"
 
 /*
  * COO matrix as an array of triplets.

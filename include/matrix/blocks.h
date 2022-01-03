@@ -3,10 +3,10 @@
 
 #include "typedefs.h"
 #include "utils.h"
-#include "matrix/base.h"
-#include "matrix/csr.h"
+#include "generic/base.h"
+#include "generic/gsb.h"
+#include "generic/csr.h"
 #include "matrix/dense.h"
-#include "matrix/gsb.h"
 #include "matrix/coo.1.h"
 
 /* -------------------- Types of blocks -------------------- */

@@ -1,8 +1,9 @@
 #ifndef _CSR_1_H_
 #define _CSR_1_H_
 #include <iostream>
+#include <cassert>
 
-#include "matrix/csr.h"
+#include "generic/csr.h"
 
 /*
  * CSR matrix represented as an array of row pointers and two arrays for
@@ -119,17 +120,11 @@ int Coo_to_Csr(Csr<T, IT> * A, NONZERO *nonzeros,
 /*
  * Constructor wrappers
  */
-template <class NONZERO, class T, class IT>
-int Coo_to_Csr(Csr<T, IT> *A, NONZERO *nonzeros, IT rows, IT columns, IT nnz)
-{
-    return Coo_to_Csr(A, nonzeros, rows, columns, nnz, true, true);
-}
-
-template <class T, class IT>
-int Coo_to_Csr(Csr<T, IT> *A, Coo<T,IT,IT> * B)
-{
-    return Coo_to_Csr(A, B->val, B->I, B->J, B->rows, B->columns, B->nnz);
-}
+//template <class NONZERO, class T, class IT>
+//int Coo_to_Csr(Csr<T, IT> *A, NONZERO *nonzeros, IT rows, IT columns, IT nnz)
+//{
+//    return Coo_to_Csr(A, nonzeros, rows, columns, nnz, true, true);
+//}
 
 /*
  * Prints the matrix in a readable format. For debugging purposes only.

@@ -1,18 +1,18 @@
 #ifndef _CSBR_H_
 #define _CSBR_H_
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cassert>
 #include <limits>
 #include <omp.h>
 
 #include "typedefs.h"
 #include "utils.h"
+#include "partition.h"
+#include "generic/nonzeros.h"
+#include "matrix/csr.1.h"
 #include "matrix/coo.2.h"
 #include "matrix/coo.3.h"
-#include "matrix/csr.1.h"
-#include "partition.h"
 
 /*
  * CSR matrix containing CSR blocks of variable size or Compressed Sparse
@@ -52,15 +52,6 @@ inline IT block_nonzeros(const Csbr<T, IT> * A, IT i)
 {
     return A->blocks[i].row_ptr[A->blocks[i].rows];
 }
-
-/*
- * Returns the number of non-zero elements of the matrix.
- */
-template <class T, class IT>
-inline IT nonzeros(const Csbr<T, IT> * A){ return A->nnz; }
-
-template <class T, class IT>
-inline IT nonzeros(const Csbr<T, IT> A){ return A.nnz; }
 
 /*
  *

@@ -1,5 +1,8 @@
 #ifndef _SPMV_OMP_GSB_H_
 #define _SPMV_OMP_GSB_H_
+#include <omp.h>
+
+#include "rt.h"
 
 /*
  * SpMV routine that handles a chunk of a blockrow. May recursively call

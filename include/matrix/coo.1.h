@@ -3,8 +3,8 @@
 #include <iostream>
 
 #include "typedefs.h"
-#include "matrix/coo.h"
-#include "matrix/base.h"
+#include "generic/coo.h"
+#include "generic/base.h"
 
 /*
  * COO matrix as three arrays.
