@@ -41,40 +41,4 @@ enum MatrixType {
 };
 #define MATRIX_TYPE_NUM 10
 
-template <class IT>
-struct BlockRowPartition {
-  IT * chunks;
-  IT size;     // Size of array allocated
-  IT nchunks;  // Number of chunks in partition ( nchunks <= size )
-};
-
-
-/*
- * CSR matrix containing blocks of variable size and type BUT ONLY ONE TYPE or
- * Static Generalized Sparse Blocks
- */
-template <typename T, typename IT, typename SIT,
-          template <typename, typename, typename> class BLOCK>
-struct Sgsb {
-  BLOCK<T,IT,SIT> * blocks;
-  IT * blockrow_ptr;         // Indexes for blocks array
-  IT * blockcol_ind;
-
-  // Partitioning information
-  BlockRowPartition<IT> * partition;
-  bool balanced;
-
-  // Block size information
-  IT * blockrow_offset;
-  IT * blockcol_offset;
-  IT blockrows;
-  IT blockcols;
-  IT nnzblocks;
-
-  // Original size
-  IT rows;
-  IT columns;
-  IT nnz;
-};
-
 #endif

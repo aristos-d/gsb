@@ -1,11 +1,10 @@
 #ifndef _OUTPUT_H_
 #define _OUTPUT_H_
-
-#include <stdio.h>
+#include <cstdio>
 
 #include "mm_io/mm_io.h"
 #include "common.h"
-#include "matrix/coo.h"
+#include "matrix/coo.3.h"
 
 /*
  * Write binary data to a file.

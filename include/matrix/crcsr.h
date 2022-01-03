@@ -1,10 +1,8 @@
 #ifndef _CRCSR_H_
 #define _CRCSR_H_
+#include <cstdio>
+#include <cassert>
 
-#include <stdlib.h>
-#include <assert.h>
-
-#include "typedefs.h"
 #include "utils.h"
 #include "matrix/coo.2.h"
 #include "matrix/coo.3.h"

@@ -1,13 +1,13 @@
 #ifndef _BCSR_H_
 #define _BCSR_H_
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cassert>
 #include <limits>
 
-#include "typedefs.h"
+#include "partition.h"
 #include "utils.h"
+#include "generic/nonzeros.h"
 #include "matrix/coo.3.h"
 #include "matrix/csr.1.h"
 
@@ -40,15 +40,6 @@ struct Bcsr {
   IT * col_ind;
   T * val;
 };
-
-/*
- * Returns the number of non-zero elements of the matrix.
- */
-template <class T, class IT>
-inline IT nonzeros(const Bcsr<T, IT> * A){ return A->nnz; }
-
-template <class T, class IT>
-inline IT nonzeros(const Bcsr<T, IT> A){ return A.nnz; }
 
 /*
  * Returns the number of non-zero elements in a block of the matrix.

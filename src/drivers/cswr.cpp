@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "matrix/coo.h"
+#include "matrix/coo.2.h"
 #include "matrix/cswr.h"
 #include "io/input.h"
 #include "common.h"

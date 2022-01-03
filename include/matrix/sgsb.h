@@ -1,12 +1,40 @@
 #ifndef _SGSB_H_
 #define _SGSB_H_
-
-#include <cilk/cilk.h>
+#include <cstdio>
 
 #include "typedefs.h"
 #include "utils.h"
+#include "partition.h"
+#include "generic/gsb.h"
 #include "matrix/blocks.h"
-#include "matrix/gsb.h"
+
+/*
+ * CSR matrix containing blocks of variable size and type BUT ONLY ONE TYPE or
+ * Static Generalized Sparse Blocks
+ */
+template <typename T, typename IT, typename SIT,
+          template <typename, typename, typename> class BLOCK>
+struct Sgsb {
+  BLOCK<T,IT,SIT> * blocks;
+  IT * blockrow_ptr;         // Indexes for blocks array
+  IT * blockcol_ind;
+
+  // Partitioning information
+  BlockRowPartition<IT> * partition;
+  bool balanced;
+
+  // Block size information
+  IT * blockrow_offset;
+  IT * blockcol_offset;
+  IT blockrows;
+  IT blockcols;
+  IT nnzblocks;
+
+  // Original size
+  IT rows;
+  IT columns;
+  IT nnz;
+};
 
 // --------------------- Constructor --------------------- 
 

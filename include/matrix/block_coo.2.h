@@ -1,8 +1,9 @@
 #ifndef _BLOCK_COO_2_H
 #define _BLOCK_COO_2_H
+#include <cassert>
 
 #include "typedefs.h"
-#include "matrix/coo.h"
+#include "generic/coo.h"
 
 /*
  * Minimalistic version of COO (Coo2) to serve as a block of a larger matrix.
@@ -29,7 +30,6 @@ inline void spmv (
 /*
  * Contructor for a BlockCoo matrix. It is different from the others because it
  * also sorts the non-zeros in Morton order.
- * WARNING : Sorts the input array in-place.
  */
 template <class NONZERO, class T, class IT, class SIT>
 int Coo_to_Coo(BlockCoo2<T,IT,SIT> * A, NONZERO * array, IT nnz)

@@ -1,10 +1,8 @@
 #ifndef _CSWR_H_
 #define _CSWR_H_
+#include <cassert>
+#include <cstdio>
 
-#include <assert.h>
-#include <stdio.h>
-
-#include "typedefs.h"
 #include "utils.h"
 #include "matrix/coo.2.h"
 #include "matrix/coo.3.h"

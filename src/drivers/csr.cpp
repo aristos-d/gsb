@@ -1,7 +1,7 @@
-#include <stdio.h>
+#include <cstdio>
 
-#include "matrix/coo.h"
-#include "matrix/csr.h"
+#include "matrix/coo.2.h"
+#include "matrix/csr.1.h"
 #include "matrix/csr.2.h"
 #include "io/input.h"
 #include "common.h"

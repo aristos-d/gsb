@@ -1,11 +1,19 @@
 #ifndef _PARTITION_H_
 #define _PARTITION_H_
+#include <cstdlib>
 
-#include <stdlib.h>
-
-#include "typedefs.h"
 #include "rt.h"
-#include "matrix/csbr.h"
+
+/*
+ * A data structure used to partition block-rows of blocked sparse matrices so
+ * that we can have parallelism within the block-row.
+ */
+template <class IT>
+struct BlockRowPartition {
+  IT * chunks;
+  IT size;     // Size of array allocated
+  IT nchunks;  // Number of chunks in partition ( nchunks <= size )
+};
 
 /*
  * Partition the blockrow into chunks. Return number of chunks
@@ -90,7 +98,7 @@ void partition_init(GSB<T,IT> * A)
  */
 template <typename T, typename IT, typename SIT,
           template<typename, typename, typename> class GSB>
-void partition_destroy(GSB<T, IT, SIT> * A)
+void partition_destroy(GSB<T,IT,SIT> * A)
 {
     for (IT br=0; br<A->blockrows; br++) {
         partition_destroy(A->partition + br);
@@ -100,7 +108,7 @@ void partition_destroy(GSB<T, IT, SIT> * A)
 
 template <typename T, typename IT,
           template<typename, typename> class GSB>
-void partition_destroy(GSB<T, IT> * A)
+void partition_destroy(GSB<T,IT> * A)
 {
     for (IT br=0; br<A->blockrows; br++) {
         partition_destroy(A->partition + br);
