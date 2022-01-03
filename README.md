@@ -7,10 +7,39 @@ library is named. However, a number of other storage formats are implemented
 and hopefully the library could be useful to anyone interested in research
 related to the SpMV routine.
 
+The fastest way to test the library is to run the SpMV routine using multiple
+defined matrix formats. To do this, build the binary `bin/test/result` and run
+it with the filename of a sparse matrix as its argument:
+
+```
+$ make bin/test/result
+...
+
+$ ./bin/test/result ~/data/cage14.mtx
+```
+
+The binary (as most binaries built by the Makefile) accepts two input formats
+for matrices. The MatrixMarket format and a custom binary format (for filenames
+ending with `.bin`). The custom binary format is as follows:
+
+```
+INDEXTYPE number_of_rows
+INDEXTYPE number_of_columns
+INDEXTYPE number_of_nonzeros
+INDEXTYPE row_indeces[number_of_rows]
+INDEXTYPE column_indeces[number_of_columns]
+VALUETYPE nonzeros[number_of_nonzeros]
+```
+
+`INDEXTYPE` and `VALUETYPE` are defined at build time and are `uin32_t` and
+`float` by default.
+
+
 ## Requirements
 
 All executables are built with clang. Any compiler supporting OpenMP and C++11
 could probably be sufficient but no other compiler has been tested.
+
 
 ## License
 
