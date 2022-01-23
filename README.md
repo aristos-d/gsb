@@ -26,8 +26,8 @@ ending with `.bin`). The custom binary format is as follows:
 INDEXTYPE number_of_rows
 INDEXTYPE number_of_columns
 INDEXTYPE number_of_nonzeros
-INDEXTYPE row_indeces[number_of_rows]
-INDEXTYPE column_indeces[number_of_columns]
+INDEXTYPE row_indeces[number_of_nonzeros]
+INDEXTYPE column_indeces[number_of_nonzeros]
 VALUETYPE nonzeros[number_of_nonzeros]
 ```
 
