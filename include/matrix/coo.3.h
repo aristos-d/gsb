@@ -9,41 +9,28 @@
  * representations.
  */
 template <class T, class IT>
-struct Coo3 {
-  Element<T, IT> * elements;
-  IT rows, columns, nnz;
-  IT blockrows, blockcols, nnzblocks;
+struct Coo3
+{
+    Element<T, IT> * elements;
+    IT rows, columns, nnz;
+    IT blockrows, blockcols, nnzblocks;
+
+    IT nonzeros() { return nnz; }
+
+    /*
+     * Getters
+     */
+    IT get_row_index (IT i) { return elements[i].row; }
+    IT get_column_index (IT i) { return elements[i].col; }
+    T get_value (IT i) { return elements[i].val; }
+
+    /*
+     * Setters
+     */
+    void set_row_index (IT i, IT row) { elements[i].row = row; }
+    void set_column_index (IT i, IT column) { elements[i].col = column; }
+    void set_value (IT i, T val) { elements[i].val = val; }
 };
-
-/*
- * Getters/Setters
- */
-template <class T, class IT>
-inline IT get_row_index(Coo3<T, IT> * A, IT index){ return A->elements[index].row; }
-
-template <class T, class IT>
-inline IT get_column_index(Coo3<T, IT> * A, IT index){ return A->elements[index].col; }
-
-template <class T, class IT>
-inline T get_value(Coo3<T, IT> * A, IT index){ return A->elements[index].val; }
-
-template <class T, class IT>
-inline void set_row_index(Coo3<T, IT> * A, IT index, IT row)
-{
-    A->elements[index].row = row;
-}
-
-template <class T, class IT>
-inline void set_column_index(Coo3<T, IT> * A, IT index, IT column)
-{
-    A->elements[index].col = column;
-}
-
-template <class T, class IT>
-inline void set_value(Coo3<T, IT> * A, IT index, T val)
-{
-    A->elements[index].val = val;
-}
 
 /*
  * Sparse matrix - vector multiplication. Result is stored in y. Memory for y

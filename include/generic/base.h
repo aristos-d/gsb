@@ -5,7 +5,8 @@
  * Abstract block
  */
 template <typename T, typename IT>
-class BlockBase {
+class BlockBase
+{
     protected:
         BlockBase() {}
         BlockBase(IT _nnz) : nnz(_nnz) {}
@@ -13,6 +14,8 @@ class BlockBase {
         virtual ~BlockBase() {}
         virtual void spmv_block (T const * const x, T * const y) const = 0;
         IT nnz;
+
+        IT nonzeros() const { return nnz; }
 };
 
 template <typename T, typename IT>

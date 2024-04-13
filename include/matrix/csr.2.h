@@ -5,6 +5,7 @@
 #include "typedefs.h"
 #include "utils.h"
 #include "generic/coo.h"
+#include "generic/csr.h"
 #include "spmv/csr.h"
 #include "spmv/omp/csr.h"
 
@@ -13,20 +14,14 @@
  * column index pairs.
  */
 template <class T, class IT>
-struct Csr2 {
-  NonZero<T, IT> * nonzeros;
+struct Csr2
+{
+  NonZero<T, IT> * data;
   IT * row_ptr;
   IT rows, columns;
+
+  IT nonzeros() const { return row_ptr[rows]; }
 };
-
-/*
- * Get the number of non-zero elements of the matrix.
- */
-template <class T, class IT>
-inline IT nonzeros (const Csr2<T, IT> * A) { return A->row_ptr[A->rows]; }
-
-template <class T, class IT>
-inline IT nonzeros (const Csr2<T, IT> A) { return A.row_ptr[A.rows]; }
 
 /*
  * SpMV routine wrappers
@@ -37,7 +32,7 @@ void spmv (
         T const * const __restrict x,
         T * const __restrict y)
 {
-    spmv_csr2(A->row_ptr, A->nonzeros, A->rows, x, y);
+    spmv_csr2(A->row_ptr, A->data, A->rows, x, y);
 }
 
 template <class T, class IT>
@@ -46,7 +41,7 @@ void spmv_serial (
         T const * const __restrict x,
         T * const __restrict y)
 {
-    spmv_csr2_serial(A->row_ptr, A->nonzeros, A->rows, x, y);
+    spmv_csr2_serial(A->row_ptr, A->data, A->rows, x, y);
 }
 
 /*
@@ -57,30 +52,33 @@ void spmv_serial (
  *           true.
  */
 template <class NONZERO, class T, class IT>
-int Coo_to_Csr(Csr2<T, IT> * A, NONZERO * nonzeros,
+int Coo_to_Csr(Csr2<T, IT> * A, NONZERO * data_,
                IT rows, IT columns, IT nnz,
                bool isSorted, bool allocate)
 {
   A->rows = rows;
   A->columns = columns;
 
-  if (!isSorted) sort_triplets(nonzeros, nnz);
+  if (!isSorted) sort_triplets(data_, nnz);
 
   // Allocate memory and check
-  if (allocate) {
-    A->nonzeros = new NonZero<T,IT>[nnz];
+  if (allocate)
+  {
+    A->data = new NonZero<T,IT>[nnz];
   }
 
   A->row_ptr = new IT[rows + 1]();
 
-  for (IT i=0; i<nnz; i++) {
-    A->nonzeros[i].index = nonzeros[i].col;
-    A->nonzeros[i].val = nonzeros[i].val;
-    (A->row_ptr[nonzeros[i].row + 1])++;
+  for (IT i=0; i<nnz; i++)
+  {
+    A->data[i].index = data_[i].col;
+    A->data[i].val = data_[i].val;
+    (A->row_ptr[data_[i].row + 1])++;
   }
 
   // Calculate row pointers as the cumulative sum of row non-nonzeros
-  for (IT i=0; i<A->rows; i++) {
+  for (IT i=0; i<A->rows; i++)
+  {
     A->row_ptr[i+1] = A->row_ptr[i+1] + A->row_ptr[i];
   }
 
@@ -95,7 +93,7 @@ template <class T, class IT>
 void release(Csr2<T, IT> A)
 {
     delete [] A.row_ptr;
-    delete [] A.nonzeros;
+    delete [] A.data;
 }
 
 #endif

@@ -10,70 +10,56 @@
  * COO matrix as three arrays.
  */
 template <typename T, typename IT, typename SIT>
-class Coo : public BlockBase<T,IT> {
-    public:
-        SIT *I;
-        SIT *J;
-        T *val;
-        IT rows, columns;   // Not always used. Carefull
+struct Coo : public BlockBase<T,IT>
+{
+    SIT *I;
+    SIT *J;
+    T *val;
+    IT rows, columns;   // Not always used. Carefull
 
-        Coo(Element<T,IT> * array, IT nnz) : BlockBase<T,IT>(nnz)
+    Coo(Element<T,IT> * array, IT nnz) : BlockBase<T,IT>(nnz)
+    {
+        allocate(this, nnz);
+
+        sort_triplets_morton(array, nnz);
+
+        for (IT i=0; i<nnz; i++)
         {
-            allocate(this, nnz);
-
-            sort_triplets_morton(array, nnz);
-
-            for (IT i=0; i<nnz; i++) {
-                I[i] = array[i].row;
-                J[i] = array[i].col;
-                val[i]  = array[i].val;
-            }
+            I[i] = array[i].row;
+            J[i] = array[i].col;
+            val[i]  = array[i].val;
         }
+    }
 
-        Coo() {}    // We need this
+    Coo() {}    // We need this
 
-        ~Coo()
-        {
-            delete [] I;
-            delete [] J;
-            delete [] val;
-        }
+    ~Coo()
+    {
+        delete [] I;
+        delete [] J;
+        delete [] val;
+    }
 
-        void spmv_block (T const * const x, T * const y) const
-        {
-            spmv_coo (val, I, J, this->nnz, x, y);
-        }
+    void spmv_block (T const * const x, T * const y) const
+    {
+        spmv_coo (val, I, J, this->nnz, x, y);
+    }
+
+    /*
+     * Getters
+     */
+    IT get_row_index (IT i) { return I[i]; }
+    IT get_column_index (IT i) { return J[i]; }
+    T get_value (IT i) { return val[i]; }
+
+    /*
+     * Setters
+     */
+    void set_row_index (IT i, IT row) { I[i] = row; }
+    void set_column_index (IT i, IT column) { J[i] = column; }
+    void set_value (IT i, T val_) { val[i] = val_; }
 };
 
-/*
- * Getters/Setters
- */
-template <typename T, typename IT, typename SIT>
-inline IT get_row_index (Coo<T,IT,SIT> * A, IT i){ return A->I[i]; }
-
-template <typename T, typename IT, typename SIT>
-inline IT get_column_index (Coo<T,IT,SIT> * A, IT i){ return A->I[i]; }
-
-template <typename T, typename IT, typename SIT>
-inline T get_value (Coo<T,IT,SIT> * A, IT i){ return A->val[i]; }
-
-template <typename T, typename IT, typename SIT>
-inline void set_row_index (Coo<T,IT,SIT> * A, IT i, IT row)
-{
-    A->I[i] = row;
-}
-
-template <typename T, typename IT, typename SIT>
-inline void set_column_index (Coo<T,IT,SIT> * A, IT i, IT column)
-{
-    A->J[i] = column;
-}
-
-template <typename T, typename IT, typename SIT>
-inline void set_value (Coo<T,IT,SIT> * A, IT i, T val)
-{
-    A->val[i] = val;
-}
 
 /*
  * Sparse matrix - vector multiplication. Result is stored in y. Memory for y

@@ -2,7 +2,6 @@
 #define _GSB_H_
 #include <cstdio>
 
-#include "generic/nonzeros.h"
 #include "spmv/omp/gsb.h"
 
 /*
@@ -10,11 +9,11 @@
  */
 template <class T, class IT, class SIT,
           template <typename, typename, typename> class GSB>
-inline IT block_nonzeros (const GSB<T,IT,SIT> A, IT i) { return nonzeros(block(&A, i)); }
+inline IT block_nonzeros (const GSB<T,IT,SIT> A, IT i) { return block(&A, i)->nonzeros(); }
 
 template <class T, class IT, class SIT,
           template <typename, typename, typename> class GSB>
-inline IT block_nonzeros (const GSB<T,IT,SIT> * A, IT i) { return nonzeros(block(A, i)); }
+inline IT block_nonzeros (const GSB<T,IT,SIT> * A, IT i) { return block(A, i)->nonzeros(); }
 
 
 // ------------------------- Constructors -------------------------

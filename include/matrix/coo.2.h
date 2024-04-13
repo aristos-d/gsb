@@ -10,40 +10,27 @@
  * COO matrix as an array of triplets.
  */
 template <class T, class IT>
-struct Coo2 {
-  Triplet<T, IT> * triplets;
-  IT rows, columns, nnz;
+struct Coo2
+{
+    Triplet<T, IT> * triplets;
+    IT rows, columns, nnz;
+
+    IT nonzeros() const { return nnz; }
+
+    /*
+     * Getters
+     */
+    IT get_row_index (IT i) { return triplets[i].row; }
+    IT get_column_index (IT i) { return triplets[i].col; }
+    T get_value (IT i) { return triplets[i].val; }
+
+    /*
+     * Setters
+     */
+    void set_row_index (IT i, IT row) { triplets[i].row = row; }
+    void set_column_index (IT i, IT column) { triplets[i].col = column; }
+    void set_value (IT i, T val) { triplets[i].val = val; }
 };
-
-/*
- * Getters/Setters
- */
-template <class T, class IT>
-inline IT get_row_index(Coo2<T, IT> * A, IT index){ return A->triplets[index].row; }
-
-template <class T, class IT>
-inline IT get_column_index(Coo2<T, IT> * A, IT index){ return A->triplets[index].col; }
-
-template <class T, class IT>
-inline T get_value(Coo2<T, IT> * A, IT index){ return A->triplets[index].val; }
-
-template <class T, class IT>
-inline void set_row_index(Coo2<T, IT> * A, IT index, IT row)
-{
-    A->triplets[index].row = row;
-}
-
-template <class T, class IT>
-inline void set_column_index(Coo2<T, IT> * A, IT index, IT column)
-{
-    A->triplets[index].col = column;
-}
-
-template <class T, class IT>
-inline void set_value(Coo2<T, IT> * A, IT index, T val)
-{
-    A->triplets[index].val = val;
-}
 
 /*
  * Sparse matrix - vector multiplication. Result is stored in y. Memory for y

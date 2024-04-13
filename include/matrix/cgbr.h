@@ -8,7 +8,6 @@
 #include "utils.h"
 #include "partition.h"
 #include "generic/gsb.h"
-#include "generic/nonzeros.h"
 #include "matrix/coo.3.h"
 #include "matrix/block_coo.1.h"
 #include "matrix/block_csr.h"
@@ -18,7 +17,8 @@
  * Union of all matrix types used for blocks.
  */
 template <class T, class IT, class SIT>
-union Matrix{
+union Matrix
+{
   BlockDense<T,IT> dense;
   BlockCsr<T,IT,SIT> csr;
   BlockCoo<T,IT,SIT> coo;
@@ -28,9 +28,26 @@ union Matrix{
  * Generic matrix representing a block of a larger sparse matrix.
  */
 template <class T, class IT, class SIT>
-struct MatrixBlock{
+struct MatrixBlock
+{
   Matrix<T,IT,SIT> matrix;
   MatrixType type;
+
+  IT nonzeros() const
+  {
+    switch (type)
+    {
+        case BLOCK_COO :
+            return matrix.coo.nonzeros();
+        case BLOCK_CSR :
+            return matrix.csr.nonzeros();
+        case BLOCK_DENSE :
+            return matrix.dense.rows * matrix.dense.columns;
+        default:
+            fprintf(stderr, "Invalid block found!\n");
+            return 0;
+    }
+  }
 };
 
 /*
@@ -38,7 +55,8 @@ struct MatrixBlock{
  * Generalized Block Rows
  */
 template <class T, class IT, class SIT>
-struct Cgbr {
+struct Cgbr
+{
   MatrixBlock<T,IT,SIT> * blocks;
   IT * blockrow_ptr;         // Indexes for blocks array
   IT * blockcol_ind;
@@ -60,6 +78,8 @@ struct Cgbr {
   IT rows;
   IT columns;
   IT nnz;
+
+  IT nonzeros() const { return nnz; }
 };
 
 /*

@@ -9,9 +9,12 @@
  * Minimalistic version of COO (Coo2) to serve as a block of a larger matrix.
  */
 template <class T, class IT, class SIT>
-struct BlockCoo2 {
+struct BlockCoo2
+{
   Triplet<T,SIT> * triplets;
   IT nnz;
+
+  IT nonzeros() const { return nnz; }
 };
 
 /*

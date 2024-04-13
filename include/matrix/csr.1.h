@@ -10,23 +10,18 @@
  * non-zero values and column indexes.
  */
 template <class T, class IT>
-struct Csr {
+class Csr
+{
+public:
   T * val;
   IT * col_ind;
   IT * row_ptr;
   IT rows, columns;
   // In 64-bit machine, with 32-bit indices, adding column information does not
   // increase struct size due to padding. It is not technically necessary.
+
+  IT nonzeros() const { return row_ptr[rows]; }
 };
-
-/*
- * Get the number of non-zero elements of the matrix.
- */
-template <class T, class IT>
-inline IT nonzeros (Csr<T,IT> const * const A) { return A->row_ptr[A->rows]; }
-
-template <class T, class IT>
-inline IT nonzeros (Csr<T,IT> const A) { return A.row_ptr[A.rows]; }
 
 /*
  * SpMV routine wrappers

@@ -39,7 +39,7 @@ template <typename CSRTYPE>
 void print_info(CSRTYPE A)
 {
     printf("CSR matrix : ");
-    printf("%lu rows, %lu non-zeros\n", (unsigned long) A.rows, (unsigned long) nonzeros(A));
+    printf("%lu rows, %lu non-zeros\n", (unsigned long) A.rows, (unsigned long) A.nonzeros());
 }
 
 #endif

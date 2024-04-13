@@ -9,7 +9,6 @@
 #include "typedefs.h"
 #include "utils.h"
 #include "partition.h"
-#include "generic/nonzeros.h"
 #include "matrix/csr.1.h"
 #include "matrix/coo.2.h"
 #include "matrix/coo.3.h"
@@ -19,7 +18,8 @@
  * Block-Rows.
  */
 template <class T, class IT>
-struct Csbr {
+struct Csbr
+{
   Csr<T,IT> * blocks;
   IT * blockrow_ptr;         // Indices for blocks array
   IT * blockcol_ind;
@@ -42,6 +42,8 @@ struct Csbr {
   // Pointers to the large arrays
   IT * col_ind;
   T * val;
+
+  IT nonzeros () const { return nnz; }
 };
 
 /*
@@ -160,7 +162,8 @@ void Coo_to_Csbr(Csbr<T, IT> * A, Coo2<T, IT> * B,
   IT * counter = new IT[blockrows*blockcols]();
 
   // Count non-zeros of each block
-  for(IT i=0; i<nnz; i++){
+  for(IT i=0; i<nnz; i++)
+  {
     br = index_to_blockindex(blockrow_offset, blockrows, B->triplets[i].row);
     bc = index_to_blockindex(blockcol_offset, blockcols, B->triplets[i].col );
     counter[br*blockcols + bc]++;
@@ -189,11 +192,13 @@ void Coo_to_Csbr(Csbr<T, IT> * A, Coo2<T, IT> * B,
   IT block_index = 0;
   IT val_index = 0;
 
-  for(IT i=0; i<blockrows; i++){
+  for(IT i=0; i<blockrows; i++)
+  {
     br_offset = blockrow_offset[i];
     br_size = blockrow_offset[i + 1] - br_offset;
 
-    for(IT j=0; j<blockcols; j++){
+    for(IT j=0; j<blockcols; j++)
+    {
       block_nnz = counter[i*blockcols+j];
       if(block_nnz>0){
         bc_offset = blockcol_offset[j];
@@ -274,11 +279,13 @@ void Coo_to_Csbr(Csbr<T, IT> * A, Coo3<T, IT> * B,
   block_index = std::numeric_limits<IT>::max();
   prev_b = std::numeric_limits<IT>::max();
 
-  for(IT i=0; i<A->nnz; i++){
+  for (IT i=0; i<A->nnz; i++)
+  {
     b = B->elements[i].block;
 
     // Check if this is the begining of a new block
-    if(b != prev_b){
+    if (b != prev_b)
+    {
       block_index++;
       prev_b = b;
       br = b / blockcols;
@@ -315,13 +322,16 @@ void Coo_to_Csbr(Csbr<T, IT> * A, Coo3<T, IT> * B,
   DEBUG(puts("Data copied"));
 
   // Get row pointers from row non-zero counters
-  for(IT bi=0; bi<A->nnzblocks; bi++){
-    for(IT i=0; i<A->blocks[bi].rows; i++){
+  for (IT bi=0; bi<A->nnzblocks; bi++)
+  {
+    for (IT i=0; i<A->blocks[bi].rows; i++)
+    {
       A->blocks[bi].row_ptr[i+1] = A->blocks[bi].row_ptr[i+1] + A->blocks[bi].row_ptr[i];
     }
   }
 
-  for(br=0; br<A->blockrows; br++){
+  for (br=0; br<A->blockrows; br++)
+  {
     A->blockrow_ptr[br+1] = A->blockrow_ptr[br+1] + A->blockrow_ptr[br];
   }
 
@@ -348,14 +358,16 @@ void Coo_to_Csbr(Csbr<T, IT> * A, COOTYPE * B, IT br_size, IT bc_size)
 
   // Calculate block-row offsets
   blockrow_offset[0] = 0;
-  for(IT i=0; i<(blockrows - 1); i++){
+  for (IT i=0; i<(blockrows - 1); i++)
+  {
     blockrow_offset[i+1] = blockrow_offset[i] + br_size;
   }
   blockrow_offset[blockrows] = B->rows;
 
   // Calculate block-column offsets
   blockcol_offset[0] = 0;
-  for(IT i=0; i<(blockcols - 1); i++){
+  for (IT i=0; i<(blockcols - 1); i++)
+  {
     blockcol_offset[i+1] = blockcol_offset[i] + bc_size;
   }
   blockcol_offset[blockcols] = B->columns;

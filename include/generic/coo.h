@@ -1,7 +1,6 @@
 #ifndef _COO_H_
 #define _COO_H_
 
-#include "generic/nonzeros.h"
 #include "spmv/coo.h"
 
 /*
@@ -11,9 +10,9 @@ template <typename T, typename IT,
           typename COO>
 inline void set_point (COO * A, IT i, IT row, IT col, T val)
 {
-  set_row_index(A, i, row);
-  set_column_index(A, i, col);
-  set_value(A, i, val);
+  A->set_row_index(i, row);
+  A->set_column_index(i, col);
+  A->set_value(i, val);
 }
 
 /*
@@ -62,10 +61,10 @@ int Coo_to_Coo(COODST * A, COOSRC<T,IT> * B)
     A->rows = B->rows;
     A->columns = B->columns;
 
-    allocate(A, nonzeros(B));
+    allocate(A, B->nonzeros());
 
-    for (IT i=0; i<nonzeros(B); i++)
-        set_point(A, i, get_row_index(B,i), get_column_index(B,i), get_value(B, i));
+    for (IT i=0; i<B->nonzeros(); i++)
+        set_point(A, i, B->get_row_index(i), B->get_column_index(i), B->get_value(i));
 
     return 0;
 }
@@ -92,7 +91,7 @@ int Coo_to_Coo(COOTYPE * A, NONZERO * array, IT rows, IT columns, IT nnz)
 
   allocate(A, nnz);
 
-  for(IT i=0; i<nnz; i++)
+  for (IT i=0; i<nnz; i++)
       set_point(A, i, array[i].row, array[i].col, array[i].val);
 
   return 0;

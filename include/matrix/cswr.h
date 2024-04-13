@@ -11,12 +11,15 @@
  * Compressed Sparse Wide Rows. This is a failure.
  */
 template <class T, class IT, class SIT>
-struct Cswr {
+struct Cswr
+{
   T *val;
   SIT *row;
   IT *col;
   IT *wrow_ptr;
   IT rows, columns, nwrows, width, nnz;
+
+  IT nonzeros() const { return nnz; }
 };
 
 #include "spmv/omp/cswr.h"

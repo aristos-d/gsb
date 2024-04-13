@@ -14,7 +14,8 @@
  * CSR matrix containing CSR blocks of variable size.
  */
 template <class T, class IT>
-struct Csbr2 {
+struct Csbr2
+{
   IT * blockrow_ptr;         // Indices for row_ptr array
 
   // Block information
@@ -33,6 +34,8 @@ struct Csbr2 {
   IT ** row_ptr;
   IT * col_ind;
   T * val;
+
+  IT nonzeros() const { return nnz; }
 };
 
 /*
@@ -49,7 +52,6 @@ inline IT get_block_row_offset(const Csbr2<T,IT> * A, IT i)
 {
     return A->blockrow_offset[i];
 }
-
 
 /*
  * SpMV routine for matrices in CSBR2 format. y vector MUST be already initialized.
@@ -207,7 +209,6 @@ void print_info(Csbr2<T, IT> A)
   printf("\t%.4f%% non-zeros\n", 100 * (float) A.nnz / ( (float) A.rows * (float) A.columns));
   printf("\t%.4f%% non-zero blocks\n", 100 * (float) A.nnzblocks / ( (float) A.blockrows * (float) A.blockcols));
 }
-
 
 /*
  * Release SOME memory allocated for the matrix. This function only releases memory

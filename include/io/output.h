@@ -58,12 +58,13 @@ int write_mm_COO(COO<T,IT> * A, const char * filename)
   mm_write_banner(f, matcode);
   mm_write_mtx_crd_size(f, A->rows, A->columns, size);
 
-  // Write one point at the time. 
-  for (i=0; i<size; i++) {
-    r = get_row_index(A, i);
-    c = get_column_index(A, i);
-    val = get_value(A, i);
-    
+  // Write one point at the time.
+  for (i=0; i<size; i++)
+  {
+    r = A->get_row_index(i);
+    c = A->get_column_index(i);
+    val = A->get_value(i);
+
     // MM uses 1-based indexing
     fprintf(f, "%lu %lu %f\n", r+1, c+1, (double) val);
   }
@@ -102,26 +103,29 @@ int write_bin_COO(COO<T,IT> * A,
   }
 
   // Write row file
-  for (i=0; i<size; i++){
-    r = get_row_index(A, i);
+  for (i=0; i<size; i++)
+  {
+    r = A->get_row_index(i);
     fwrite(&r, sizeof(IT), 1, fr);
   }
   fclose(fr);
 
   // Write column file
-  for (i=0; i<size; i++){
-    c = get_column_index(A, i);
+  for (i=0; i<size; i++)
+  {
+    c = A->get_column_index(i);
     fwrite(&c, sizeof(IT), 1, fc);
   }
   fclose(fc);
 
   // Write value file
-  for (i=0; i<size; i++){
-    val = get_value(A, i);
+  for (i=0; i<size; i++)
+  {
+    val = A->get_value(i);
     fwrite(&val, sizeof(T), 1, fv);
   }
   fclose(fv);
-  
+
   return 0;
 }
 
@@ -142,28 +146,29 @@ int write_bin_COO(COO<T,IT> A, const char * filename)
         fprintf(stderr, "Cannot open output file.\n");
         return -1;
     }
-  
+
     // Header section
     fwrite(&(A.rows), sizeof(IT), 1, f);
     fwrite(&(A.columns), sizeof(IT), 1, f);
     fwrite(&(A.nnz), sizeof(IT), 1, f);
-  
+
     // Data section
-    for (IT i=0; i<A.nnz; i++) {
-        buffer = get_row_index(&A, i);
+    for (IT i=0; i<A.nnz; i++)
+    {
+        buffer = A.get_row_index(i);
         fwrite(&buffer, sizeof(IT), 1, f);
     }
 
     for (IT i=0; i<A.nnz; i++) {
-        buffer = get_column_index(&A, i);
+        buffer = A.get_column_index(i);
         fwrite(&buffer, sizeof(IT), 1, f);
     }
 
     for (IT i=0; i<A.nnz; i++) {
-        vbuffer = get_value(&A, i);
+        vbuffer = A.get_value(i);
         fwrite(&vbuffer, sizeof(T), 1, f);
     }
-  
+
     fclose(f);
     return 0;
 }
@@ -191,7 +196,8 @@ int write_bin_blocked(Coo3<T, IT> A, const char * filename)
   fwrite(&(A.nnzblocks), sizeof(IT), 1, f);
 
   // Data section
-  for(IT i=0; i<A.nnz; i++){
+  for(IT i=0; i<A.nnz; i++)
+  {
     fwrite(&(A.elements[i].block) , sizeof(IT), 1, f);
     fwrite(&(A.elements[i].row) , sizeof(IT), 1, f);
     fwrite(&(A.elements[i].col) , sizeof(IT), 1, f);

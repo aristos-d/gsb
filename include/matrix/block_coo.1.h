@@ -1,17 +1,20 @@
 #ifndef _BLOCK_COO_1_H
 #define _BLOCK_COO_1_H
 
-#include <assert.h>
+#include <cassert>
 
 /*
  * Minimalistic version of COO to serve as a block of a larger matrix.
  */
 template <class T, class IT, class SIT>
-struct BlockCoo {
+struct BlockCoo
+{
   T * val;
   SIT * I;
   SIT * J;
   IT nnz;
+
+  IT nonzeros() const { return nnz; }
 };
 
 /*

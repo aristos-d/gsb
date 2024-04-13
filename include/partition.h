@@ -9,7 +9,8 @@
  * that we can have parallelism within the block-row.
  */
 template <class IT>
-struct BlockRowPartition {
+struct BlockRowPartition
+{
   IT * chunks;
   IT size;     // Size of array allocated
   IT nchunks;  // Number of chunks in partition ( nchunks <= size )
@@ -27,7 +28,8 @@ IT partition_blockrow(const BLOCKMATRIX * A, BlockRowPartition<IT> * partition, 
     partition->chunks = (IT *) malloc(INITPARTITION * sizeof(IT));
     partition->chunks[0] = start;
 
-    for (b=start; b<end; b++) {
+    for (b=start; b<end; b++)
+    {
       nnz += block_nonzeros(A, b);
       
       if (nnz>min_nnz && b<end-1) {  // Break chunk

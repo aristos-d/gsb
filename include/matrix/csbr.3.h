@@ -4,14 +4,14 @@
 #include <cassert>
 #include <cstdio>
 
-#include "generic/nonzeros.h"
 #include "matrix/coo.3.h"
 
 /*
  * CSR matrix containing COO blocks of fixed size.
  */
 template <class T, class IT, class SIT>
-struct Csbr3 {
+struct Csbr3
+{
     IT * block_ptr;     // Indices for actual data arrays
     IT * blockcol_ind;
     IT * blockrow_ptr;  // Indices for block_ptr
@@ -35,6 +35,8 @@ struct Csbr3 {
     // Partitioning data
     bool balanced;
     BlockRowPartition<IT> * partition;
+
+    IT nonzeros() const { return nnz; }
 };
 
 /*

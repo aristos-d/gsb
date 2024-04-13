@@ -6,23 +6,17 @@
  * non-zero values and column indexes.
  */
 template <class T, class IT, class SIT>
-struct BlockCsr {
+struct BlockCsr
+{
   T * val;
   SIT * col_ind;
   IT * row_ptr;
   IT rows, columns;
   // In 64-bit machine, with 32-bit indices, adding column information does not
   // increase struct size due to padding. It is not technically necessary.
+
+  IT nonzeros() const { return row_ptr[rows]; }
 };
-
-/*
- * Get the number of non-zero elements of the matrix.
- */
-template <class T, class IT, class SIT>
-inline IT nonzeros (BlockCsr<T,IT,SIT> const * const A) { return A->row_ptr[A->rows]; }
-
-template <class T, class IT, class SIT>
-inline IT nonzeros (BlockCsr<T,IT,SIT> const A) { return A.row_ptr[A.rows]; }
 
 /*
  * SpMV routine wrappers
@@ -55,21 +49,23 @@ int Coo_to_Csr(BlockCsr<T,IT,SIT> * A, NONZERO * nonzeros,
   A->rows = rows;
   A->columns = columns;
 
-  if(!isSorted) sort_triplets(nonzeros, nnz);
+  if (!isSorted) sort_triplets(nonzeros, nnz);
 
   // Allocate memory
   A->val = new T[nnz];
   A->col_ind = new SIT[nnz];
   A->row_ptr = new IT[rows+1]();
 
-  for (IT i=0; i<nnz; i++) {
+  for (IT i=0; i<nnz; i++)
+  {
     A->col_ind[i] = nonzeros[i].col;
     A->val[i] = nonzeros[i].val;
     (A->row_ptr[nonzeros[i].row + 1])++;
   }
 
   // Calculate row pointers as the cumulative sum of row non-nonzeros
-  for (IT i=0; i<A->rows; i++) {
+  for (IT i=0; i<A->rows; i++)
+  {
     A->row_ptr[i+1] = A->row_ptr[i+1] + A->row_ptr[i];
   }
 

@@ -5,19 +5,20 @@
 
 template <class MATRIX, class T>
 void benchmark_spmv_core (
-        MATRIX A, unsigned iterations,
+        MATRIX const& A, unsigned iterations,
         char const *method,
         void (*print)(char const *, unsigned long, unsigned long, double *))
 {
     T *x, *y;
     double *t;
-    
+
     vector_random(&x, A.columns);
     vector_zero(&y, A.rows);
     t = new double[iterations];
-    
-    spmv(&A, x, y); 
-    for (unsigned i=0; i<iterations; i++) { 
+
+    spmv(&A, x, y); // Warm-up the cache.
+    for (unsigned i=0; i<iterations; i++)
+    {
         auto start = std::chrono::high_resolution_clock::now();
         spmv(&A, x, y);
         auto end = std::chrono::high_resolution_clock::now();
@@ -25,7 +26,7 @@ void benchmark_spmv_core (
         t[i] = lap.count();
     }
 
-    print(method, nonzeros(A), iterations, t);
+    print(method, A.nonzeros(), iterations, t);
 
     // Free memory
     vector_release(y);

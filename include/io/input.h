@@ -1,8 +1,8 @@
 #ifndef _INPUT_H_
 #define _INPUT_H_
 
-#include <assert.h>
-#include <stdio.h>
+#include <cassert>
+#include <cstdio>
 
 #include "mm_io/mm_io.h"
 #include "common.h"
@@ -220,37 +220,42 @@ int read_bin_COO(COO<T, IT> * A, const char * file_row, const char * file_col, c
     return -1;
   }
 
-  for (IT i=0; i<size; i++) {
+  for (IT i=0; i<size; i++)
+  {
     counter += fread(&buffer, sizeof(IT), 1, fr);
-    set_row_index(A, i, buffer);
+    A->set_row_index(i, buffer);
   }
 
   fclose(fr);
 
   // Read column file
   fc = fopen(file_col, "rb");
-  if (fc == NULL) {
+  if (fc == NULL)
+  {
     fprintf(stderr, "Cannot open column file.\n");
     return -1;
   }
 
-  for (IT i=0; i<size; i++){
+  for (IT i=0; i<size; i++)
+  {
     counter += fread(&buffer, sizeof(IT), 1, fc);
-    set_column_index(A, i, buffer);
+    A->set_column_index(i, buffer);
   }
 
   fclose(fc);
 
   // Read value file
   fv = fopen(file_val, "rb");
-  if (fv == NULL) {
+  if (fv == NULL)
+  {
     fprintf(stderr, "Cannot open values file.\n");
     return -1;
   }
 
-  for (IT i=0; i<size; i++) {
+  for (IT i=0; i<size; i++)
+  {
     counter += fread(&vbuffer, sizeof(T), 1, fv);
-    set_value(A, i, vbuffer);
+    A->set_value(i, vbuffer);
   }
   
   fclose(fc);
@@ -294,22 +299,26 @@ int read_bin_COO(COO<T,IT> * A, const char * filename)
 
     // Reading rest of the file
     counter = 0;
-    for (IT i=0; i<A->nnz; i++) {
+    for (IT i=0; i<A->nnz; i++)
+    {
         counter += fread(&buffer, sizeof(IT), 1, f);
-        set_row_index(A, i, buffer);
+        A->set_row_index(i, buffer);
     }
 
-    for (IT i=0; i<A->nnz; i++) {
+    for (IT i=0; i<A->nnz; i++)
+    {
         counter += fread(&buffer, sizeof(IT), 1, f);
-        set_column_index(A, i, buffer);
+        A->set_column_index(i, buffer);
     }
 
-    for (IT i=0; i<A->nnz; i++) {
+    for (IT i=0; i<A->nnz; i++)
+    {
         counter += fread(&vbuffer, sizeof(T), 1, f);
-        set_value(A, i, vbuffer);
+        A->set_value(i, vbuffer);
     }
 
-    if (counter != 3 * A->nnz) {
+    if (counter != 3 * A->nnz)
+    {
         fprintf(stderr, "Failed to read matrix.\n");
         return -4;
     }

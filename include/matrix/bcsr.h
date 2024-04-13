@@ -7,7 +7,6 @@
 
 #include "partition.h"
 #include "utils.h"
-#include "generic/nonzeros.h"
 #include "matrix/coo.3.h"
 #include "matrix/csr.1.h"
 
@@ -16,7 +15,8 @@
  * Rows
  */
 template <class T, class IT>
-struct Bcsr {
+struct Bcsr
+{
   // Block information
   IT * blockrow_offset;
   IT * blockcol_offset;
@@ -39,6 +39,8 @@ struct Bcsr {
   // Pointers to the large arrays
   IT * col_ind;
   T * val;
+
+  IT nonzeros() const { return nnz; }
 };
 
 /*
