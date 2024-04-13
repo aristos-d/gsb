@@ -16,67 +16,66 @@
 template <class T, class IT>
 struct Csbr2
 {
-  IT * blockrow_ptr;         // Indices for row_ptr array
+    IT * blockrow_ptr;         // Indices for row_ptr array
 
-  // Block information
-  IT * blockrow_offset;
-  IT * blockcol_offset;
-  IT blockrows;
-  IT blockcols;
-  IT nnzblocks;
+    // Block information
+    IT * blockrow_offset;
+    IT * blockcol_offset;
+    IT blockrows;
+    IT blockcols;
+    IT nnzblocks;
 
-  // Original size
-  IT rows;
-  IT columns;
-  IT nnz;
-
-  // Pointers to the large arrays
-  IT ** row_ptr;
-  IT * col_ind;
-  T * val;
-
-  IT nonzeros() const { return nnz; }
-};
-
-/*
- * Return the offset of block column "i"
- */
-template <class T, class IT>
-inline IT get_block_column_offset(const Csbr2<T,IT> * A, IT i)
-{
-    return A->blockcol_offset[i];
-}
-
-template <class T, class IT>
-inline IT get_block_row_offset(const Csbr2<T,IT> * A, IT i)
-{
-    return A->blockrow_offset[i];
-}
-
-/*
- * SpMV routine for matrices in CSBR2 format. y vector MUST be already initialized.
- */
-template <class T, class IT>
-void spmv(const Csbr2<T, IT> * const A, const T * __restrict x, T * __restrict y)
-{
-  // For each block row
-  #pragma omp parallel for schedule(dynamic,1)
-  for (IT bi=0; bi<A->blockrows; bi++) {
+    // Original size
     IT rows;
-    IT blockrow_start, blockrow_end;
-    IT y_offset;
+    IT columns;
+    IT nnz;
 
-    y_offset = A->blockrow_offset[bi];
-    rows = A->blockrow_offset[bi+1] - y_offset;
-    blockrow_start = A->blockrow_ptr[bi];
-    blockrow_end = A->blockrow_ptr[bi+1];
+    // Pointers to the large arrays
+    IT ** row_ptr;
+    IT * col_ind;
+    T * val;
 
-    // For every block in block row
-    for (IT k=blockrow_start; k<blockrow_end; k++) {
-      spmv_csr_serial ( A->row_ptr[k], A->col_ind, A->val, rows, x, y + y_offset);
+    IT nonzeros() const { return nnz; }
+
+    /*
+     * Return the offset of block column "i"
+     */
+    IT get_block_column_offset(IT i) const
+    {
+        return blockcol_offset[i];
     }
-  }
-}
+
+    IT get_block_row_offset(IT i) const
+    {
+        return blockrow_offset[i];
+    }
+
+    /*
+     * SpMV routine for matrices in CSBR2 format. y vector MUST be already initialized.
+     */
+    void spmv(const T * __restrict x, T * __restrict y) const
+    {
+      // For each block row
+      #pragma omp parallel for schedule(dynamic,1)
+      for (IT bi=0; bi<blockrows; bi++)
+      {
+        IT rows;
+        IT blockrow_start, blockrow_end;
+        IT y_offset;
+
+        y_offset = blockrow_offset[bi];
+        rows = blockrow_offset[bi+1] - y_offset;
+        blockrow_start = blockrow_ptr[bi];
+        blockrow_end = blockrow_ptr[bi+1];
+
+        // For every block in block row
+        for (IT k=blockrow_start; k<blockrow_end; k++)
+        {
+          spmv_csr_serial(row_ptr[k], col_ind, val, rows, x, y + y_offset);
+        }
+      }
+    }
+};
 
 /*
 Construct a CSBR2 matrix from a Coo3 matrix.
@@ -91,7 +90,7 @@ void Coo_to_Csbr(Csbr2<T,IT> * A, Coo3<T,IT> * B,
   IT b, prev_b;
 
   // Sort triplets according to block-row, block-column, row, column
-  calculate_block_id(B->elements, B->nnz, blockrow_offset, blockrows, blockcol_offset, blockcols);  
+  calculate_block_id(B->elements, B->nnz, blockrow_offset, blockrows, blockcol_offset, blockcols);
   sort_elements_blocks(B->elements, B->nnz);
   DEBUG(puts("Sorting complete"));
 
@@ -102,7 +101,7 @@ void Coo_to_Csbr(Csbr2<T,IT> * A, Coo3<T,IT> * B,
   A->blockcols = blockcols;
   A->blockrow_offset = blockrow_offset;
   A->blockcol_offset = blockcol_offset;
-  A->nnzblocks = count_blocks(B->elements, B->nnz); 
+  A->nnzblocks = count_blocks(B->elements, B->nnz);
 
   // Sanity checks on block sizes
   assert(blockrows <= B->rows);
@@ -119,7 +118,8 @@ void Coo_to_Csbr(Csbr2<T,IT> * A, Coo3<T,IT> * B,
   block_index = std::numeric_limits<IT>::max();
   prev_b = std::numeric_limits<IT>::max();
 
-  for (IT i=0; i<A->nnz; i++) {
+  for (IT i=0; i<A->nnz; i++)
+  {
     b = B->elements[i].block;
 
     // Check if this is the begining of a new block
@@ -133,10 +133,10 @@ void Coo_to_Csbr(Csbr2<T,IT> * A, Coo3<T,IT> * B,
 
       block_index++;
       prev_b = b;
-      
+
       // CSR block initialize and block meta data
       A->blockrow_ptr[br+1]++;
-      A->row_ptr[block_index] = (IT *) calloc(br_size + 1, sizeof(IT));      
+      A->row_ptr[block_index] = (IT *) calloc(br_size + 1, sizeof(IT));
     }
 
     assert(B->elements[i].row >= br_offset);
@@ -149,14 +149,16 @@ void Coo_to_Csbr(Csbr2<T,IT> * A, Coo3<T,IT> * B,
     A->val[i] = B->elements[i].val;
   }
 
-  for (br=0; br<A->blockrows; br++) {
+  for (br=0; br<A->blockrows; br++)
+  {
     A->blockrow_ptr[br+1] = A->blockrow_ptr[br+1] + A->blockrow_ptr[br];
   }
 
   // Get row pointers by accumulating row non-zero counts
 
   IT nnz_count = 0;
-  for (IT br=0; br<blockrows; br++) {
+  for (IT br=0; br<blockrows; br++)
+  {
     IT block_size;
     IT blockrow_start, blockrow_end;
 
@@ -165,9 +167,11 @@ void Coo_to_Csbr(Csbr2<T,IT> * A, Coo3<T,IT> * B,
     blockrow_end = A->blockrow_ptr[br+1];
 
     // For every block in block row
-    for (IT k=blockrow_start; k<blockrow_end; k++) {
+    for (IT k=blockrow_start; k<blockrow_end; k++)
+    {
       A->row_ptr[k][0] = nnz_count;
-      for (IT i=0; i<block_size; i++) {
+      for (IT i=0; i<block_size; i++)
+      {
         A->row_ptr[k][i+1] = A->row_ptr[k][i+1] + A->row_ptr[k][i];
       }
       nnz_count = A->row_ptr[k][block_size];
@@ -190,7 +194,7 @@ void Coo_to_Csbr(Csbr2<T, IT> * A, COO<T,IT> * B, IT br_size, IT bc_size)
 
 template <class T, class IT, template<typename, typename> class COO>
 void Coo_to_Blocked(Csbr2<T,IT> * A, COO<T,IT> * B,
-                    IT * blockrow_offset, IT blockrows, 
+                    IT * blockrow_offset, IT blockrows,
                     IT * blockcol_offset, IT blockcols)
 {
     Coo_to_Csbr(A, B, blockrow_offset, blockrows, blockcol_offset, blockcols);

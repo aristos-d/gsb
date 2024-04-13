@@ -72,7 +72,7 @@ int main(int argc, char* argv[])
 
   // Time spmv with CSR matrix
   tick();
-  spmv(&csr, x, y1);
+  csr.spmv(x, y1);
   t = tock();
   printf("spmv : %f sec\n", t);
 
@@ -88,7 +88,7 @@ int main(int argc, char* argv[])
 
   // Time spmv with CSR matrix
   tick();
-  spmv(&csr2, x, y2);
+  csr2.spmv(x, y2);
   t = tock();
   printf("spmv : %f sec\n", t);
 
@@ -110,7 +110,7 @@ int main(int argc, char* argv[])
 
   // Time spmv with CSWR matrix
   tick();
-  spmv(&cswr, x, y2);
+  cswr.spmv(x, y2);
   t = tock();
   printf("spmv : %f sec\n", t);
 
@@ -132,7 +132,7 @@ int main(int argc, char* argv[])
 
   // Time spmv with CSBR matrix
   tick();
-  spmv(&csbr, x, y2);
+  csbr.spmv(x, y2);
   t = tock();
   printf("spmv : %f sec\n", t);
 
@@ -154,7 +154,7 @@ int main(int argc, char* argv[])
 
   // Time spmv with CSBR(2) matrix
   tick();
-  spmv(&csbr2, x, y2);
+  csbr2.spmv(x, y2);
   t = tock();
   printf("spmv : %f sec\n", t);
 
@@ -182,7 +182,7 @@ int main(int argc, char* argv[])
 
   // Time spmv with CGBR matrix
   tick();
-  spmv(&cgbr, x, y2);
+  cgbr.spmv(x, y2);
   t = tock();
   printf("spmv : %f sec\n", t);
 
@@ -207,7 +207,7 @@ int main(int argc, char* argv[])
 
   // Time spmv with CGBR matrix
   tick();
-  spmv(&cgbr_si, x, y2);
+  cgbr_si.spmv(x, y2);
   t = tock();
   printf("spmv : %f sec\n", t);
 
@@ -232,7 +232,7 @@ int main(int argc, char* argv[])
 
   // Time spmv with CGBR matrix
   tick();
-  spmv(&cgbr2, x, y2);
+  cgbr2.spmv(x, y2);
   t = tock();
   printf("spmv : %f sec\n", t);
 

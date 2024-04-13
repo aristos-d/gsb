@@ -11,24 +11,20 @@
 template <class T, class IT, class SIT>
 struct BlockCoo2
 {
-  Triplet<T,SIT> * triplets;
-  IT nnz;
+    Triplet<T,SIT> * triplets;
+    IT nnz;
 
-  IT nonzeros() const { return nnz; }
+    IT nonzeros() const { return nnz; }
+
+    /*
+     * Sparse matrix - vector multiplication. Result is stored in y. Memory for
+     * y should already be allocated and initialized.
+     */
+    void spmv(const T * __restrict x, T * __restrict y) const
+    {
+        spmv_coo(triplets, nnz, x, y);
+    }
 };
-
-/*
- * Sparse matrix - vector multiplication. Result is stored in y. Memory for y
- * should already be allocated and initialized.
- */
-template <class T, class IT, class SIT>
-inline void spmv (
-        const BlockCoo2<T,IT,SIT> * const A,
-        const T * __restrict x,
-        T * __restrict y)
-{
-    spmv_coo(A->triplets, A->nnz, x, y);
-}
 
 /*
  * Contructor for a BlockCoo matrix. It is different from the others because it

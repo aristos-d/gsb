@@ -34,7 +34,7 @@ int main(int argc, char* argv[])
   Csr <VALUETYPE,INDEXTYPE> csr;
   Csr2<VALUETYPE,INDEXTYPE> csr2;
   BlockCsr<VALUETYPE,INDEXTYPE,SMALLINDEXTYPE> csr_si;
-  Dense<VALUETYPE,INDEXTYPE> dense;
+  DenseSerial<VALUETYPE,INDEXTYPE> dense;
 
   if (argc < 2) {
     fprintf(stderr, "Usage: %s [binary matrix filename(s)]\n", argv[0]);
@@ -67,19 +67,19 @@ int main(int argc, char* argv[])
     /* ----------------------- Coo ----------------------- */
     Coo_to_Coo(&coo, &coo2);
 
-    BENCH_AVG( spmv(&coo, x, y), ITERATIONS, t_avg );
+    BENCH_AVG( coo.spmv(x, y), ITERATIONS, t_avg );
     printf("%e, ", t_avg); fflush(stdout);
 
     /* ----------------------- Coo2 ----------------------- */
     
-    BENCH_AVG( spmv(&coo2, x, y), ITERATIONS, t_avg );
+    BENCH_AVG( coo2.spmv(x, y), ITERATIONS, t_avg );
     printf("%e, ", t_avg); fflush(stdout);
 
     /* --------------------- Coo (SI) --------------------- */
 
     Coo_to_Coo(&coo_si, coo2.triplets, coo2.nnz);
     
-    BENCH_AVG( spmv(&coo_si, x, y), ITERATIONS, t_avg );
+    BENCH_AVG( coo_si.spmv(x, y), ITERATIONS, t_avg );
     printf("%e, ", t_avg); fflush(stdout);
 
     release(coo_si);
@@ -88,13 +88,13 @@ int main(int argc, char* argv[])
     /* ----------------------- Csr ------------------------ */
     Coo_to_Csr(&csr, &coo2);
 
-    BENCH_AVG( spmv_serial(&csr, x, y), ITERATIONS, t_avg );
+    BENCH_AVG( csr.spmv_serial(x, y), ITERATIONS, t_avg );
     printf("%e, ", t_avg); fflush(stdout);
 
     /* ----------------------- Csr2 ----------------------- */
     Coo_to_Csr(&csr2, &coo2);
 
-    BENCH_AVG( spmv_serial(&csr2, x, y), ITERATIONS, t_avg );
+    BENCH_AVG( csr2.spmv_serial(x, y), ITERATIONS, t_avg );
     printf("%e, ", t_avg); fflush(stdout);
 
     release(csr2);
@@ -102,7 +102,7 @@ int main(int argc, char* argv[])
     /* ----------------------- Csr (SI) ------------------- */
     Coo_to_Csr(&csr_si, coo2.triplets, coo2.rows, coo2.columns, coo2.nnz);
 
-    BENCH_AVG( spmv_serial(&csr_si, x, y), ITERATIONS, t_avg );
+    BENCH_AVG( csr_si.spmv_serial(x, y), ITERATIONS, t_avg );
     printf("%e, ", t_avg); fflush(stdout);
 
     release(csr_si);
@@ -111,7 +111,7 @@ int main(int argc, char* argv[])
     /* ----------------------- Dense ---------------------- */
     Coo_to_Dense(&dense, &coo2);
 
-    BENCH_AVG( spmv_serial(&dense, x, y), ITERATIONS, t_avg );
+    BENCH_AVG( dense.spmv(x, y), ITERATIONS, t_avg );
     printf("%e, ", t_avg); fflush(stdout);
 
     // Clean up

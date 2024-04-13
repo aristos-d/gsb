@@ -17,33 +17,25 @@ struct Coo2
 
     IT nonzeros() const { return nnz; }
 
-    /*
-     * Getters
-     */
+    // Getters
     IT get_row_index (IT i) { return triplets[i].row; }
     IT get_column_index (IT i) { return triplets[i].col; }
     T get_value (IT i) { return triplets[i].val; }
 
-    /*
-     * Setters
-     */
+    // Setters
     void set_row_index (IT i, IT row) { triplets[i].row = row; }
     void set_column_index (IT i, IT column) { triplets[i].col = column; }
     void set_value (IT i, T val) { triplets[i].val = val; }
-};
 
-/*
- * Sparse matrix - vector multiplication. Result is stored in y. Memory for y
- * should already be allocated and initialized.
- */
-template <class T, class IT>
-inline void spmv (
-        const Coo2<T, IT> * const A,
-        const T * __restrict x,
-        T * __restrict y)
-{
-    spmv_coo(A->triplets, A->nnz, x, y);
-}
+    /*
+     * Sparse matrix - vector multiplication. Result is stored in y. Memory for
+     * y should already be allocated and initialized.
+     */
+    void spmv (const T * __restrict x, T * __restrict y) const
+    {
+        spmv_coo(triplets, nnz, x, y);
+    }
+};
 
 /*
  * Prints the matrix in a readable format. For debugging purposes only.

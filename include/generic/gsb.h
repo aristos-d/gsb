@@ -4,18 +4,6 @@
 
 #include "spmv/omp/gsb.h"
 
-/*
- * Returns the number of non-zero elements of a block
- */
-template <class T, class IT, class SIT,
-          template <typename, typename, typename> class GSB>
-inline IT block_nonzeros (const GSB<T,IT,SIT> A, IT i) { return block(&A, i)->nonzeros(); }
-
-template <class T, class IT, class SIT,
-          template <typename, typename, typename> class GSB>
-inline IT block_nonzeros (const GSB<T,IT,SIT> * A, IT i) { return block(A, i)->nonzeros(); }
-
-
 // ------------------------- Constructors -------------------------
 
 /*
@@ -36,14 +24,16 @@ void Coo_to_Blocked(MATRIX * A, COO<T,IT> * B, IT br_size, IT bc_size)
 
     // Calculate block-row offsets
     blockrow_offset[0] = 0;
-    for (IT i=0; i<(blockrows - 1); i++) {
+    for (IT i=0; i<(blockrows - 1); i++)
+    {
         blockrow_offset[i+1] = blockrow_offset[i] + br_size;
     }
     blockrow_offset[blockrows] = B->rows;
 
     // Calculate block-column offsets
     blockcol_offset[0] = 0;
-    for (IT i=0; i<(blockcols - 1); i++) {
+    for (IT i=0; i<(blockcols - 1); i++)
+    {
         blockcol_offset[i+1] = blockcol_offset[i] + bc_size;
     }
     blockcol_offset[blockcols] = B->columns;

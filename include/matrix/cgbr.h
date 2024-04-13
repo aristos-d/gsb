@@ -19,9 +19,9 @@
 template <class T, class IT, class SIT>
 union Matrix
 {
-  BlockDense<T,IT> dense;
-  BlockCsr<T,IT,SIT> csr;
-  BlockCoo<T,IT,SIT> coo;
+    BlockDense<T,IT> dense;
+    BlockCsr<T,IT,SIT> csr;
+    BlockCoo<T,IT,SIT> coo;
 };
 
 /*
@@ -30,24 +30,68 @@ union Matrix
 template <class T, class IT, class SIT>
 struct MatrixBlock
 {
-  Matrix<T,IT,SIT> matrix;
-  MatrixType type;
+    Matrix<T,IT,SIT> matrix;
+    MatrixType type;
 
-  IT nonzeros() const
-  {
-    switch (type)
+    IT nonzeros() const
     {
-        case BLOCK_COO :
-            return matrix.coo.nonzeros();
-        case BLOCK_CSR :
-            return matrix.csr.nonzeros();
-        case BLOCK_DENSE :
-            return matrix.dense.rows * matrix.dense.columns;
-        default:
-            fprintf(stderr, "Invalid block found!\n");
-            return 0;
+      switch (type)
+      {
+          case BLOCK_COO :
+              return matrix.coo.nonzeros();
+          case BLOCK_CSR :
+              return matrix.csr.nonzeros();
+          case BLOCK_DENSE :
+              return matrix.dense.rows * matrix.dense.columns;
+          default:
+              fprintf(stderr, "Invalid block found!\n");
+              return 0;
+      }
     }
-  }
+
+    /*
+     * SpMV routine for a block of a CSBR matrix. It only calls the appropriate
+     * spmv implementation based on the block matrix type.
+     */
+    void spmv (T const * const __restrict x, T * const __restrict y) const
+    {
+        switch (type)
+        {
+            case BLOCK_COO :
+                matrix.coo.spmv(x, y);
+                break;
+            case BLOCK_CSR :
+                matrix.csr.spmv(x, y);
+                break;
+            case BLOCK_DENSE :
+                matrix.dense.spmv(x, y);
+                break;
+            default:
+                DEBUG(fprintf(stderr, "Invalid block found!\n"));
+        }
+    }
+
+    /*
+     * SpMV routine for a block of a CGBR matrix. It only calls the appropriate
+     * spmv (serial) implementation based on the block matrix type.
+     */
+    void spmv_serial (T const * const __restrict x, T * const __restrict y) const
+    {
+        switch (type)
+        {
+            case BLOCK_COO :
+                matrix.coo.spmv(x, y);
+                break;
+            case BLOCK_CSR :
+                matrix.csr.spmv_serial(x, y);
+                break;
+            case BLOCK_DENSE :
+                matrix.dense.spmv_serial(x, y);
+                break;
+            default:
+                DEBUG(fprintf(stderr, "Invalid block found!\n"));
+        }
+    }
 };
 
 /*
@@ -57,183 +101,112 @@ struct MatrixBlock
 template <class T, class IT, class SIT>
 struct Cgbr
 {
-  MatrixBlock<T,IT,SIT> * blocks;
-  IT * blockrow_ptr;         // Indexes for blocks array
-  IT * blockcol_ind;
-  IT type_block_count[MATRIX_TYPE_NUM];
-  IT type_nnz_count[MATRIX_TYPE_NUM];
+    MatrixBlock<T,IT,SIT> * blocks;
+    IT * blockrow_ptr;         // Indexes for blocks array
+    IT * blockcol_ind;
+    IT type_block_count[MATRIX_TYPE_NUM];
+    IT type_nnz_count[MATRIX_TYPE_NUM];
 
-  // Partitioning information
-  BlockRowPartition<IT> * partition;
-  bool balanced;
+    // Partitioning information
+    BlockRowPartition<IT> * partition;
+    bool balanced;
 
-  // Block size information
-  IT * blockrow_offset;
-  IT * blockcol_offset;
-  IT blockrows;
-  IT blockcols;
-  IT nnzblocks;
+    // Block size information
+    IT * blockrow_offset;
+    IT * blockcol_offset;
+    IT blockrows;
+    IT blockcols;
+    IT nnzblocks;
 
-  // Original size
-  IT rows;
-  IT columns;
-  IT nnz;
+    // Original size
+    IT rows;
+    IT columns;
+    IT nnz;
 
-  IT nonzeros() const { return nnz; }
-};
+    IT nonzeros() const { return nnz; }
 
-/*
- * Get pointer to block i
- */
-template <class T, class IT, class SIT>
-inline MatrixBlock<T,IT,SIT> * block (Cgbr<T,IT,SIT> const * const A, IT i)
-{
-    return A->blocks + i;
-}
-
-/*
- * Return the offset of block column "i"
- */
-template <class T, class IT, class SIT>
-inline IT get_block_column_offset(const Cgbr<T,IT,SIT> * A, IT i)
-{
-    return A->blockcol_offset[i];
-}
-
-template <class T, class IT, class SIT>
-inline IT get_block_row_offset(const Cgbr<T,IT,SIT> * A, IT i)
-{
-    return A->blockrow_offset[i];
-}
-
-/*
- * Returns the number of non-zeros in the `i`th block
- */
-template <class T, class IT, class SIT>
-inline IT nonzeros (MatrixBlock<T,IT,SIT> const * const block)
-{
-    switch (block->type)
+    // Get pointer to block i
+    MatrixBlock<T,IT,SIT> * block (IT i) const
     {
-        case BLOCK_COO :
-            return nonzeros(block->matrix.coo);
-        case BLOCK_CSR :
-            return nonzeros(block->matrix.csr);
-        case BLOCK_DENSE :
-            return block->matrix.dense.rows * block->matrix.dense.columns;
-        default:
-            fprintf(stderr, "Invalid block found!\n");
-            return 0;
-    }
-}
-
-/*
- * Are the non-zeros distributed (almost) equally among rows?
- */
-template <class T, class IT, class SIT>
-bool is_balanced (Cgbr<T,IT,SIT> const * const A)
-{
-    float mean_nnz = A->nnz / (float) A->blockrows;
-    float br_nnz;
-    IT blockrow_start, blockrow_end;
-    IT col_index;
-
-    for (IT i=0; i<A->blockrows; i++) {
-
-        blockrow_start = A->blockrow_ptr[i];
-        blockrow_end = A->blockrow_ptr[i+1];
-        br_nnz = 0.0f;
-
-        // Count the non-zeros of each block-row
-        for (IT k=blockrow_start; k<blockrow_end; k++) {
-            col_index = A->blockcol_ind[k];
-            br_nnz += block_nonzeros(A, k);
-        }
-
-        if (br_nnz > 2.0f * mean_nnz) return false;
+        return blocks + i;
     }
 
-    return true;
-}
-
-/*
- * SpMV routine for a block of a CSBR matrix. It only calls the appropriate spmv
- * implementation based on the block matrix type.
- */
-template <class T, class IT, class SIT>
-inline void spmv (
-        MatrixBlock<T,IT,SIT> const * const A,
-        T const * const __restrict x,
-        T * const __restrict y)
-{
-    switch (A->type)
+    IT block_nonzeros(IT i) const
     {
-        case BLOCK_COO :
-            spmv(&(A->matrix.coo), x, y);
-            break;
-        case BLOCK_CSR :
-            spmv(&(A->matrix.csr), x, y);
-            break;
-        case BLOCK_DENSE :
-            spmv(&(A->matrix.dense), x, y);
-            break;
-        default:
-            DEBUG(fprintf(stderr, "Invalid block found!\n"));
+        return blocks[i].nonzeros();
     }
-}
 
-/*
- * SpMV routine for a block of a CGBR matrix. It only calls the appropriate spmv
- * (serial) implementation based on the block matrix type.
- */
-template <class T, class IT, class SIT>
-inline void spmv_serial (
-        MatrixBlock<T,IT,SIT> const * const A,
-        T const * const __restrict x,
-        T * const __restrict y)
-{
-    switch (A->type)
+    // Return the offset of block column "i"
+    IT get_block_column_offset(IT i) const
     {
-        case BLOCK_COO :
-            spmv(&(A->matrix.coo), x, y);
-            break;
-        case BLOCK_CSR :
-            spmv_serial(&(A->matrix.csr), x, y);
-            break;
-        case BLOCK_DENSE :
-            spmv_serial(&(A->matrix.dense), x, y);
-            break;
-        default:
-            DEBUG(fprintf(stderr, "Invalid block found!\n"));
+        return blockcol_offset[i];
     }
-}
 
-/*
- * SpMV routine for matrices in CGBR format. y vector MUST be already initialized.
- */
-template <class T, class IT, class SIT>
-void spmv_serial (
-        Cgbr<T,IT,SIT> const * const A,
-        T const * const __restrict x,
-        T * const __restrict y)
-{
-    // For each block row
-    for (IT bi=0; bi<A->blockrows; bi++) {
-        IT x_offset, y_offset;
+    IT get_block_row_offset(IT i) const
+    {
+        return blockrow_offset[i];
+    }
+
+    /*
+     * Are the non-zeros distributed (almost) equally among rows?
+     */
+    bool is_balanced() const
+    {
+        float mean_nnz = nnz / float(blockrows);
+        float br_nnz;
         IT blockrow_start, blockrow_end;
         IT col_index;
 
-        blockrow_start = A->blockrow_ptr[bi];
-        blockrow_end = A->blockrow_ptr[bi+1];
-        y_offset = A->blockrow_offset[bi];
+        for (IT i=0; i<blockrows; i++)
+        {
+            blockrow_start = blockrow_ptr[i];
+            blockrow_end = blockrow_ptr[i+1];
+            br_nnz = 0.0f;
 
-        // For every block in block row
-        for (IT k=blockrow_start; k<blockrow_end; k++) {
-            col_index = A->blockcol_ind[k];
-            x_offset = A->blockcol_offset[col_index];
-            spmv_serial(A->blocks + k, x + x_offset, y + y_offset);
+            // Count the non-zeros of each block-row
+            for (IT k=blockrow_start; k<blockrow_end; k++)
+            {
+                col_index = blockcol_ind[k];
+                br_nnz += block_nonzeros(k);
+            }
+
+            if (br_nnz > 2.0f * mean_nnz) return false;
+        }
+
+        return true;
+    }
+
+    /*
+     * SpMV routine for matrices in CGBR format. y vector MUST be already initialized.
+     */
+    void spmv(T const * const __restrict x, T * const __restrict y) const
+    {
+        spmv_blocked(this, x, y);
+    }
+
+    void spmv_serial(T const * const __restrict x, T * const __restrict y) const
+    {
+        // For each block row
+        for (IT bi=0; bi<blockrows; bi++)
+        {
+            IT x_offset, y_offset;
+            IT blockrow_start, blockrow_end;
+            IT col_index;
+
+            blockrow_start = blockrow_ptr[bi];
+            blockrow_end = blockrow_ptr[bi+1];
+            y_offset = blockrow_offset[bi];
+
+            // For every block in block row
+            for (IT k=blockrow_start; k<blockrow_end; k++)
+            {
+                col_index = blockcol_ind[k];
+                x_offset = blockcol_offset[col_index];
+                block(k)->spmv_serial(x + x_offset, y + y_offset);
+            }
         }
     }
-}
+};
 
 /* ------------------ Constructors begin ------------------ */
 
@@ -245,9 +218,9 @@ MatrixType Coo_to_MatrixBlock (
 {
     float coo, csr, nnzratio;
 
-    coo = ((float) nnz) * (2 * sizeof(SIT) + sizeof(T));
-    csr = (((float) rows) * sizeof(IT)) + (nnz * (sizeof(SIT) + sizeof(T)));
-    nnzratio = nnz / ((float) rows * columns);
+    coo = float(nnz) * (2 * sizeof(SIT) + sizeof(T));
+    csr = (float(rows) * sizeof(IT)) + (nnz * (sizeof(SIT) + sizeof(T)));
+    nnzratio = nnz / (float(rows) * float(columns));
 
     if (coo < 1.5f * csr) {
         // COO block
@@ -298,7 +271,8 @@ void Coo_to_Cgbr(
   A->blockcol_offset = blockcol_offset;
   A->nnzblocks = count_blocks(B->elements, B->nnz);
 
-  for(IT i=0; i<MATRIX_TYPE_NUM; i++){
+  for (IT i=0; i<MATRIX_TYPE_NUM; i++)
+  {
     A->type_block_count[i] = 0;
     A->type_nnz_count[i] = 0;
   }
@@ -317,7 +291,8 @@ void Coo_to_Cgbr(
   block_index = 0;
   IT i=0, j=0, k;
 
-  while (i<A->nnz) {
+  while (i<A->nnz)
+  {
     b = B->elements[i].block;
     j = i + 1;
 
@@ -336,7 +311,8 @@ void Coo_to_Cgbr(
     A->blockcol_ind[block_index] = bc;
 
     // Adjust indeces inside block
-    for (k=i; k<j; k++) {
+    for (k=i; k<j; k++)
+    {
       assert(B->elements[k].row >= br_offset);
       assert(B->elements[k].row < br_offset + br_size);
       assert(B->elements[k].col >= bc_offset);
@@ -355,13 +331,14 @@ void Coo_to_Cgbr(
     i = j;
   }
 
-  for (br=0; br<A->blockrows; br++) {
+  for (br=0; br<A->blockrows; br++)
+  {
     A->blockrow_ptr[br+1] = A->blockrow_ptr[br+1] + A->blockrow_ptr[br];
   }
 
   assert(A->blockrow_ptr[blockrows] == A->nnzblocks);
 
-  A->balanced = is_balanced(A);
+  A->balanced = A->is_balanced();
 
   if (!A->balanced) {
       // Unbalanced block-rows. We need within-block-row parallelism.

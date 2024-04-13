@@ -16,11 +16,11 @@ void benchmark_spmv_core (
     vector_zero(&y, A.rows);
     t = new double[iterations];
 
-    spmv(&A, x, y); // Warm-up the cache.
+    A.spmv(x, y); // Warm-up the cache.
     for (unsigned i=0; i<iterations; i++)
     {
         auto start = std::chrono::high_resolution_clock::now();
-        spmv(&A, x, y);
+        A.spmv(x, y);
         auto end = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> lap = end - start;
         t[i] = lap.count();

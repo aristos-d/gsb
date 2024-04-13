@@ -23,9 +23,10 @@ void spmv_chunk (
         IT bstart = partition->chunks[first];
         IT bend = partition->chunks[last];
 
-        for (IT k=bstart; k<bend; k++) {
-            x_offset = get_block_column_offset(A, A->blockcol_ind[k]);
-            spmv(block(A, k), x + x_offset, y);
+        for (IT k=bstart; k<bend; k++)
+        {
+            x_offset = A->get_block_column_offset(A->blockcol_ind[k]);
+            A->block(k)->spmv(x + x_offset, y);
         }
 
     } else {
@@ -69,10 +70,10 @@ void spmv_unbalanced (
     for (IT bi=0; bi<A->blockrows; bi++) {
 
         IT nchunks = A->partition[bi].nchunks;
-        IT y_start = get_block_row_offset(A, bi);
-        IT y_end = get_block_row_offset(A, bi+1);
+        IT y_start = A->get_block_row_offset(bi);
+        IT y_end = A->get_block_row_offset(bi+1);
 
-        spmv_chunk(A, x, y + y_start, A->partition + bi, (IT) 0, nchunks, y_end - y_start);
+        A->spmv_chunk(x, y + y_start, A->partition + bi, IT(0), nchunks, y_end - y_start);
     }
 }
 
@@ -89,30 +90,38 @@ void spmv_balanced (
 {
     // For each block row
     #pragma omp parallel for schedule(dynamic,1)
-    for (IT bi=0; bi<A->blockrows; bi++) {
+    for (IT bi=0; bi<A->blockrows; bi++)
+    {
         IT x_offset, y_offset;
         IT blockrow_start, blockrow_end;
         IT col_index;
 
         blockrow_start = A->blockrow_ptr[bi];
         blockrow_end = A->blockrow_ptr[bi+1];
-        y_offset = get_block_row_offset(A, bi);
+        y_offset = A->get_block_row_offset(bi);
 
         // For every block in block row
-        for (IT k=blockrow_start; k<blockrow_end; k++) {
+        for (IT k=blockrow_start; k<blockrow_end; k++)
+        {
             col_index = A->blockcol_ind[k];
-            x_offset = get_block_column_offset(A, A->blockcol_ind[k]); //A->blockcol_offset[col_index];
-            spmv_serial(block(A, k), x + x_offset, y + y_offset);
+            x_offset = A->get_block_column_offset(A->blockcol_ind[k]); //A->blockcol_offset[col_index];
+            A->block(k)->spmv(x + x_offset, y + y_offset);
         }
     }
 }
 
 /*
- * High-level SpMV routine
+ * High-level SpMV routine for blocked sparse matrices. Requires that the
+ * blocked sparse matrix has:
+ * - A BlockRowPartition member named "partition".
+ * - A "get_block_row_offset" member method.
+ * - A "get_block_column_offset" member method.
+ * - A "block" method returning a pointer to an object that defines a
+ *   "spmv" method.
  */
 template <typename T, typename IT, typename SIT,
           template <typename, typename, typename> class GSB>
-void spmv (
+void spmv_blocked (
         GSB<T,IT,SIT> const * const A,
         T const * const __restrict x,
         T * const __restrict y)
@@ -125,15 +134,15 @@ void spmv (
 
         // For each block row
         #pragma omp parallel for schedule(dynamic,1)
-        for (IT bi=0; bi<A->blockrows; bi++) {
-
+        for (IT bi=0; bi<A->blockrows; bi++)
+        {
             IT nchunks = A->partition[bi].nchunks;
-            IT y_start = get_block_row_offset(A, bi);
-            IT y_end = get_block_row_offset(A, bi+1);
+            IT y_start = A->get_block_row_offset(bi);
+            IT y_end = A->get_block_row_offset(bi+1);
 
             spmv_chunk(A, x, y + y_start,
                        A->partition + bi,
-                       (IT) 0,
+                       IT(0),
                        nchunks,
                        y_end - y_start);
         }

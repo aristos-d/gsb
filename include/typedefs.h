@@ -4,20 +4,23 @@
 #include "params.h"
 
 template <class T, class IT>
-struct NonZero {
+struct NonZero
+{
   T val;
   IT index;
 };
 
 template <class T, class IT>
-struct Triplet {
+struct Triplet
+{
   IT row;
   IT col;
   T val;
 };
 
 template <class T, class IT>
-struct Element {
+struct Element
+{
   IT row;
   IT col;
   T val;
@@ -27,7 +30,8 @@ struct Element {
 /*
  * Enumeration of all matrix types used for blocks.
  */
-enum MatrixType {
+enum MatrixType
+{
   BLOCK_COO             = 0,
   BLOCK_CSR             = 1,
   BLOCK_DENSE           = 2,

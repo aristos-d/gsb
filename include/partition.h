@@ -30,8 +30,8 @@ IT partition_blockrow(const BLOCKMATRIX * A, BlockRowPartition<IT> * partition, 
 
     for (b=start; b<end; b++)
     {
-      nnz += block_nonzeros(A, b);
-      
+      nnz += A->block_nonzeros(b);
+
       if (nnz>min_nnz && b<end-1) {  // Break chunk
 
         c++;
@@ -47,7 +47,7 @@ IT partition_blockrow(const BLOCKMATRIX * A, BlockRowPartition<IT> * partition, 
         partition->chunks[c] = b;
       }
     }
-    
+
     partition->chunks[c+1] = end;
     partition->nchunks = c+1;
     partition->size = size;
@@ -60,9 +60,11 @@ IT partition_blockrow(const BLOCKMATRIX * A, BlockRowPartition<IT> * partition, 
 template <class IT>
 void partition_dump(BlockRowPartition<IT> * partition, IT blockrows)
 {
-    for (IT br=0; br<blockrows; br++) {
+    for (IT br=0; br<blockrows; br++)
+    {
         printf("%u,%u:\t", br, partition[br].nchunks);
-        for (IT i=0; i<partition[br].nchunks; i++) {
+        for (IT i=0; i<partition[br].nchunks; i++)
+        {
             printf("%u ", partition[br].chunks[i+1] - partition[br].chunks[i]);
         }
         printf("\n");
@@ -77,7 +79,8 @@ template <typename T, typename IT, typename SIT,
 void partition_init(GSB<T,IT,SIT> * A)
 {
     A->partition = (BlockRowPartition<IT> *) malloc(A->blockrows * sizeof(BlockRowPartition<IT>));
-    for (IT br=0; br<A->blockrows; br++) {
+    for (IT br=0; br<A->blockrows; br++)
+    {
         partition_blockrow(A, A->partition + br, A->blockrow_ptr[br], A->blockrow_ptr[br+1]);
     }
 }
@@ -90,7 +93,8 @@ template <typename T, typename IT,
 void partition_init(GSB<T,IT> * A)
 {
     A->partition = (BlockRowPartition<IT> *) malloc(A->blockrows * sizeof(BlockRowPartition<IT>));
-    for (IT br=0; br<A->blockrows; br++) {
+    for (IT br=0; br<A->blockrows; br++)
+    {
         partition_blockrow(A, A->partition + br, A->blockrow_ptr[br], A->blockrow_ptr[br+1]);
     }
 }
@@ -102,7 +106,8 @@ template <typename T, typename IT, typename SIT,
           template<typename, typename, typename> class GSB>
 void partition_destroy(GSB<T,IT,SIT> * A)
 {
-    for (IT br=0; br<A->blockrows; br++) {
+    for (IT br=0; br<A->blockrows; br++)
+    {
         partition_destroy(A->partition + br);
     }
     free(A->partition);
@@ -112,7 +117,8 @@ template <typename T, typename IT,
           template<typename, typename> class GSB>
 void partition_destroy(GSB<T,IT> * A)
 {
-    for (IT br=0; br<A->blockrows; br++) {
+    for (IT br=0; br<A->blockrows; br++)
+    {
         partition_destroy(A->partition + br);
     }
     free(A->partition);

@@ -7,76 +7,75 @@
 #include "partition.h"
 #include "generic/gsb.h"
 #include "matrix/blocks.h"
+#include "spmv/omp/gsb.h"
 
 /*
  * Version 2 of CGBR using abstract blocks
  */
 template <typename T, typename IT, typename SIT>
-class Cgbr2 : public BlockBase<T,IT> {
-    public:
-        BlockBase<T,IT> ** blocks;
-        IT * blockrow_ptr;         // Indexes for blocks array
-        IT * blockcol_ind;
+struct Cgbr2 : public BlockBase<T,IT>
+{
+    BlockBase<T,IT> ** blocks;
+    IT * blockrow_ptr;         // Indexes for blocks array
+    IT * blockcol_ind;
 
-        // Report statistics
-        IT type_block_count[MATRIX_TYPE_NUM];
-        IT type_nnz_count[MATRIX_TYPE_NUM];
+    // Report statistics
+    IT type_block_count[MATRIX_TYPE_NUM];
+    IT type_nnz_count[MATRIX_TYPE_NUM];
 
-        // Partitioning information
-        BlockRowPartition<IT> * partition;
-        bool balanced;
+    // Partitioning information
+    BlockRowPartition<IT> * partition;
+    bool balanced;
 
-        // Block size information
-        IT * blockrow_offset;
-        IT * blockcol_offset;
-        IT blockrows;
-        IT blockcols;
-        IT nnzblocks;
+    // Block size information
+    IT * blockrow_offset;
+    IT * blockcol_offset;
+    IT blockrows;
+    IT blockcols;
+    IT nnzblocks;
 
-        // Original size
-        IT rows;
-        IT columns;
+    // Original size
+    IT rows;
+    IT columns;
 
-        Cgbr2() {}
-        Cgbr2(Element<T,IT> * array, IT _rows, IT _columns, IT nnz,
-              IT * _blockrow_offset, IT _blockrows,
-              IT * _blockcol_offset, IT _blockcols,
-              BlockFactory<T,IT> & factory);
-        int create(Element<T,IT> * array, IT _rows, IT _columns, IT nnz,
-                   IT * _blockrow_offset, IT _blockrows,
-                   IT * _blockcol_offset, IT _blockcols,
-                   BlockFactory<T,IT> & factory);
-        ~Cgbr2() {}
+    Cgbr2() {}
+    Cgbr2(Element<T,IT> * array, IT _rows, IT _columns, IT nnz,
+          IT * _blockrow_offset, IT _blockrows,
+          IT * _blockcol_offset, IT _blockcols,
+          BlockFactory<T,IT> & factory);
+    int create(Element<T,IT> * array, IT _rows, IT _columns, IT nnz,
+               IT * _blockrow_offset, IT _blockrows,
+               IT * _blockcol_offset, IT _blockcols,
+               BlockFactory<T,IT> & factory);
+    ~Cgbr2() {}
 
-        void spmv_block (T const * const __restrict x, T * const __restrict y) const
-	    {
-            spmv(this, x, y);
-	    }
+    void spmv (T const * const __restrict x, T * const __restrict y) const
+    {
+        spmv_blocked(this, x, y);
+    }
+
+    // Get pointer to block i
+    BlockBase<T,IT> * block (IT i) const
+    {
+        return blocks[i];
+    }
+
+    IT block_nonzeros(IT i) const
+    {
+        return blocks[i]->nonzeros();
+    }
+
+    // Return the offset of block column "i"
+    IT get_block_column_offset(IT i) const
+    {
+        return blockcol_offset[i];
+    }
+
+    IT get_block_row_offset(IT i) const
+    {
+        return blockrow_offset[i];
+    }
 };
-
-/*
- * Return the offset of block column "i"
- */
-template <class T, class IT, class SIT>
-inline IT get_block_column_offset(const Cgbr2<T,IT,SIT> * A, IT i)
-{
-    return A->blockcol_offset[i];
-}
-
-template <class T, class IT, class SIT>
-inline IT get_block_row_offset(const Cgbr2<T,IT,SIT> * A, IT i)
-{
-    return A->blockrow_offset[i];
-}
-
-/*
- * Get pointer to block i
- */
-template <class T, class IT, class SIT>
-inline BlockBase<T,IT> * block (Cgbr2<T,IT,SIT> const * const A, IT i)
-{
-    return A->blocks[i];
-}
 
 // --------------------- Constructor ---------------------
 

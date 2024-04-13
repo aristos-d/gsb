@@ -16,33 +16,23 @@
 template <class T, class IT>
 struct Csr2
 {
-  NonZero<T, IT> * data;
-  IT * row_ptr;
-  IT rows, columns;
+    NonZero<T, IT> * data;
+    IT * row_ptr;
+    IT rows, columns;
 
-  IT nonzeros() const { return row_ptr[rows]; }
+    IT nonzeros() const { return row_ptr[rows]; }
+
+    // SpMV routine wrappers
+    void spmv (T const * const __restrict x, T * const __restrict y) const
+    {
+        spmv_csr2(row_ptr, data, rows, x, y);
+    }
+
+    void spmv_serial (T const * const __restrict x, T * const __restrict y) const
+    {
+        spmv_csr2_serial(row_ptr, data, rows, x, y);
+    }
 };
-
-/*
- * SpMV routine wrappers
- */
-template <class T, class IT>
-void spmv (
-        Csr2<T, IT> const * const A,
-        T const * const __restrict x,
-        T * const __restrict y)
-{
-    spmv_csr2(A->row_ptr, A->data, A->rows, x, y);
-}
-
-template <class T, class IT>
-void spmv_serial (
-        Csr2<T, IT> const * const A,
-        T const * const __restrict x,
-        T * const __restrict y)
-{
-    spmv_csr2_serial(A->row_ptr, A->data, A->rows, x, y);
-}
 
 /*
  * Construct a CSR2 matrix by processing a matrix in COO format. Triplets of

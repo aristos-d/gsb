@@ -10,9 +10,8 @@
  * non-zero values and column indexes.
  */
 template <class T, class IT>
-class Csr
+struct Csr
 {
-public:
   T * val;
   IT * col_ind;
   IT * row_ptr;
@@ -21,28 +20,19 @@ public:
   // increase struct size due to padding. It is not technically necessary.
 
   IT nonzeros() const { return row_ptr[rows]; }
+
+  // SpMV routine wrappers
+  void spmv (T const * const __restrict x, T * const __restrict y) const
+  {
+    spmv_csr(row_ptr, col_ind, val, rows, x, y);
+  }
+
+  void spmv_serial (T const * const __restrict x, T * const __restrict y) const
+  {
+    spmv_csr_serial(row_ptr, col_ind, val, rows, x, y);
+  }
 };
 
-/*
- * SpMV routine wrappers
- */
-template <class T, class IT>
-inline void spmv (
-        Csr<T,IT> const * const A,
-        T const * const __restrict x,
-        T * const __restrict y)
-{
-    spmv_csr(A->row_ptr, A->col_ind, A->val, A->rows, x, y);
-}
-
-template <class T, class IT>
-inline void spmv_serial (
-        Csr<T,IT> const * const A,
-        T const * const __restrict x,
-        T * const __restrict y)
-{
-    spmv_csr_serial(A->row_ptr, A->col_ind, A->val, A->rows, x, y);
-}
 
 /*
  * Construct a CSR matrix by processing three coordinate arrays. The arrays are

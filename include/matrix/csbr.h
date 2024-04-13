@@ -1,9 +1,11 @@
 #ifndef _CSBR_H_
 #define _CSBR_H_
+
 #include <cstdio>
 #include <cstdlib>
 #include <cassert>
 #include <limits>
+
 #include <omp.h>
 
 #include "typedefs.h"
@@ -20,110 +22,105 @@
 template <class T, class IT>
 struct Csbr
 {
-  Csr<T,IT> * blocks;
-  IT * blockrow_ptr;         // Indices for blocks array
-  IT * blockcol_ind;
+    Csr<T,IT> * blocks;
+    IT * blockrow_ptr;         // Indices for blocks array
+    IT * blockcol_ind;
 
-  // Block information
-  IT * blockrow_offset;
-  IT * blockcol_offset;
-  IT blockrows;
-  IT blockcols;
-  IT nnzblocks;
+    // Block information
+    IT * blockrow_offset;
+    IT * blockcol_offset;
+    IT blockrows;
+    IT blockcols;
+    IT nnzblocks;
 
-  // Partitioning information
-  BlockRowPartition<IT> * partition;
+    // Partitioning information
+    BlockRowPartition<IT> * partition;
 
-  // Original size
-  IT rows;
-  IT columns;
-  IT nnz;
+    // Original size
+    IT rows;
+    IT columns;
+    IT nnz;
 
-  // Pointers to the large arrays
-  IT * col_ind;
-  T * val;
+    // Pointers to the large arrays
+    IT * col_ind;
+    T * val;
 
-  IT nonzeros () const { return nnz; }
+    IT nonzeros () const { return nnz; }
+
+    Csr<T,IT> * block(IT i) const
+    {
+        return blocks + i;
+    }
+
+    // Returns the number of non-zero elements in a block of the matrix.
+    IT block_nonzeros(IT i) const
+    {
+        return blocks[i].row_ptr[blocks[i].rows];
+    }
+
+    /*
+     * SpMV routine for matrices in CSBR format. y vector MUST be already
+     * initialized. Parallel spmv for blocks
+     */
+    void spmv(T const * const __restrict x, T * const __restrict y) const
+    {
+        // For each block row
+        #pragma omp parallel for schedule(dynamic, 1)
+        for (IT bi=0; bi<blockrows; bi++)
+        {
+            IT nchunks = partition[bi].nchunks;
+            IT y_start = blockrow_offset[bi];
+            IT y_end = blockrow_offset[bi+1];
+
+            spmv_chunk(x, y + y_start, partition + bi, IT(0), nchunks, y_end - y_start);
+        }
+    }
+
+    void spmv_chunk(T const * const __restrict x, T * const __restrict y,
+                    BlockRowPartition<IT> const * const partition,
+                    IT const first, IT const last, IT const bsize) const
+    {
+        if (last - first == 1)
+        {
+            IT x_offset;
+            IT bstart = partition->chunks[first];
+            IT bend = partition->chunks[last];
+
+            for (IT k=bstart; k<bend; k++)
+            {
+                x_offset = blockcol_offset[blockcol_ind[k]];
+                block(k)->spmv_serial(x + x_offset, y);
+            }
+        }
+        else
+        {
+            IT middle = (first+last) / 2;
+
+            #pragma omp task
+            spmv_chunk(x, y, partition, first, middle, bsize);
+
+            if (RT_SYNCHED)
+            {
+                spmv_chunk(x, y, partition, middle, last, bsize);
+            }
+            else
+            {
+                // We need C++ style allocation to ensure proper initialization
+                T * temp = new T[bsize]();
+
+                spmv_chunk(x, temp, partition, middle, last, bsize);
+                #pragma omp taskwait
+
+                #pragma omp simd
+                for (IT i=0; i<bsize; i++)
+                    y[i] += temp[i];
+
+                delete [] temp;
+            }
+        }
+    }
 };
 
-/*
- * Returns the number of non-zero elements in a block of the matrix.
- */
-template <class T, class IT>
-inline IT block_nonzeros(const Csbr<T, IT> * A, IT i)
-{
-    return A->blocks[i].row_ptr[A->blocks[i].rows];
-}
-
-/*
- *
- */
-template <class T, class IT>
-void spmv_chunk(Csbr<T,IT> const * const A,
-                T const * const __restrict x, T * const __restrict y,
-                BlockRowPartition<IT> const * const partition,
-                IT const first, IT const last, IT const bsize)
-{
-    if (last - first == 1) {
-
-        IT x_offset;
-        IT bstart = partition->chunks[first];
-        IT bend = partition->chunks[last];
-
-        for (IT k=bstart; k<bend; k++) {
-            x_offset = A->blockcol_offset[A->blockcol_ind[k]];
-            spmv_serial(A->blocks + k, x + x_offset, y);
-        }
-
-    } else {
-
-        IT middle = (first+last) / 2;
-
-        #pragma omp task
-        spmv_chunk(A, x, y, partition, first, middle, bsize);
-
-        if (RT_SYNCHED) {
-            spmv_chunk(A, x, y, partition, middle, last, bsize);
-        } else {
-
-            // We need C++ style allocation to ensure proper initialization
-            T * temp = new T[bsize]();
-
-            spmv_chunk(A, x, temp, partition, middle, last, bsize);
-            #pragma omp taskwait
-
-            #pragma omp simd
-            for (IT i=0; i<bsize; i++)
-                y[i] += temp[i];
-
-            delete [] temp;
-        }
-    }
-}
-
-/*
- * SpMV routine for matrices in CSBR format. y vector MUST be already initialized.
- * Parallel spmv for blocks
- */
-template <class T, class IT>
-void spmv(Csbr<T,IT> const * const A,
-                    T const * const __restrict x, T * const __restrict y)
-{
-    IT const * const blockrow_ptr = A->blockrow_ptr;
-    IT const * const blockrow_offset = A->blockrow_offset;
-
-    // For each block row
-    #pragma omp parallel for schedule(dynamic, 1)
-    for(IT bi=0; bi<A->blockrows; bi++){
-
-      IT nchunks = A->partition[bi].nchunks;
-      IT y_start = blockrow_offset[bi];
-      IT y_end = blockrow_offset[bi+1];
-
-      spmv_chunk(A, x, y + y_start, A->partition + bi, (IT) 0, nchunks, y_end - y_start);
-
-    }
-}
 
 /* ------------------ Constructors begin ------------------ */
 

@@ -1,7 +1,10 @@
 #ifndef _CSWR_H_
 #define _CSWR_H_
+
 #include <cassert>
 #include <cstdio>
+
+#include <omp.h>
 
 #include "utils.h"
 #include "matrix/coo.2.h"
@@ -13,16 +16,29 @@
 template <class T, class IT, class SIT>
 struct Cswr
 {
-  T *val;
-  SIT *row;
-  IT *col;
-  IT *wrow_ptr;
-  IT rows, columns, nwrows, width, nnz;
+    T *val;
+    SIT *row;
+    IT *col;
+    IT *wrow_ptr;
+    IT rows, columns, nwrows, width, nnz;
 
-  IT nonzeros() const { return nnz; }
+    IT nonzeros() const { return nnz; }
+
+    void spmv(T const * const __restrict x, T * const __restrict y) const
+    {
+        #pragma omp parallel for
+        for (IT i=0; i<nwrows; i++)
+        {
+            IT wrow_offset = width * i;
+            IT wrow_start = wrow_ptr[i];
+            IT wrow_nnz = wrow_ptr[i+1] - wrow_start;
+    
+            spmv_coo(val + wrow_start, row + wrow_start, col + wrow_start,
+                     width, columns, wrow_nnz,
+                     x, y + wrow_offset);
+        }
+    }
 };
-
-#include "spmv/omp/cswr.h"
 
 /*
  * Constructor from COO matrix

@@ -8,9 +8,11 @@ inline void spmv_dense_serial (
         T const * const __restrict x,
         T * const __restrict y)
 {
-    for (IT i=0; i<M; i++) {
+    for (IT i=0; i<M; i++)
+    {
         T temp = y[i];
-        for (IT j=0; j<N; j++) {
+        for (IT j=0; j<N; j++)
+        {
             temp += val[i*N + j] * x[j];
         }
         y[i] = temp;

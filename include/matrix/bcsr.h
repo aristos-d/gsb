@@ -17,113 +17,113 @@
 template <class T, class IT>
 struct Bcsr
 {
-  // Block information
-  IT * blockrow_offset;
-  IT * blockcol_offset;
-  IT blockrows;
-  IT blockcols;
+    // Block information
+    IT * blockrow_offset;
+    IT * blockcol_offset;
+    IT blockrows;
+    IT blockcols;
 
-  // Partitioning information
-  BlockRowPartition<IT> * partition;
-  bool balanced;
+    // Partitioning information
+    BlockRowPartition<IT> * partition;
+    bool balanced;
 
-  // Original size
-  IT rows;
-  IT columns;
-  IT nnz;
+    // Original size
+    IT rows;
+    IT columns;
+    IT nnz;
 
-  // Actual block array
-  Csr<T,IT> * blocks;
-  IT nnzblocks;
+    // Actual block array
+    Csr<T,IT> * blocks;
+    IT nnzblocks;
 
-  // Pointers to the large arrays
-  IT * col_ind;
-  T * val;
+    // Pointers to the large arrays
+    IT * col_ind;
+    T * val;
 
-  IT nonzeros() const { return nnz; }
+    IT nonzeros() const { return nnz; }
+
+    // Returns the number of non-zero elements in a block of the matrix.
+    IT block_nonzeros(IT i) { return blocks[i].row_ptr[blocks[i].rows]; }
+
+    /*
+     * SpMV routine for all the blocks in a chunk of a blockrow from a matrix
+     * in CSBR format. y vector MUST be already initialized. spmv is executed
+     * serially for all blocks but, within each block, execution is
+     * parallelized.
+     */
+    void spmv_chunk(const T * __restrict x, T * __restrict y, IT first, IT last) const
+    {
+        IT x_offset;
+        for (IT k=first; k<last; k++)
+        {
+            blocks[k].spmv(x, y);
+        }
+    }
+
+    /*
+     * SpMV routine for all the blocks in a chunk of a blockrow from a matrix
+     * in CSBR format. y vector MUST be already initialized. spmv is executed
+     * serially for all blocks and execution is serial within each block too.
+     */
+    void spmv_chunk_serial(const T * __restrict x, T * __restrict y, IT first, IT last) const
+    {
+        IT x_offset;
+        for (IT k=first; k<last; k++)
+        {
+            blocks[k].spmv_serial(x, y);
+        }
+    }
+
+    /*
+     * spmv routine for matrices in BCSR format. y vector MUST be already
+     * initialized. Parallel spmv for blocks
+     */
+    void spmv(const T * __restrict x, T * __restrict y) const
+    {
+        // For each block row
+        #pragma omp parallel for schedule(dynamic,1)
+        for (IT bi=0; bi<blockrows; bi++)
+        {
+            IT x_offset, y_offset, index;
+
+            y_offset = blockrow_offset[bi];
+
+            // For every block in block row
+            for (IT bj=0; bj<blockcols; bj++)
+            {
+                x_offset = blockcol_offset[bj];
+                index = bi * blockcols + bj;
+                if (blocks[index].rows > 0)
+                    blocks[index].spmv(x + x_offset, y + y_offset);
+            }
+        }
+    }
+
+    /*
+     * spmv routine for matrices in BCSR format. y vector MUST be already
+     * initialized. Serial spmv for blocks
+     */
+    void spmv_serial_block(const T * __restrict x, T * __restrict y) const
+    {
+        // For each block row
+        #pragma omp parallel for schedule(dynamic,1)
+        for (IT bi=0; bi<blockrows; bi++)
+        {
+            IT x_offset, y_offset, index;
+
+            y_offset = blockrow_offset[bi];
+
+            // For every block in block row
+            for (IT bj=0; bj<blockcols; bj++)
+            {
+                x_offset = blockcol_offset[bj];
+                index = bi * blockcols + bj;
+                if (blocks[index].rows > 0)
+                    blocks[index].spmv_serial(x + x_offset, y + y_offset);
+            }
+        }
+    }
 };
-
-/*
- * Returns the number of non-zero elements in a block of the matrix.
- */
-template <class T, class IT>
-inline IT block_nonzeros(const Bcsr<T, IT> * A, IT i){ return A->blocks[i].row_ptr[A->blocks[i].rows]; }
-
-/*
- * spmv routine for all the blocks in a chunk of a blockrow from a matrix in CSBR
- * format. y vector MUST be already initialized. spmv is executed serially for all
- * blocks but, within each block, execution is parallelized.
- */
-template <class T, class IT>
-inline void spmv_chunk(const Bcsr<T, IT> * const A, const T * __restrict x, T * __restrict y, IT first, IT last)
-{
-    IT x_offset;
-    for (IT k=first; k<last; k++) {
-      x_offset = A->blockcol_offset[A->blockcol_ind[k]];
-      spmv(A->blocks + k, x + x_offset, y);
-    }
-}
-
-/*
- * spmv routine for all the blocks in a chunk of a blockrow from a matrix in CSBR
- * format. y vector MUST be already initialized. spmv is executed serially for all
- * blocks and execution is serial within each block too.
- */
-template <class T, class IT>
-inline void spmv_chunk_serial(const Bcsr<T, IT> * const A, const T * __restrict x, T * __restrict y, IT first, IT last)
-{
-    IT x_offset;
-    for (IT k=first; k<last; k++) {
-      x_offset = A->blockcol_offset[A->blockcol_ind[k]];
-      spmv_serial(A->blocks + k, x + x_offset, y);
-    }
-}
-
-/*
- * spmv routine for matrices in BCSR format. y vector MUST be already initialized.
- * Parallel spmv for blocks
- */
-template <class T, class IT>
-void spmv(const Bcsr<T,IT> * const A, const T * __restrict x, T * __restrict y)
-{
-  // For each block row
-  #pragma omp parallel for schedule(dynamic,1)
-  for (IT bi=0; bi<A->blockrows; bi++) {
-    IT x_offset, y_offset, index;
-
-    y_offset = A->blockrow_offset[bi];
-
-    // For every block in block row
-    for (IT bj=0; bj<A->blockcols; bj++) {
-      x_offset = A->blockcol_offset[bj];
-      index = bi * A->blockcols + bj;
-      if (A->blocks[index].rows > 0) spmv (A->blocks + index, x + x_offset, y + y_offset);
-    }
-  }
-}
-
-/*
- * spmv routine for matrices in BCSR format. y vector MUST be already initialized.
- * Serial spmv for blocks
- */
-template <class T, class IT>
-void spmv_serial_block(const Bcsr<T,IT> * const A, const T * __restrict x, T * __restrict y)
-{
-  // For each block row
-  #pragma omp parallel for schedule(dynamic,1)
-  for (IT bi=0; bi<A->blockrows; bi++) {
-    IT x_offset, y_offset, index;
-
-    y_offset = A->blockrow_offset[bi];
-
-    // For every block in block row
-    for (IT bj=0; bj<A->blockcols; bj++) {
-      x_offset = A->blockcol_offset[bj];
-      index = bi * A->blockcols + bj;
-      if (A->blocks[index].rows > 0) spmv_serial (A->blocks + index, x + x_offset, y + y_offset);
-    }
-  }
-}
 
 /* ------------------ Constructors begin ------------------ */
 
@@ -171,17 +171,18 @@ void Coo_to_Bcsr(Bcsr<T, IT> * A, Coo3<T, IT> * B,
   DEBUG(puts("Memory allocation done"));
 
   // Mark all blocks as having 0 rows to filter out empty ones
-  for(IT i=0; i<blockrows * blockcols; i++){
+  for (IT i=0; i<blockrows * blockcols; i++) {
     A->blocks[b].rows = 0;
   }
 
   prev_b = std::numeric_limits<IT>::max();
 
-  for(IT i=0; i<A->nnz; i++){
+  for (IT i=0; i<A->nnz; i++) {
     b = B->elements[i].block;
 
     // Check if this is the begining of a new block
-    if(b != prev_b){
+    if (b != prev_b)
+    {
       prev_b = b;
       br = b / blockcols;
       bc = b % blockcols;
@@ -213,8 +214,10 @@ void Coo_to_Bcsr(Bcsr<T, IT> * A, Coo3<T, IT> * B,
   DEBUG(puts("Data copied"));
 
   // Get row pointers from row non-zero counters
-  for(IT bi=0; bi<A->nnzblocks; bi++){
-    for(IT i=0; i<A->blocks[bi].rows; i++){
+  for (IT bi=0; bi<A->nnzblocks; bi++)
+  {
+    for (IT i=0; i<A->blocks[bi].rows; i++)
+    {
       A->blocks[bi].row_ptr[i+1] = A->blocks[bi].row_ptr[i+1] + A->blocks[bi].row_ptr[i];
     }
   }
@@ -252,13 +255,14 @@ void print_info(Bcsr<T, IT> A)
 template <class T, class IT>
 void release(Bcsr<T, IT> A)
 {
-  for(IT i=0; i<A.blockrows * A.blockcols; i++){
-    if(A.blocks[i].rows > 0) free(A.blocks[i].row_ptr);
+  for (IT i=0; i<A.blockrows * A.blockcols; i++)
+  {
+    if (A.blocks[i].rows > 0) free(A.blocks[i].row_ptr);
   }
   // Block-row and block-column offsets may point to the same array
-  if(A.blockcol_offset == A.blockrow_offset){
+  if (A.blockcol_offset == A.blockrow_offset){
     free(A.blockrow_offset);
-  }else{
+  } else {
     free(A.blockcol_offset);
     free(A.blockrow_offset);
   }

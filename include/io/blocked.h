@@ -61,7 +61,7 @@ FILE * read_bin_blocked_common(BLOCKEDTYPE * A, const char * filename, IT * bloc
  * Read a blocked sparse matrix in CSBR format from a binary (.block) file.
  */
 template <class T, class IT>
-int read_bin_blocked(Csbr<T, IT> * A, const char * filename, 
+int read_bin_blocked(Csbr<T, IT> * A, const char * filename,
   IT * blockrow_offset, IT blockrows, IT * blockcol_offset, IT blockcols)
 {
   IT block_index;
@@ -81,7 +81,7 @@ int read_bin_blocked(Csbr<T, IT> * A, const char * filename,
   A->blockrow_ptr = (IT *) calloc( A->blockrows + 1 , sizeof(IT));
   A->val = (T *) malloc( A->nnz * sizeof(T));
   A->col_ind = (IT *) malloc( A->nnz * sizeof(IT));
-  
+
   if(A->blocks==NULL || A->blockcol_ind==NULL || A->blockrow_ptr==NULL || A->col_ind==NULL || A->val==NULL){
     fprintf(stderr, "Memory allocation failed.");
     return -3;
@@ -120,7 +120,7 @@ int read_bin_blocked(Csbr<T, IT> * A, const char * filename,
       // Block meta data
       A->blockrow_ptr[br+1]++;
       A->blockcol_ind[block_index] = bc;
-      
+
       // CSR block initialize
       A->blocks[block_index].rows = br_size;
       A->blocks[block_index].val = A->val + i;
@@ -164,7 +164,7 @@ int read_bin_blocked(Csbr<T, IT> * A, const char * filename,
  * Read a blocked sparse matrix in CSBR(2) format from a binary (.block) file.
  */
 template <class T, class IT>
-int read_bin_blocked(Csbr2<T, IT> * A, const char * filename, 
+int read_bin_blocked(Csbr2<T, IT> * A, const char * filename,
   IT * blockrow_offset, IT blockrows, IT * blockcol_offset, IT blockcols)
 {
   IT block_index;
@@ -183,7 +183,7 @@ int read_bin_blocked(Csbr2<T, IT> * A, const char * filename,
   A->row_ptr = (IT **) malloc( A->nnzblocks * sizeof(IT *));
   A->col_ind = (IT *) malloc( A->nnz * sizeof(IT));
   A->val = (T *) malloc( A->nnz * sizeof(T));
-  
+
   if(A->blockrow_ptr==NULL || A->col_ind==NULL || A->val==NULL || A->row_ptr==NULL){
     fprintf(stderr, "Memory allocation failed.");
     return -3;
@@ -221,7 +221,7 @@ int read_bin_blocked(Csbr2<T, IT> * A, const char * filename,
 
       // Block meta data
       A->blockrow_ptr[br+1]++;
-      
+
       // CSR block initialize
       A->row_ptr[block_index] = (IT *) calloc(br_size + 1, sizeof(IT));
       if(A->row_ptr[block_index] == NULL){
@@ -267,7 +267,7 @@ int read_bin_blocked(Csbr2<T, IT> * A, const char * filename,
       nnz_count = A->row_ptr[k][block_size];
     }
   }
-  
+
   return 0;
 }
 
@@ -275,7 +275,7 @@ int read_bin_blocked(Csbr2<T, IT> * A, const char * filename,
  * Read a blocked sparse matrix in BCSR format from a binary (.block) file.
  */
 template <class T, class IT>
-int read_bin_blocked(Bcsr<T, IT> * A, const char * filename, 
+int read_bin_blocked(Bcsr<T, IT> * A, const char * filename,
   IT * blockrow_offset, IT blockrows, IT * blockcol_offset, IT blockcols)
 {
   IT br, br_offset, br_size;
@@ -292,7 +292,7 @@ int read_bin_blocked(Bcsr<T, IT> * A, const char * filename,
   A->blocks = (Csr<T, IT> *) malloc( A->blockrows * A->blockcols * sizeof(Csr<T, IT>));
   A->col_ind = (IT *) malloc( A->nnz * sizeof(IT));
   A->val = (T *) malloc( A->nnz * sizeof(T));
-  
+
   if(A->blocks==NULL || A->col_ind==NULL || A->val==NULL){
     fprintf(stderr, "Memory allocation failed.");
     return -3;
@@ -327,7 +327,7 @@ int read_bin_blocked(Bcsr<T, IT> * A, const char * filename,
       br_offset = blockrow_offset[br];
       bc_offset = blockcol_offset[bc];
       br_size = blockrow_offset[br + 1] - br_offset;
-      
+
       // CSR block initialize
       A->blocks[b].row_ptr = (IT *) calloc(br_size + 1, sizeof(IT));
       if(A->blocks[b].row_ptr == NULL){
@@ -355,7 +355,7 @@ int read_bin_blocked(Bcsr<T, IT> * A, const char * filename,
       A->blocks[bi].row_ptr[i+1] = A->blocks[bi].row_ptr[i+1] + A->blocks[bi].row_ptr[i];
     }
   }
-  
+
   return 0;
 }
 
@@ -363,7 +363,7 @@ int read_bin_blocked(Bcsr<T, IT> * A, const char * filename,
  * Read a blocked sparse matrix in CGBR format from a binary (.block) file.
  */
 template <class T, class IT, class SIT>
-int read_bin_blocked(Cgbr<T, IT, SIT> * A, const char * filename, 
+int read_bin_blocked(Cgbr<T, IT, SIT> * A, const char * filename,
   IT * blockrow_offset, IT blockrows, IT * blockcol_offset, IT blockcols)
 {
   Element<T, IT> * temp_array;
@@ -383,7 +383,7 @@ int read_bin_blocked(Cgbr<T, IT, SIT> * A, const char * filename,
   A->blocks = new MatrixBlock<T, IT, SIT>[A->nnzblocks];
   A->blockcol_ind = new IT[A->nnzblocks];
   A->blockrow_ptr = new IT[A->blockrows + 1]();
-  
+
   for(int i=0; i<MATRIX_TYPE_NUM; i++){
     A->type_block_count[i] = 0;
     A->type_nnz_count[i] = 0;
@@ -405,7 +405,7 @@ int read_bin_blocked(Cgbr<T, IT, SIT> * A, const char * filename,
     fr += fread(&cur_row, sizeof(IT), 1, f);
     fr += fread(&cur_col, sizeof(IT), 1, f);
     fr += fread(&cur_val, sizeof(T), 1, f);
-    
+
     // Check if this is the begining of a new block
     if( b != prev_b || fr == 0){
       br = prev_b / blockcols;
@@ -418,7 +418,7 @@ int read_bin_blocked(Cgbr<T, IT, SIT> * A, const char * filename,
       // Block meta data
       A->blockrow_ptr[br+1]++;
       A->blockcol_ind[block_index] = bc;
-      
+
       // Read new block in memory
       block_nnz = i - block_start;
       temp_array = new Element<T,IT>[block_nnz];
@@ -426,13 +426,13 @@ int read_bin_blocked(Cgbr<T, IT, SIT> * A, const char * filename,
         fseek(f, - ((long) ((block_nnz + 1) * (3*sizeof(IT) + sizeof(T)))), SEEK_CUR);
       else
         fseek(f, - ((long) (block_nnz * (3*sizeof(IT) + sizeof(T)))), SEEK_CUR);
-    
+
       for(IT j=0; j<block_nnz; j++){
         fread(&(temp_array[j].block), sizeof(IT), 1, f);
         fread(&(temp_array[j].row), sizeof(IT), 1, f);
         fread(&(temp_array[j].col), sizeof(IT), 1, f);
         fread(&(temp_array[j].val), sizeof(T), 1, f);
- 
+
         assert(temp_array[j].block == prev_b);
         assert(temp_array[j].row   >= br_offset);
         assert(temp_array[j].row   <  br_offset + br_size);
@@ -461,11 +461,12 @@ int read_bin_blocked(Cgbr<T, IT, SIT> * A, const char * filename,
 
   DEBUG(puts("Reading data section done"));
 
-  for(br=0; br<A->blockrows; br++){
+  for (br=0; br<A->blockrows; br++)
+  {
     A->blockrow_ptr[br+1] = A->blockrow_ptr[br+1] + A->blockrow_ptr[br];
   }
   assert(A->blockrow_ptr[blockrows] == A->nnzblocks);
-  
+
   partition_init(A);
 
   return 0;
