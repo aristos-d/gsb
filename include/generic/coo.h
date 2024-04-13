@@ -29,27 +29,6 @@ inline void spmv_coo(
     spmv_coo(v, ri, ci, nnz, x, y);
 }
 
-#ifdef MKL_SPARSE
-#include <mkl.h>
-#include <stdio.h>
-
-#include "params.h"
-
-template <>
-inline void spmv_coo(
-        float const * const v, int const * const ri, int const * const ci,
-        int const rows, int const columns, int const nnz,
-        float const * const __restrict x,
-        float * const __restrict y)
-{
-    DEBUG_USE_MKL( fprintf(stderr, "MKL COO in use\n") );
-    const float alpha = 1.0f;
-    const float beta = 1.0f;
-    mkl_scoomv ("N", &rows, &columns, &alpha, "G__C", v, ri, ci, &nnz, x, &beta, y);
-}
-
-#endif
-
 /*
  * Heavily overloaded constructors for COO matrices
  */

@@ -1,14 +1,13 @@
 #ifndef _DENSE_H_
 #define _DENSE_H_
 
-#include <assert.h>
+#include <cassert>
 
 #include "typedefs.h"
 #include "matrix/coo.2.h"
 #include "matrix/coo.3.h"
 #include "spmv/dense.h"
 #include "spmv/omp/dense.h"
-
 
 /*
  * Structure representing a dense matrix, stored in classic C way.
@@ -74,34 +73,6 @@ inline void spmv_serial(DENSE<T,IT> const * const A,
 {
     spmv_dense_serial(A->val, A->rows, A->columns, x, y);
 }
-
-/*
- * Template specializations which use Intel's MKL library
- */
-#ifdef MKL_DENSE
-#include <mkl.h>
-
-template <>
-inline void spmv_dense(float const * const val, int const M, int const N,
-                       float const * const __restrict x, float * const __restrict y)
-{
-    DEBUG_USE_MKL( fprintf(stderr, "MKL Dense in use\n") );
-    cblas_sgemv(CblasRowMajor, CblasNoTrans, M, N, 
-            1.0f, val, N, 
-            x, 1, 1.0f,
-            y, 1);
-}
-
-template <>
-inline void spmv_dense_serial(float const * const val, int const M, int const N,
-                              float const * const __restrict x, float * const __restrict y)
-{
-    // No point in having serial/parallel version. That is determined at link-time.
-    spmv_dense(val, M, N, x, y);
-}
-
-#endif
-
 
 /* ------------------ Constructors begin ------------------ */
 

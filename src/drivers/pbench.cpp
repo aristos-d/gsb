@@ -22,7 +22,7 @@ int main(int argc, char * argv[])
     INDEXTYPE beta;
   
     Coo3<VALTYPE,INDEXTYPE> coo;
-    Csr<VALTYPE,INDEXTYPE> csr;   // Don't use MKL for this one!
+    Csr<VALTYPE,INDEXTYPE> csr;
     Cgbr2<VALTYPE,INDEXTYPE,SINDEXTYPE> cgbr;
   
     if (argc != 3){

@@ -61,20 +61,10 @@
 #define SLACKNESS 8
 #endif
 
-// Uncomment for debugging messages
-// #define DEBUG_MODE
-// #define DEBUG_MODE_MKL
-
 #ifdef DEBUG_MODE
 #define DEBUG(expression) expression
 #else
 #define DEBUG(expression)
-#endif
-
-#ifdef DEBUG_MODE_MKL
-#define DEBUG_USE_MKL(expression) expression
-#else
-#define DEBUG_USE_MKL(expression)
 #endif
 
 #endif
