@@ -1,9 +1,11 @@
 #ifndef _CSBR_3_H_
 #define _CSBR_3_H_
+
 #include <limits>
 #include <cassert>
 #include <cstdio>
 
+#include "partition.h"
 #include "matrix/coo.3.h"
 
 /*
@@ -37,22 +39,18 @@ struct Csbr3
     BlockRowPartition<IT> * partition;
 
     IT nonzeros() const { return nnz; }
+
+    // Return the offset of block column "i"
+    IT get_block_column_offset(IT i) const
+    {
+        return block_size * i;
+    }
+
+    IT get_block_row_offset(IT i) const
+    {
+        return block_size * i;
+    }
 };
-
-/*
- * Return the offset of block column "i"
- */
-template <class T, class IT, class SIT>
-inline IT get_block_column_offset(const Csbr3<T,IT,SIT> * A, IT i)
-{
-    return A->block_size * i;
-}
-
-template <class T, class IT, class SIT>
-inline IT get_block_row_offset(const Csbr3<T,IT,SIT> * A, IT i)
-{
-    return A->block_size * i;
-}
 
 /*
  * Construct a CSBR3 matrix from a Coo3 matrix.

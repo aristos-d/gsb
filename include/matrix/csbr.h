@@ -68,7 +68,7 @@ struct Csbr
         #pragma omp parallel for schedule(dynamic, 1)
         for (IT bi=0; bi<blockrows; bi++)
         {
-            IT nchunks = partition[bi].nchunks;
+            IT nchunks = partition[bi].nchunks();
             IT y_start = blockrow_offset[bi];
             IT y_end = blockrow_offset[bi+1];
 

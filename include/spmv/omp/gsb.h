@@ -126,17 +126,17 @@ void spmv_blocked (
         T const * const __restrict x,
         T * const __restrict y)
 {
-    if (A->balanced) {
-
+    if (A->balanced)
+    {
         spmv_balanced(A, x, y);
-
-    } else {
-
+    }
+    else
+    {
         // For each block row
         #pragma omp parallel for schedule(dynamic,1)
         for (IT bi=0; bi<A->blockrows; bi++)
         {
-            IT nchunks = A->partition[bi].nchunks;
+            IT nchunks = A->partition[bi].chunks.size() - 1;
             IT y_start = A->get_block_row_offset(bi);
             IT y_end = A->get_block_row_offset(bi+1);
 

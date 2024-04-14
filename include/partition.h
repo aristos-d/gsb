@@ -1,6 +1,8 @@
 #ifndef _PARTITION_H_
 #define _PARTITION_H_
-#include <cstdlib>
+
+#include <cstdio>
+#include <vector>
 
 #include "rt.h"
 
@@ -11,61 +13,50 @@
 template <class IT>
 struct BlockRowPartition
 {
-  IT * chunks;
-  IT size;     // Size of array allocated
-  IT nchunks;  // Number of chunks in partition ( nchunks <= size )
+    std::vector<IT> chunks;
+    IT nchunks() { return chunks.size() - 1; }
 };
 
 /*
  * Partition the blockrow into chunks. Return number of chunks
  */
-template <class BLOCKMATRIX, class IT>
-IT partition_blockrow(const BLOCKMATRIX * A, BlockRowPartition<IT> * partition, IT start, IT end)
+template <class Matrix_t, class Index_t>
+Index_t partition_blockrow(const Matrix_t * A, BlockRowPartition<Index_t> * partition, Index_t start, Index_t end)
 {
-    IT b, c = 0, nnz = 0, size = INITPARTITION;
-    const IT min_nnz = PARTITION_FACTOR * A->nnz / (PARTITION_FACTOR_INV * RT_WORKERS);
+    const Index_t min_nnz = PARTITION_FACTOR * A->nnz / (PARTITION_FACTOR_INV * RT_WORKERS);
+    Index_t nnz = 0;
 
-    partition->chunks = (IT *) malloc(INITPARTITION * sizeof(IT));
-    partition->chunks[0] = start;
+    partition->chunks.clear();
+    partition->chunks.push_back(start);
 
-    for (b=start; b<end; b++)
+    for (Index_t b = start; b < end; b++)
     {
       nnz += A->block_nonzeros(b);
 
-      if (nnz>min_nnz && b<end-1) {  // Break chunk
-
-        c++;
-        nnz = 0;
-
-        // Check if a larger array is nedded. If so, reallocate.
-        if (c == size) {
-          size = 2 * size;
-          partition->chunks = (IT *) realloc(partition->chunks, size * sizeof(IT));
-        }
-
+      if (nnz > min_nnz && b < end-1)
+      {
         // Previous chunk ends. New chunk begins
-        partition->chunks[c] = b;
+        nnz = 0;
+        partition->chunks.push_back(b);
       }
     }
 
-    partition->chunks[c+1] = end;
-    partition->nchunks = c+1;
-    partition->size = size;
-    return c+1;
+    partition->chunks.push_back(end);
+    return partition->chunks.size();
 }
 
 /*
  *  Debugging function to visually inspect block-row partitioning
  */
-template <class IT>
-void partition_dump(BlockRowPartition<IT> * partition, IT blockrows)
+template <class Index_t>
+void partition_dump(BlockRowPartition<Index_t> * partition, Index_t blockrows)
 {
-    for (IT br=0; br<blockrows; br++)
+    for (Index_t br=0; br<blockrows; br++)
     {
-        printf("%u,%u:\t", br, partition[br].nchunks);
-        for (IT i=0; i<partition[br].nchunks; i++)
+        printf("%u,%u:\t", br, partition[br].nchunks());
+        for (Index_t i=1; i<partition[br].chunks.size(); i++)
         {
-            printf("%u ", partition[br].chunks[i+1] - partition[br].chunks[i]);
+            printf("%u ", partition[br].chunks[i] - partition[br].chunks[i-1]);
         }
         printf("\n");
     }
@@ -78,7 +69,7 @@ template <typename T, typename IT, typename SIT,
           template<typename, typename, typename> class GSB>
 void partition_init(GSB<T,IT,SIT> * A)
 {
-    A->partition = (BlockRowPartition<IT> *) malloc(A->blockrows * sizeof(BlockRowPartition<IT>));
+    A->partition = new BlockRowPartition<IT>[A->blockrows];
     for (IT br=0; br<A->blockrows; br++)
     {
         partition_blockrow(A, A->partition + br, A->blockrow_ptr[br], A->blockrow_ptr[br+1]);
@@ -88,52 +79,24 @@ void partition_init(GSB<T,IT,SIT> * A)
 /*
  * Initialize partition datastruct for CSBR matrix
  */
-template <typename T, typename IT,
+template <typename T, typename Index_t,
           template<typename, typename> class GSB>
-void partition_init(GSB<T,IT> * A)
+void partition_init(GSB<T,Index_t> * A)
 {
-    A->partition = (BlockRowPartition<IT> *) malloc(A->blockrows * sizeof(BlockRowPartition<IT>));
-    for (IT br=0; br<A->blockrows; br++)
+    A->partition = new BlockRowPartition<Index_t>[A->blockrows];
+    for (Index_t br=0; br<A->blockrows; br++)
     {
         partition_blockrow(A, A->partition + br, A->blockrow_ptr[br], A->blockrow_ptr[br+1]);
     }
 }
 
 /*
- * Clean-up functions
+ * Clean-up
  */
-template <typename T, typename IT, typename SIT,
-          template<typename, typename, typename> class GSB>
-void partition_destroy(GSB<T,IT,SIT> * A)
+template <typename Matrix_t>
+void partition_destroy(Matrix_t * A)
 {
-    for (IT br=0; br<A->blockrows; br++)
-    {
-        partition_destroy(A->partition + br);
-    }
-    free(A->partition);
-}
-
-template <typename T, typename IT,
-          template<typename, typename> class GSB>
-void partition_destroy(GSB<T,IT> * A)
-{
-    for (IT br=0; br<A->blockrows; br++)
-    {
-        partition_destroy(A->partition + br);
-    }
-    free(A->partition);
-}
-
-template <class IT>
-void partition_destroy(BlockRowPartition<IT> * partition)
-{
-  free(partition->chunks);
-}
-
-template <class IT>
-void partition_destroy(BlockRowPartition<IT> partition)
-{
-  free(partition.chunks);
+    delete [] A->partition;
 }
 
 #endif
