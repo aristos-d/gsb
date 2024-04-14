@@ -129,18 +129,23 @@ void size_to_offset(IT * offsets, const IT * sizes, IT size)
 }
 
 /*
- * Sort a triplet array in either row-major or column-major order
+ * Sort an element array in either row-major or column-major order
  */
-template <class T, class IT>
-void sort_triplets(Triplet<T, IT> * array, IT size, bool row_major)
+template <class Value_t, class Index_t,
+          template <typename, typename> class Point_t>
+void sort_triplets(Point_t<Value_t,Index_t> * array, Index_t size, bool row_major)
 {
   // Define function to compare row-major
-  auto compare_row = [](Triplet<T, IT> first, Triplet<T, IT> last){
+  auto compare_row = [](Point_t<Value_t,Index_t> const& first,
+                        Point_t<Value_t,Index_t> const& last)
+  {
     return (first.row<last.row || (first.row==last.row && first.col<last.col));
   };
 
   // Define function to compare column-major
-  auto compare_col = [](Triplet<T, IT> first, Triplet<T, IT> last){
+  auto compare_col = [](Point_t<Value_t,Index_t> const& first,
+                        Point_t<Value_t,Index_t> const& last)
+  {
     return (first.col<last.col || (first.col==last.col && first.row<last.row));
   };
 
@@ -153,27 +158,13 @@ void sort_triplets(Triplet<T, IT> * array, IT size, bool row_major)
 }
 
 /*
- * Sort an element array in either row-major or column-major order
+ * Sort a triplet array in row-major order
  */
-template <class T, class IT>
-void sort_triplets(Element<T, IT> * array, IT size, bool row_major)
+template <class Value_t, class Index_t,
+          template <typename, typename> class Point_t>
+void sort_triplets(Point_t<Value_t, Index_t> * array, Index_t size)
 {
-  // Define function to compare row-major
-  auto compare_row = [](Element<T, IT> first, Element<T, IT> last){
-    return (first.row<last.row || (first.row==last.row && first.col<last.col));
-  };
-
-  // Define function to compare column-major
-  auto compare_col = [](Element<T, IT> first, Element<T, IT> last){
-    return (first.col<last.col || (first.col==last.col && first.row<last.row));
-  };
-
-  // Sort
-  if (row_major) {
-    pss::parallel_stable_sort(array, array + size, compare_row);
-  } else {
-    pss::parallel_stable_sort(array, array + size, compare_col);
-  }
+  sort_triplets(array, size, true);
 }
 
 /*
@@ -203,48 +194,21 @@ IT bit_interleave(IT row, IT col)
 }
 
 /*
- * Sort a Triplet array in Morton order
+ * Sort a triplet array in Morton order
  */
-template <class T, class IT, class SIT>
-void sort_triplets_morton(Triplet<T, SIT> * array, IT size)
+template <class Value_t, class Index_t, class SmallIndex_t,
+          template <typename, typename> class Point_t>
+void sort_triplets_morton(Point_t<Value_t,SmallIndex_t> * array, Index_t size)
 {
     // Comparison function 
-    auto compare = [](Triplet<T, SIT> first, Triplet<T, SIT> last){
-        return bit_interleave(first.row, first.col) < bit_interleave(last.row, last.col);
+    auto compare = [](Point_t<Value_t,SmallIndex_t> const& first,
+                      Point_t<Value_t,SmallIndex_t> const& second)
+    {
+        return bit_interleave(first.row, first.col) < bit_interleave(second.row, second.col);
     };
 
     // Sort
     pss::parallel_stable_sort(array, array + size, compare);
-}
-
-/*
- * Sort a Triplet array in Morton order
- */
-template <class T, class IT, class SIT>
-void sort_triplets_morton(Element<T,SIT> * array, IT size)
-{
-    // Comparison function 
-    auto compare = [](Element<T, SIT> first, Element<T, SIT> last){
-        return bit_interleave(first.row, first.col) < bit_interleave(last.row, last.col);
-    };
-
-    // Sort
-    pss::parallel_stable_sort(array, array + size, compare);
-}
-
-/*
- * Sort a triplet array in row-major order
- */
-template <class T, class IT>
-void sort_triplets(Triplet<T, IT> * array, IT size)
-{
-  sort_triplets(array, size, true);
-}
-
-template <class T, class IT>
-void sort_triplets(Element<T, IT> * array, IT size)
-{
-  sort_triplets(array, size, true);
 }
 
 /*
@@ -319,36 +283,17 @@ void sort_elements_blocks(Element<T, IT> * array, IT size)
  * Sort a triplet array according to wide-row, column and row (in this order).
  * A wide row is a group of `width` rows.
  */
-template <class T, class IT>
-void sort_triplets_widerows(Triplet<T, IT> * array, IT size, IT width)
+template <class Value_t, class Index_t,
+          template <typename, typename> class Point_t>
+void sort_triplets_widerows(Point_t<Value_t,Index_t> * array, Index_t size, Index_t width)
 {
-  auto compare = [width](Triplet<T, IT> first, Triplet<T, IT> last)
+  auto compare = [width](Point_t<Value_t,Index_t> const& first,
+                         Point_t<Value_t,Index_t> const& last)
   {
-    IT wr1, wr2;
-    wr1 = first.row / width;
-    wr2 = last.row / width;
+    Index_t wr1 = first.row / width;
+    Index_t wr2 = last.row / width;
     return ( wr1 < wr2  || 
            ( wr1 == wr2 && first.col < last.col ) || 
-           ( wr1 == wr2 && first.col == last.col && first.row < last.row ));
-  };
-
-  pss::parallel_stable_sort(array, array + size, compare);
-}
-
-/*
- * Sort an element array according to wide-row, column and row (in this order).
- * A wide row is a group of `width` rows.
- */
-template <class T, class IT>
-void sort_triplets_widerows(Element<T, IT> * array, IT size, IT width)
-{
-  auto compare = [width](Element<T, IT> first, Element<T, IT> last)
-  {
-    IT wr1, wr2;
-    wr1 = first.row / width;
-    wr2 = last.row / width;
-    return ( wr1 < wr2  || 
-           ( wr1 == wr2 && first.col < last.col) || 
            ( wr1 == wr2 && first.col == last.col && first.row < last.row ));
   };
 
@@ -362,7 +307,8 @@ template <class T, class IT>
 void calculate_block_id(Element<T, IT> * elements, IT size,
         IT * blockrow_offset, IT blockrows, IT * blockcol_offset, IT blockcols)
 {
-    for (IT i=0; i<size; i++) {
+    for (IT i=0; i<size; i++)
+    {
         IT br = index_to_blockindex(blockrow_offset, blockrows, elements[i].row );
         IT bc = index_to_blockindex(blockcol_offset, blockcols, elements[i].col );
         elements[i].block = br * blockcols + bc;
@@ -373,7 +319,8 @@ template <class T, class IT>
 void calculate_block_id(Element<T, IT> * elements, IT size,
         IT blockrow_size, IT blockcol_size, IT blockcols)
 {
-    for (IT i=0; i<size; i++) {
+    for (IT i=0; i<size; i++)
+    {
         IT br = elements[i].row / blockrow_size;
         IT bc = elements[i].col / blockcol_size;
         elements[i].block = br * blockcols + bc;
@@ -390,8 +337,10 @@ IT count_blocks(Element<T, IT> * array, IT size)
   IT current = array[0].block;
   IT count = 1;
 
-  for(IT i=0; i<size; i++){
-    if(array[i].block > current){
+  for (IT i=0; i<size; i++)
+  {
+    if (array[i].block > current)
+    {
       count++;
       current = array[i].block;
     }
@@ -411,8 +360,10 @@ IT count_nnz_rows(NONZERO * source, IT nnz)
   IT count=1;
   IT cur_row = source[0].row;
 
-  for(IT i=0; i<nnz; i++){
-    if(source[i].row != cur_row){
+  for (IT i=0; i<nnz; i++)
+  {
+    if (source[i].row != cur_row)
+    {
       cur_row = source[i].row;
       count++;
     }
