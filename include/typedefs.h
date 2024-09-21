@@ -38,11 +38,7 @@ enum MatrixType
   BLOCK_CSC             = 3,
   BLOCK_CSR_PAR         = 4,
   BLOCK_COMP_ROW_CSR    = 5,
-  BLOCK_CUSTOM_1        = 6,
-  BLOCK_CUSTOM_2        = 7,
-  BLOCK_CUSTOM_3        = 8,
-  BLOCK_CUSTOM_4        = 9
 };
-#define MATRIX_TYPE_NUM 10
+#define MATRIX_TYPE_NUM 6
 
 #endif

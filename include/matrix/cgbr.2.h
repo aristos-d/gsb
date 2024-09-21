@@ -116,10 +116,17 @@ int Cgbr2<T,IT,SIT>::create (
     blockcol_ind = new IT[nnzblocks];
     blockrow_ptr = new IT[blockrows + 1]();
 
+    for (unsigned i = 0; i < MATRIX_TYPE_NUM; i++)
+    {
+        type_block_count[i] = 0;
+        type_nnz_count[i]   = 0;
+    }
+
     IT block_index = 0;
     IT i=0, j=0, k;
 
-    while (i<nnz) {
+    while (i<nnz)
+    {
         b = array[i].block;
         j = i + 1;
 
