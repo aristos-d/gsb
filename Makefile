@@ -33,8 +33,8 @@ LINKFLAGS =
 CC = clang
 CXX = clang++
 FLAGSOPT = -O3 -fno-rtti -fno-exceptions -funroll-loops 
-FLAGS = $(INCFLAGS) -std=c++11 -g -fopenmp $(FLAGSOPT)
-FLAGSDEBUG = $(INCFLAGS) -std=c++11 -g -fopenmp
+FLAGS = $(INCFLAGS) -std=c++17 -g -fopenmp $(FLAGSOPT)
+FLAGSDEBUG = $(INCFLAGS) -std=c++17 -g -fopenmp
 FLAGSC = $(INCFLAGS) -fopenmp
 HEADERS = $(INCDIR)*.h $(INCDIR)matrix/*.h $(INCDIR)io/*.h $(INCDIR)test/*.h
 

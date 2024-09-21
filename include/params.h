@@ -46,10 +46,6 @@
 #define BLOCK_SIZE(m, n) (BLOCK_SIZE_PARAM * round(sqrt(sqrt(m * n))))
 #endif
 
-// Memory allignment, first argument of alligned_alloc
-#define MEMALLIGN 32
-#define alligned_malloc(s) aligned_alloc(MEMALLIGN, s)
-
 #define DEFAULT_CSWR_WIDTH 32 
 
 // L2 cache size for tuning

@@ -37,7 +37,7 @@ VALUETYPE nonzeros[number_of_nonzeros]
 
 ## Requirements
 
-All executables are built with clang. Any compiler supporting OpenMP and C++11
+All executables are built with clang. Any compiler supporting OpenMP and C++17
 could probably be sufficient but no other compiler has been tested.
 
 

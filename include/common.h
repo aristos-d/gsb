@@ -1,16 +1,12 @@
-#ifndef _CSBR_COMMON_
-#define _CSBR_COMMON_
+#ifndef COMMON_H
+#define COMMON_H
 
-#include <stdint.h>
-#include <stdlib.h>
+#include <cstdint>
+#include <cstdlib>
 
 // Timer API.
 void tick();
 double tock();
-
-// Aligned memory API
-void * aligned_malloc(size_t size);
-void aligned_free(void *ptr);
 
 void print_timing(char const *mode, unsigned long nnz, double tm);
 void print_timing(char const *method, char const *mode, unsigned long nnz, double tm);
@@ -33,26 +29,31 @@ int highest_bit_set(int v);
 template <class T, class IT>
 void vector_random (T **x, IT size)
 {
-    *x = (T *) aligned_malloc(size * sizeof(T));
+    *x = static_cast<T*>(aligned_alloc(64, size * sizeof(T)));
 
     for (IT i=0; i<size; i++)
-        (*x)[i] = ((T) rand()) / ((T) RAND_MAX);
+    {
+        (*x)[i] = (static_cast<T>(rand())) / (static_cast<T>(RAND_MAX));
+    }
 }
 
 template <class T, class IT>
 void vector_zero (T **x, IT size)
 {
-    *x = (T *) aligned_malloc(size * sizeof(T));
+    *x = static_cast<T*>(aligned_alloc(64, size * sizeof(T)));
 
     for (IT i=0; i<size; i++)
+    {
         // This is slower than memset but safer in case we have to deal with a
         // data type whose 0 representation in not all-zero bytes.
         (*x)[i] = (T) 0;
+    }
 }
 
 template <class T>
 void vector_release (T *x)
 {
-    aligned_free(x);
+    free(x);
 }
-#endif
+
+#endif /* COMMON_H */
