@@ -25,7 +25,8 @@
 #endif
 #endif
 
-// Used to calculate minimum number of non-zeros in a subblockrow to use Cilk
+// Used to calculate minimum number of non-zeros in a sub-blockrow to use
+// parallelization.
 #ifndef PARTITION_FACTOR
 #define PARTITION_FACTOR 1
 #endif

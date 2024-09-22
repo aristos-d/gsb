@@ -1,13 +1,12 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <cilk/cilk.h>
-#include <cilk/cilk_api.h>
+#include <cstdlib>
+#include <cstdio>
 
 #include "matrix/coo.h"
 #include "matrix/csbr.h"
 #include "matrix/csbr.2.h"
 #include "matrix/cgbr.h"
 #include "common.h"
+#include "rt.h"
 
 static const char * worker_number[] = {
     "1", "2", "4", "8", "16", "32", "64", "128", "256"
@@ -15,10 +14,10 @@ static const char * worker_number[] = {
 
 template <class T, class IT,
           template <typename, typename> class MATRIX>
-void benchmark_spmv_threads (MATRIX<T,IT> const A, int iterations)
+void benchmark_spmv_threads (MATRIX<T,IT> const& A, int iterations)
 {
   T * x, * y;
-  double ts, te, time_avg;
+  double dt, time_avg;
 
   // Allocate and initialize x and y
   srand(0);
@@ -35,11 +34,11 @@ void benchmark_spmv_threads (MATRIX<T,IT> const A, int iterations)
     printf("%3d, ", RT_WORKERS);
 
     // Run SpMV multiple times and measure execution time
-    spmv(&A, x, y);
-    ts = timer_seconds_since_init();
-    for (int i=0; i<iterations; i++) spmv(&A, x, y);
-    te = timer_seconds_since_init();
-    time_avg = (te - ts) / iterations;
+    A.spmv(x, y);
+    tick();
+    for (int i=0; i<iterations; i++) A.spmv(x, y);
+    dt = tock();
+    time_avg = dt / iterations;
     printf("%.6f, ", time_avg);
   }
 
