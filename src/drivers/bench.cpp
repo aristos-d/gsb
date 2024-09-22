@@ -1,10 +1,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#define _NO_CSB_ALIGNED_MALLOC_
 #include "common.h"
-#include "matrix/coo.h"
-#include "matrix/csr.h"
+#include "matrix/coo.1.h"
+#include "matrix/csr.1.h"
 #include "matrix/cgbr.2.h"
 #include "io/input.h"
 #include "test/bench.h"
@@ -20,7 +19,8 @@ int main (int argc, char * argv[])
     Csr<VALTYPE,INDEXTYPE> csr;
     Cgbr2<VALTYPE,INDEXTYPE,SINDEXTYPE> cgbr; 
   
-    if (argc != 2){
+    if (argc != 2)
+    {
         fprintf(stderr, "Usage: %s [matrix]\n", argv[0]);
         return 1;
     }
@@ -33,7 +33,8 @@ int main (int argc, char * argv[])
     ret = read_COO(&coo, argv[1]);
     t = tock();
 
-    if (ret<0) {
+    if (ret<0)
+    {
         fprintf(stderr, "Something went wrong while reading the matrix. Aborting.\n");
         return 1;
     } 
