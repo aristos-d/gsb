@@ -6,14 +6,13 @@
 #include <cassert>
 #include <limits>
 
-#include <omp.h>
-
 #include "typedefs.h"
 #include "utils.h"
 #include "partition.h"
 #include "matrix/csr.1.h"
 #include "matrix/coo.2.h"
 #include "matrix/coo.3.h"
+#include "spmv/omp/gsb.h"
 
 /*
  * CSR matrix containing CSR blocks of variable size or Compressed Sparse
@@ -35,6 +34,7 @@ struct Csbr
 
     // Partitioning information
     BlockRowPartition<IT> * partition;
+    bool balanced {true}; // TODO: Add heuristic
 
     // Original size
     IT rows;
@@ -58,66 +58,24 @@ struct Csbr
         return blocks[i].row_ptr[blocks[i].rows];
     }
 
+    // Return the offset of block column "i"
+    IT get_block_column_offset(IT i) const
+    {
+        return blockcol_offset[i];
+    }
+
+    IT get_block_row_offset(IT i) const
+    {
+        return blockrow_offset[i];
+    }
+
     /*
      * SpMV routine for matrices in CSBR format. y vector MUST be already
      * initialized. Parallel spmv for blocks
      */
     void spmv(T const * const __restrict x, T * const __restrict y) const
     {
-        // For each block row
-        #pragma omp parallel for schedule(dynamic, 1)
-        for (IT bi=0; bi<blockrows; bi++)
-        {
-            IT nchunks = partition[bi].nchunks();
-            IT y_start = blockrow_offset[bi];
-            IT y_end = blockrow_offset[bi+1];
-
-            spmv_chunk(x, y + y_start, partition + bi, IT(0), nchunks, y_end - y_start);
-        }
-    }
-
-    void spmv_chunk(T const * const __restrict x, T * const __restrict y,
-                    BlockRowPartition<IT> const * const partition,
-                    IT const first, IT const last, IT const bsize) const
-    {
-        if (last - first == 1)
-        {
-            IT x_offset;
-            IT bstart = partition->chunks[first];
-            IT bend = partition->chunks[last];
-
-            for (IT k=bstart; k<bend; k++)
-            {
-                x_offset = blockcol_offset[blockcol_ind[k]];
-                block(k)->spmv_serial(x + x_offset, y);
-            }
-        }
-        else
-        {
-            IT middle = (first+last) / 2;
-
-            #pragma omp task
-            spmv_chunk(x, y, partition, first, middle, bsize);
-
-            if (RT_SYNCHED)
-            {
-                spmv_chunk(x, y, partition, middle, last, bsize);
-            }
-            else
-            {
-                // We need C++ style allocation to ensure proper initialization
-                T * temp = new T[bsize]();
-
-                spmv_chunk(x, temp, partition, middle, last, bsize);
-                #pragma omp taskwait
-
-                #pragma omp simd
-                for (IT i=0; i<bsize; i++)
-                    y[i] += temp[i];
-
-                delete [] temp;
-            }
-        }
+        spmv_blocked<Csbr<T,IT>,T,IT>(this, x, y);
     }
 };
 
@@ -142,8 +100,8 @@ void Coo_to_Csbr(Csbr<T, IT> * A, Coo2<T, IT> * B,
   // Sanity checks on block sizes
   assert(blockrows <= B->rows);
   assert(blockcols <= B->columns);
-  assert(A->blockrow_offset[blockrows] == B->rows);
-  assert(A->blockcol_offset[blockcols] == B->columns);
+  assert(A->get_block_row_offset(blockrows) == B->rows);
+  assert(A->get_block_column_offset(blockcols) == B->columns);
 
   IT nnz = A->nnz;
   IT br, br_offset, br_size;
@@ -159,7 +117,7 @@ void Coo_to_Csbr(Csbr<T, IT> * A, Coo2<T, IT> * B,
   IT * counter = new IT[blockrows*blockcols]();
 
   // Count non-zeros of each block
-  for(IT i=0; i<nnz; i++)
+  for (IT i=0; i<nnz; i++)
   {
     br = index_to_blockindex(blockrow_offset, blockrows, B->triplets[i].row);
     bc = index_to_blockindex(blockcol_offset, blockcols, B->triplets[i].col );
@@ -174,9 +132,11 @@ void Coo_to_Csbr(Csbr<T, IT> * A, Coo2<T, IT> * B,
   // Count non-zero blocks, calculate block row pointers
   nnz_blocks = 0;
   A->blockrow_ptr[0] = 0;
-  for(IT i=0; i<blockrows; i++){
-    for(IT j=0; j<blockcols; j++){
-      if(counter[i*blockcols + j] > 0) nnz_blocks++ ;
+  for (IT i=0; i<blockrows; i++)
+  {
+    for (IT j=0; j<blockcols; j++)
+    {
+      if (counter[i*blockcols + j] > 0) nnz_blocks++ ;
     }
     A->blockrow_ptr[i+1] = nnz_blocks;
   }
@@ -189,21 +149,23 @@ void Coo_to_Csbr(Csbr<T, IT> * A, Coo2<T, IT> * B,
   IT block_index = 0;
   IT val_index = 0;
 
-  for(IT i=0; i<blockrows; i++)
+  for (IT i=0; i<blockrows; i++)
   {
     br_offset = blockrow_offset[i];
     br_size = blockrow_offset[i + 1] - br_offset;
 
-    for(IT j=0; j<blockcols; j++)
+    for (IT j=0; j<blockcols; j++)
     {
       block_nnz = counter[i*blockcols+j];
-      if(block_nnz>0){
+      if (block_nnz>0)
+      {
         bc_offset = blockcol_offset[j];
         bc_size = blockcol_offset[j+1] - bc_offset;
         A->blockcol_ind[block_index] = j;
 
         // Calculate new row and column indexes
-        for(IT k=0; k<block_nnz; k++){
+        for (IT k=0; k<block_nnz; k++)
+        {
           B->triplets[val_index+k].row = B->triplets[val_index+k].row - br_offset;
           B->triplets[val_index+k].col = B->triplets[val_index+k].col - bc_offset;
         }
@@ -261,8 +223,8 @@ void Coo_to_Csbr(Csbr<T, IT> * A, Coo3<T, IT> * B,
   // Sanity checks on block sizes
   assert(blockrows <= B->rows);
   assert(blockcols <= B->columns);
-  assert(A->blockrow_offset[blockrows] == B->rows);
-  assert(A->blockcol_offset[blockcols] == B->columns);
+  assert(A->get_block_row_offset(blockrows) == B->rows);
+  assert(A->get_block_column_offset(blockcols) == B->columns);
 
   // Memory allocations
   A->blocks = (Csr<T,IT> *) malloc(A->nnzblocks * sizeof(Csr<T,IT>));

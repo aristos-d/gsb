@@ -102,8 +102,8 @@ int Cgbr2<T,IT,SIT>::create (
     // Sanity checks on block sizes
     assert(blockrows <= rows);
     assert(blockcols <= columns);
-    assert(blockrow_offset[blockrows] == rows);
-    assert(blockcol_offset[blockcols] == columns);
+    assert(get_block_row_offset(blockrows) == rows);
+    assert(get_block_column_offset(blockcols) == columns);
 
     // Sort non-zeros according to block-row, block-column, row, column
     calculate_block_id(array, nnz, blockrow_offset, blockrows, blockcol_offset, blockcols);
@@ -135,10 +135,10 @@ int Cgbr2<T,IT,SIT>::create (
 
         br = b / blockcols;
         bc = b % blockcols;
-        br_offset = blockrow_offset[br];
-        bc_offset = blockcol_offset[bc];
-        br_size = blockrow_offset[br + 1] - br_offset;
-        bc_size = blockcol_offset[bc + 1] - bc_offset;
+        br_offset = get_block_row_offset(br);
+        bc_offset = get_block_column_offset(bc);
+        br_size = get_block_row_offset(br + 1) - br_offset;
+        bc_size = get_block_column_offset(bc + 1) - bc_offset;
 
         // Block meta data
         blockrow_ptr[br+1]++;

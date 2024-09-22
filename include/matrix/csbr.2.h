@@ -63,8 +63,8 @@ struct Csbr2
         IT blockrow_start, blockrow_end;
         IT y_offset;
 
-        y_offset = blockrow_offset[bi];
-        rows = blockrow_offset[bi+1] - y_offset;
+        y_offset = get_block_row_offset(bi);
+        rows = get_block_row_offset(bi+1) - y_offset;
         blockrow_start = blockrow_ptr[bi];
         blockrow_end = blockrow_ptr[bi+1];
 
@@ -106,8 +106,8 @@ void Coo_to_Csbr(Csbr2<T,IT> * A, Coo3<T,IT> * B,
   // Sanity checks on block sizes
   assert(blockrows <= B->rows);
   assert(blockcols <= B->columns);
-  assert(A->blockrow_offset[blockrows] == B->rows);
-  assert(A->blockcol_offset[blockcols] == B->columns);
+  assert(A->get_block_row_offset(blockrows) == B->rows);
+  assert(A->get_block_column_offset(blockcols) == B->columns);
 
   // Memory allocations
   A->blockrow_ptr = (IT *) calloc(A->blockrows + 1, sizeof(IT));
@@ -162,7 +162,7 @@ void Coo_to_Csbr(Csbr2<T,IT> * A, Coo3<T,IT> * B,
     IT block_size;
     IT blockrow_start, blockrow_end;
 
-    block_size = A->blockrow_offset[br+1] - A->blockrow_offset[br];
+    block_size = A->get_block_row_offset(br+1) - A->get_block_row_offset(br);
     blockrow_start = A->blockrow_ptr[br];
     blockrow_end = A->blockrow_ptr[br+1];
 

@@ -106,8 +106,8 @@ void Coo_to_Bcsr(Bcsr<T, IT> * A, Coo3<T, IT> * B,
   // Sanity checks on block sizes
   assert(blockrows <= B->rows);
   assert(blockcols <= B->columns);
-  assert(A->blockrow_offset[blockrows] == B->rows);
-  assert(A->blockcol_offset[blockcols] == B->columns);
+  assert(A->get_block_row_offset(blockrows) == B->rows);
+  assert(A->get_block_column_offset(blockcols) == B->columns);
 
   // Memory allocations
   A->blocks = (Csr<T,IT> *) malloc(blockrows * blockcols * sizeof(Csr<T,IT>));
@@ -132,10 +132,10 @@ void Coo_to_Bcsr(Bcsr<T, IT> * A, Coo3<T, IT> * B,
       prev_b = b;
       br = b / blockcols;
       bc = b % blockcols;
-      br_offset = blockrow_offset[br];
-      bc_offset = blockcol_offset[bc];
-      br_size = blockrow_offset[br + 1] - br_offset;
-      bc_size = blockcol_offset[bc + 1] - bc_offset;
+      br_offset = A->get_block_row_offset(br);
+      bc_offset = A->get_block_column_offset(bc);
+      br_size = A->get_block_row_offset(br + 1) - br_offset;
+      bc_size = A->get_block_column_offset(bc + 1) - bc_offset;
 
       // CSR block initialize
       A->blocks[b].rows = br_size;
