@@ -48,7 +48,7 @@ void allocate(Coo3<T, IT> * A, IT nnz)
 }
 
 template <class T, class IT>
-void release(Coo3<T,IT> A)
+void release(Coo3<T,IT>& A)
 {
     delete [] A.elements;
 }

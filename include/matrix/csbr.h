@@ -348,9 +348,9 @@ void Coo_to_Blocked(Csbr<T,IT> * A, COO<T,IT> * B,
  * Print information about the matrix
  */
 template <class T, class IT>
-void print_info(Csbr<T, IT> A)
+void print_info(Csbr<T, IT> const& A)
 {
-  printf("Csbr matrix : \n");
+  printf("CSBR matrix :\n");
   printf("\t%ld rows x %ld columns\n", (long) A.rows, (long) A.columns);
   printf("\t%ld block-rows x %ld block-columns\n", (long) A.blockrows, (long) A.blockcols);
   printf("\t%ld non-zeros in %ld blocks\n", (long) A.nnz, (long) A.nnzblocks);
@@ -364,7 +364,7 @@ void print_info(Csbr<T, IT> A)
  * memory allocated by the Coo_to_Csbr function.
  */
 template <class T, class IT>
-void release(Csbr<T, IT> A)
+void release(Csbr<T, IT>& A)
 {
     for (IT i=0; i<A.nnzblocks; i++) {
         delete [] A.blocks[i].row_ptr;

@@ -18,24 +18,14 @@ struct CompRowCsr {
   IT * row_ptr;
   IT * nnz_rows;
   IT nnz_rows_num;
+
+  IT nonzeros() const
+  {
+    return row_ptr[nnz_rows_num];
+  }
 };
 
 #include "spmv/crcsr.h"
-
-/*
- * Returns the number of non-zero elements of the matrix.
- */
-template <class T, class IT>
-inline IT nonzeros (CompRowCsr<T,IT> const * const A)
-{
-    return A->row_ptr[A->nnz_rows_num];
-}
-
-template <class T, class IT>
-inline IT nonzeros (CompRowCsr<T,IT> const A)
-{
-    return A.row_ptr[A.nnz_rows_num];
-}
 
 /*
  * Construct a CSRCSR matrix from an array of type NONZERO. Type NONZERO must
@@ -57,8 +47,8 @@ void Coo_to_CrCsr(CompRowCsr<T, IT> * A, NONZERO * nonzeros, IT nnz, IT nnzrows)
     A->nnz_rows[0] = nonzeros[0].row;
     cur_row_index = 0;
 
-    for (IT i=0; i<nnz; i++) {
-
+    for (IT i=0; i<nnz; i++)
+    {
         A->col_ind[i] = nonzeros[i].col;
         A->val[i] = nonzeros[i].val;
 
@@ -72,7 +62,8 @@ void Coo_to_CrCsr(CompRowCsr<T, IT> * A, NONZERO * nonzeros, IT nnz, IT nnzrows)
 
     assert(cur_row_index == nnzrows - 1);
 
-    for (IT r=0; r<nnzrows; r++) {
+    for (IT r=0; r<nnzrows; r++)
+    {
        A->row_ptr[r+1] = A->row_ptr[r+1] + A->row_ptr[r];
     }
 
@@ -110,7 +101,7 @@ void Coo_to_CrCsr (CompRowCsr<T, IT> * A, Coo3<T, IT> * B)
  * Memory deallocation function
  */
 template <class T, class IT>
-void release (CompRowCsr<T, IT> A)
+void release (CompRowCsr<T, IT>& A)
 {
     delete [] A.nnz_rows;
     delete [] A.row_ptr;

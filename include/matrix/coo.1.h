@@ -72,7 +72,7 @@ void allocate(Coo<T,IT,SIT> *A, IT nnz)
 }
 
 template <typename T, typename IT, typename SIT>
-void release(Coo<T,IT,SIT> A)
+void release(Coo<T,IT,SIT>& A)
 {
     delete [] A.I;
     delete [] A.J;

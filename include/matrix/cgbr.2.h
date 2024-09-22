@@ -228,7 +228,7 @@ void Coo_to_Blocked (Cgbr2<T,IT,SIT> * A, Coo3<T,IT> * B,
  * Release memory allocated for the CGBR matrix
  */
 template <class T, class IT, class SIT>
-void release(Cgbr2<T,IT,SIT> A)
+void release(Cgbr2<T,IT,SIT>& A)
 {
     partition_destroy(&A);
 

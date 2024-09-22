@@ -394,7 +394,7 @@ void release (MatrixBlock<T,IT,SIT> *A)
  * Release memory allocated for the CGBR matrix
  */
 template <class T, class IT, class SIT>
-void release(Cgbr<T,IT,SIT> A)
+void release(Cgbr<T,IT,SIT>& A)
 {
     if (!A.balanced)
         partition_destroy(&A);

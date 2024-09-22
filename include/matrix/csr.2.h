@@ -1,5 +1,6 @@
-#ifndef _CSR_2_H_
-#define _CSR_2_H_
+#ifndef MATRIX_CSR_2_H
+#define MATRIX_CSR_2_H
+
 #include <cassert>
 
 #include "typedefs.h"
@@ -80,10 +81,10 @@ int Coo_to_Csr(Csr2<T, IT> * A, NONZERO * data_,
  * Free all the memory allocated for this matrix.
  */
 template <class T, class IT>
-void release(Csr2<T, IT> A)
+void release(Csr2<T, IT>& A)
 {
     delete [] A.row_ptr;
     delete [] A.data;
 }
 
-#endif
+#endif /* MATRIX_CSR_2_H */

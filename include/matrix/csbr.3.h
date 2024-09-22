@@ -136,7 +136,7 @@ void Coo_to_Blocked (Csbr3<T,IT,SIT> * A, Coo3<T,IT> * B,
 }
 
 template <class T, class IT, class SIT>
-void print_info(Csbr3<T,IT,SIT> A)
+void print_info(Csbr3<T,IT,SIT> const& A)
 {
     printf("Matrix info : \n");
     printf("\t%lu rows x %lu columns\n",
@@ -159,7 +159,7 @@ void print_info(Csbr3<T,IT,SIT> A)
  * Memory deallocation
  */
 template <class T, class IT, class SIT>
-void release (Csbr3<T,IT,SIT> A)
+void release (Csbr3<T,IT,SIT>& A)
 {
     delete [] A.blockrow_ptr;
     delete [] A.block_ptr;

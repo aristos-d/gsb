@@ -48,7 +48,7 @@ void allocate(Coo2<T, IT> *A, IT nnz)
 }
 
 template <class T, class IT>
-void release(Coo2<T,IT> A)
+void release(Coo2<T,IT>& A)
 {
     delete [] A.triplets;
 }

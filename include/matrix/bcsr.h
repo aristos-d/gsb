@@ -184,9 +184,9 @@ void Coo_to_Blocked(Bcsr<T, IT> * A, Coo3<T, IT> * B,
  * Print information about the matrix
  */
 template <class T, class IT>
-void print_info(Bcsr<T, IT> A)
+void print_info(Bcsr<T, IT> const& A)
 {
-  printf("Bcsr matrix : \n");
+  printf("BCSR matrix :\n");
   printf("\t%ld rows x %ld columns\n", (long) A.rows, (long) A.columns);
   printf("\t%ld block-rows x %ld block-columns\n", (long) A.blockrows, (long) A.blockcols);
   printf("\t%ld non-zeros in %ld blocks\n", (long) A.nnz, (long) A.nnzblocks);
@@ -199,7 +199,7 @@ void print_info(Bcsr<T, IT> A)
  * allocated by the Coo_to_Bcsr function.
  */
 template <class T, class IT>
-void release(Bcsr<T, IT> A)
+void release(Bcsr<T, IT>& A)
 {
   for (IT i=0; i<A.blockrows * A.blockcols; i++)
   {
