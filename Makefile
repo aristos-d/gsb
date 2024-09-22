@@ -13,7 +13,8 @@ OBJ = obj/common.o \
 TESTS = $(TESTBINDIR)result \
 		$(TESTBINDIR)structs \
 		$(TESTBINDIR)block \
-		$(TESTBINDIR)partition
+		$(TESTBINDIR)partition \
+		$(TESTBINDIR)visual
 
 TOOLS = $(TOOLBINDIR)permute  \
 		$(TOOLBINDIR)sort \
@@ -66,6 +67,9 @@ $(TESTBINDIR)structs: $(TESTDIR)structs.cpp $(INCDIR)typedefs.h
 
 $(TESTBINDIR)result: $(TESTDIR)result.cpp lib/common.a $(HEADERS)
 	$(CXX) $(FLAGS) $< lib/common.a -o $@
+
+$(TESTBINDIR)visual: $(TESTDIR)visual.cpp $(HEADERS)
+	$(CXX) $(FLAGS) $< -o $@
 
 $(TESTBINDIR)partition: src/drivers/blocked.cpp lib/common.a $(HEADERS)
 	$(CXX) $(FLAGS) \

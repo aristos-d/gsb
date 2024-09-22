@@ -18,9 +18,9 @@ struct Coo2
     IT nonzeros() const { return nnz; }
 
     // Getters
-    IT get_row_index (IT i) { return triplets[i].row; }
-    IT get_column_index (IT i) { return triplets[i].col; }
-    T get_value (IT i) { return triplets[i].val; }
+    IT get_row_index (IT i) const { return triplets[i].row; }
+    IT get_column_index (IT i) const { return triplets[i].col; }
+    T get_value (IT i) const { return triplets[i].val; }
 
     // Setters
     void set_row_index (IT i, IT row) { triplets[i].row = row; }
