@@ -3,6 +3,9 @@
 
 #include "spmv/coo.h"
 
+#include <cstddef>
+#include <iostream>
+
 /*
  * Generic method to set a point on any COO matrix
  */
@@ -74,6 +77,28 @@ int Coo_to_Coo(COOTYPE * A, NONZERO * array, IT rows, IT columns, IT nnz)
       set_point(A, i, array[i].row, array[i].col, array[i].val);
 
   return 0;
+}
+
+/*
+ * Prints the matrix in a readable format. For debugging purposes only.
+ */
+template <typename COOTYPE>
+void show (COOTYPE const& A)
+{
+    if (A.nnz > 20)
+    {
+        std::cout << "Printing a matrix with more than 20 non-zeros is a bad idea.\n";
+        return;
+    }
+
+    for (size_t i = 0; i < A.nonzeros(); i++)
+    {
+        std::cout << '(' << A.get_row_index(i) << ", " <<
+                            A.get_column_index(i) << ", " <<
+                            A.get_value(i) <<
+                     ')' << '\n';
+    }
+    std::cout << '\n';
 }
 
 #endif

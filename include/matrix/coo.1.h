@@ -1,8 +1,6 @@
 #ifndef _COO_1_H_
 #define _COO_1_H_
 
-#include <iostream>
-
 #include "typedefs.h"
 #include "generic/coo.h"
 #include "generic/base.h"
@@ -60,21 +58,6 @@ struct Coo : public BlockBase<T,IT>
         spmv_coo(val, I, J, this->nnz, x, y);
     }
 };
-
-/*
- * Prints the matrix in a readable format. For debugging purposes only.
- */
-template <typename T, typename IT, typename SIT>
-void show (Coo<T,IT,SIT> A)
-{
-    if (A.nnz > 20) {
-        std::cout << "Printing a matrix with more than 20 non-zeros is a bad idea.\n";
-    } else {
-        for (IT i=0; i<A.nnz; i++)
-            std::cout << '(' << A.I[i] << ", " << A.J[i] << ", " << A.val[i] << ')' << '\n';
-        std::cout << '\n';
-    }
-}
 
 /*
  * Memory allocation/deallocation

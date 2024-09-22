@@ -38,20 +38,6 @@ struct Coo2
 };
 
 /*
- * Prints the matrix in a readable format. For debugging purposes only.
- */
-template <class T, class IT>
-void show (Coo2<T, IT> A)
-{
-    if (A.nnz > 20) {
-      std::cout << "Printing a matrix with more than 20 non-zeros is a bad idea.\n";
-    } else {
-      for (IT i=0; i<A.nnz; i++) show(A.triplets[i]);
-      std::cout << '\n';
-  }
-}
-
-/*
  * Memory allocation/deallocation
  */
 template <class T, class IT>

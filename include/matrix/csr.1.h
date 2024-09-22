@@ -1,5 +1,6 @@
 #ifndef _CSR_1_H_
 #define _CSR_1_H_
+
 #include <iostream>
 #include <cassert>
 
@@ -76,7 +77,7 @@ int Coo_to_Csr(Csr<T, IT> * A, NONZERO *nonzeros,
   A->rows = rows;
   A->columns = columns;
 
-  if(!isSorted) sort_triplets(nonzeros, nnz);
+  if (!isSorted) sort_triplets(nonzeros, nnz);
 
   // Allocate memory and check
   if (allocate) {
@@ -103,35 +104,29 @@ int Coo_to_Csr(Csr<T, IT> * A, NONZERO *nonzeros,
 }
 
 /*
- * Constructor wrappers
- */
-//template <class NONZERO, class T, class IT>
-//int Coo_to_Csr(Csr<T, IT> *A, NONZERO *nonzeros, IT rows, IT columns, IT nnz)
-//{
-//    return Coo_to_Csr(A, nonzeros, rows, columns, nnz, true, true);
-//}
-
-/*
  * Prints the matrix in a readable format. For debugging purposes only.
  */
 template <class T, class IT>
-void show(Csr<T, IT> A)
+void show(Csr<T, IT> const& A)
 {
-    if (A.rows > 20) {
-        std::cout
-            << "Printing a matrix with more than 20 rows is a bad idea.\n";
-    } else {
-        for (IT i = 0; i < A.rows; i++) {
-            std::cout << i << ": ";
-            IT row_start, next_row;
-            row_start = A.row_ptr[i];
-            next_row = A.row_ptr[i + 1];
-            for (IT k = row_start; k < next_row; k++) {
-                std::cout << '(' << A.col_ind[k] << ',' << A.val[k] << ')'
-                          << '\t';
-            }
-            std::cout << '\n';
+    if (A.rows > 20)
+    {
+        std::cout << "Printing a matrix with more than 20 rows is a bad idea.\n";
+        return;
+    }
+
+    for (IT i = 0; i < A.rows; i++)
+    {
+        std::cout << i << ": ";
+        IT row_start, next_row;
+        row_start = A.row_ptr[i];
+        next_row = A.row_ptr[i + 1];
+        for (IT k = row_start; k < next_row; k++)
+        {
+            std::cout << '(' << A.col_ind[k] << ',' << A.val[k] << ')'
+                      << '\t';
         }
+        std::cout << '\n';
     }
 }
 
@@ -139,7 +134,7 @@ void show(Csr<T, IT> A)
  * Memory deallocation
  */
 template <class T, class IT>
-void release(Csr<T, IT> A)
+void release(Csr<T, IT>& A)
 {
     delete [] A.val;
     delete [] A.row_ptr;

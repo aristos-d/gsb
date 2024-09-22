@@ -1,6 +1,7 @@
-#ifndef _CSR_H_
-#define _CSR_H_
-#include <cstdio>
+#ifndef GENERIC_CSR_H
+#define GENERIC_CSR_H
+
+#include <iostream>
 
 #include "matrix/coo.1.h"
 #include "matrix/coo.2.h"
@@ -36,10 +37,9 @@ int Coo_to_Csr(CSR<T,IT> *A, Coo3<T,IT> *B)
  * Print information about the matrix
  */
 template <typename CSRTYPE>
-void print_info(CSRTYPE A)
+void print_info(CSRTYPE const& A)
 {
-    printf("CSR matrix : ");
-    printf("%lu rows, %lu non-zeros\n", (unsigned long) A.rows, (unsigned long) A.nonzeros());
+    std::cout << "CSR matrix : " << A.rows << " rows, " << A.nonzeros() << " non-zeros\n";
 }
 
-#endif
+#endif /* GENERIC_CSR_H */
