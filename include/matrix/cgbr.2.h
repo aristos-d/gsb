@@ -51,7 +51,7 @@ struct Cgbr2 : public BlockBase<T,IT>
 
     void spmv (T const * const __restrict x, T * const __restrict y) const
     {
-        spmv_blocked(this, x, y);
+        spmv_blocked<Cgbr2<T,IT,SIT>,T,IT>(this, x, y);
     }
 
     // Get pointer to block i

@@ -181,7 +181,7 @@ struct Cgbr
      */
     void spmv(T const * const __restrict x, T * const __restrict y) const
     {
-        spmv_blocked(this, x, y);
+        spmv_blocked<Cgbr<T,IT,SIT>,T,IT>(this, x, y);
     }
 
     void spmv_serial(T const * const __restrict x, T * const __restrict y) const

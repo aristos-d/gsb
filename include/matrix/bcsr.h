@@ -1,5 +1,6 @@
-#ifndef _BCSR_H_
-#define _BCSR_H_
+#ifndef BCSR_H
+#define BCSR_H
+
 #include <cstdio>
 #include <cstdlib>
 #include <cassert>
@@ -9,6 +10,7 @@
 #include "utils.h"
 #include "matrix/coo.3.h"
 #include "matrix/csr.1.h"
+#include "spmv/omp/gsb.h"
 
 /*
  * Dense matrix of CSR blocks of variable size or Blocked Compressed Sparse
@@ -25,7 +27,7 @@ struct Bcsr
 
     // Partitioning information
     BlockRowPartition<IT> * partition;
-    bool balanced;
+    bool balanced {true}; // TODO: Find a heuristic for this.
 
     // Original size
     IT rows;
@@ -43,35 +45,20 @@ struct Bcsr
     IT nonzeros() const { return nnz; }
 
     // Returns the number of non-zero elements in a block of the matrix.
-    IT block_nonzeros(IT i) { return blocks[i].row_ptr[blocks[i].rows]; }
-
-    /*
-     * SpMV routine for all the blocks in a chunk of a blockrow from a matrix
-     * in CSBR format. y vector MUST be already initialized. spmv is executed
-     * serially for all blocks but, within each block, execution is
-     * parallelized.
-     */
-    void spmv_chunk(const T * __restrict x, T * __restrict y, IT first, IT last) const
+    IT block_nonzeros(IT i) const
     {
-        IT x_offset;
-        for (IT k=first; k<last; k++)
-        {
-            blocks[k].spmv(x, y);
-        }
+        return blocks[i].row_ptr[blocks[i].rows];
     }
 
-    /*
-     * SpMV routine for all the blocks in a chunk of a blockrow from a matrix
-     * in CSBR format. y vector MUST be already initialized. spmv is executed
-     * serially for all blocks and execution is serial within each block too.
-     */
-    void spmv_chunk_serial(const T * __restrict x, T * __restrict y, IT first, IT last) const
+    // Return the offset of block column "i"
+    IT get_block_column_offset(IT i) const
     {
-        IT x_offset;
-        for (IT k=first; k<last; k++)
-        {
-            blocks[k].spmv_serial(x, y);
-        }
+        return blockcol_offset[i];
+    }
+
+    IT get_block_row_offset(IT i) const
+    {
+        return blockrow_offset[i];
     }
 
     /*
@@ -80,48 +67,7 @@ struct Bcsr
      */
     void spmv(const T * __restrict x, T * __restrict y) const
     {
-        // For each block row
-        #pragma omp parallel for schedule(dynamic,1)
-        for (IT bi=0; bi<blockrows; bi++)
-        {
-            IT x_offset, y_offset, index;
-
-            y_offset = blockrow_offset[bi];
-
-            // For every block in block row
-            for (IT bj=0; bj<blockcols; bj++)
-            {
-                x_offset = blockcol_offset[bj];
-                index = bi * blockcols + bj;
-                if (blocks[index].rows > 0)
-                    blocks[index].spmv(x + x_offset, y + y_offset);
-            }
-        }
-    }
-
-    /*
-     * spmv routine for matrices in BCSR format. y vector MUST be already
-     * initialized. Serial spmv for blocks
-     */
-    void spmv_serial_block(const T * __restrict x, T * __restrict y) const
-    {
-        // For each block row
-        #pragma omp parallel for schedule(dynamic,1)
-        for (IT bi=0; bi<blockrows; bi++)
-        {
-            IT x_offset, y_offset, index;
-
-            y_offset = blockrow_offset[bi];
-
-            // For every block in block row
-            for (IT bj=0; bj<blockcols; bj++)
-            {
-                x_offset = blockcol_offset[bj];
-                index = bi * blockcols + bj;
-                if (blocks[index].rows > 0)
-                    blocks[index].spmv_serial(x + x_offset, y + y_offset);
-            }
-        }
+        spmv_blocked<Bcsr<T,IT>,T,IT>(this, x, y);
     }
 };
 
@@ -271,4 +217,4 @@ void release(Bcsr<T, IT> A)
   free(A.val);
 }
 
-#endif
+#endif /* BCSR_H */

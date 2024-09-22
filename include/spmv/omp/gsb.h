@@ -1,17 +1,18 @@
 #ifndef _SPMV_OMP_GSB_H_
 #define _SPMV_OMP_GSB_H_
+
 #include <omp.h>
 
 #include "rt.h"
+#include "partition.h"
 
 /*
  * SpMV routine that handles a chunk of a blockrow. May recursively call
  * itself.
  */
-template <class T, class IT, class SIT,
-          template <typename, typename, typename> class GSB>
+template <typename GSB, typename T, typename IT>
 void spmv_chunk (
-	    GSB<T,IT,SIT> const * const A,
+	    GSB const * const A,
         T const * const __restrict x,
         T * const __restrict y,
         BlockRowPartition<IT> const * const partition,
@@ -56,35 +57,12 @@ void spmv_chunk (
 }
 
 /*
- * SpMV routine for matrices in GSB format.
- */
-template <typename T, typename IT, typename SIT,
-          template <typename, typename, typename> class GSB>
-void spmv_unbalanced (
-        GSB<T,IT,SIT> const * const A,
-        T const * const __restrict x,
-        T * const __restrict y)
-{
-    // For each block row
-    #pragma omp parallel for schedule(dynamic,1)
-    for (IT bi=0; bi<A->blockrows; bi++) {
-
-        IT nchunks = A->partition[bi].nchunks;
-        IT y_start = A->get_block_row_offset(bi);
-        IT y_end = A->get_block_row_offset(bi+1);
-
-        A->spmv_chunk(x, y + y_start, A->partition + bi, IT(0), nchunks, y_end - y_start);
-    }
-}
-
-/*
  * SpMV routine for matrices in GSB format with "balanced" block-rows.
  * Parallelism within the block-row is unnecessary.
  */
-template <typename T, typename IT, typename SIT,
-          template <typename, typename, typename> class GSB>
+template <typename GSB, typename T, typename IT>
 void spmv_balanced (
-        GSB<T,IT,SIT> const * const A,
+        GSB const * const A,
         T const * const __restrict x,
         T * const __restrict y)
 {
@@ -119,16 +97,15 @@ void spmv_balanced (
  * - A "block" method returning a pointer to an object that defines a
  *   "spmv" method.
  */
-template <typename T, typename IT, typename SIT,
-          template <typename, typename, typename> class GSB>
+template <typename GSB, typename T, typename IT>
 void spmv_blocked (
-        GSB<T,IT,SIT> const * const A,
+        GSB const * const A,
         T const * const __restrict x,
         T * const __restrict y)
 {
     if (A->balanced)
     {
-        spmv_balanced(A, x, y);
+        spmv_balanced<GSB,T,IT>(A, x, y);
     }
     else
     {
