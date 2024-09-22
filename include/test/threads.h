@@ -44,7 +44,7 @@ void benchmark_spmv_threads (MATRIX<T,IT> const A, int iterations)
   }
 
   printf("------------ End of benchmarking -----------\n");
-  
+
   // Free memory
   vector_release(y);
   vector_release(x);

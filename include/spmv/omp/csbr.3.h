@@ -30,7 +30,7 @@ void spmv_balanced (
             x_offset = A->blockcol_ind[k] * A->block_size;
             block_start = A->block_ptr[k];
             block_end = A->block_ptr[k+1];
-            
+
             spmv_coo(
                 A->val + block_start,
                 A->row_ind + block_start,
@@ -43,7 +43,7 @@ void spmv_balanced (
 }
 
 /*
- * 
+ *
  */
 template <typename T, typename IT, typename SIT>
 void spmv_chunk (
@@ -66,7 +66,7 @@ void spmv_chunk (
             x_offset = A->blockcol_ind[k] * A->block_size;
             block_start = A->block_ptr[k];
             block_end = A->block_ptr[k + 1];
-            
+
             spmv_coo(
                 A->val + block_start,
                 A->row_ind + block_start,

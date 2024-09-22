@@ -11,7 +11,7 @@
  * WARNING : Always pipe results somewhere (eg. to 'less')
 */
 int main (int argc, char * argv[])
-{   
+{
     unsigned long i;
     int mode;
     INDEXTYPE n, r, c, nnz;
@@ -50,19 +50,19 @@ int main (int argc, char * argv[])
 
         for (i=0; i<nnz; i++) {
             fread(&n, sizeof(INDEXTYPE), 1, f);
-            printf("%12lu\n", (unsigned long) n);  
+            printf("%12lu\n", (unsigned long) n);
         }
-        printf("---------------------------------------\n"); 
+        printf("---------------------------------------\n");
 
         for (i=0; i<nnz; i++) {
             fread(&n, sizeof(INDEXTYPE), 1, f);
-            printf("%12lu\n", (unsigned long) n);  
+            printf("%12lu\n", (unsigned long) n);
         }
         printf("---------------------------------------\n");
 
         for (i=0; i<nnz; i++) {
             fread(&v, sizeof(VALUETYPE), 1, f);
-            printf("%12f\n", (double) v);  
+            printf("%12f\n", (double) v);
         }
         break;
 

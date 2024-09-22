@@ -186,7 +186,7 @@ int read_bin_COO(Coo<T,IT,IT> * A, const char * file_row, const char * file_col,
 
   // Set number or rows and columns
   A->rows = max_row + 1;
-  A->columns = max_col + 1; 
+  A->columns = max_col + 1;
   A->nnz = size;
 
   return 0;
@@ -257,27 +257,27 @@ int read_bin_COO(COO<T, IT> * A, const char * file_row, const char * file_col, c
     counter += fread(&vbuffer, sizeof(T), 1, fv);
     A->set_value(i, vbuffer);
   }
-  
+
   fclose(fc);
 
   // Set number or rows and columns
   A->rows = max_row + 1;
-  A->columns = max_col + 1; 
+  A->columns = max_col + 1;
   A->nnz = size;
   return 0;
 }
 
 /*
- * Read a COO matrix from a binary file (.bin). 
+ * Read a COO matrix from a binary file (.bin).
  */
-template <typename T, typename IT, 
+template <typename T, typename IT,
           template <typename, typename> class COO>
 int read_bin_COO(COO<T,IT> * A, const char * filename)
 {
     IT counter, buffer;
     T vbuffer;
     FILE * f;
-   
+
     f = fopen(filename, "rb");
     if (f == NULL) {
         fprintf(stderr, "Cannot open matrix file.\n");
@@ -331,7 +331,7 @@ int read_bin_COO(COO<T,IT> * A, const char * filename)
  * Read a COO matrix in either binary (.bin) or MatrixMarket (.mtx) format.
  * Use filename suffix to decide.
  */
-template <typename T, typename IT, 
+template <typename T, typename IT,
           template <typename, typename> class COO>
 int read_COO(COO<T,IT> * A, const char * filename)
 {

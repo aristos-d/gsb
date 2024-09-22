@@ -51,7 +51,7 @@ int main(int argc, char * argv[]){
     exit(1);
   }
   size_to_offset(block_offsets, block_sizes, A.blockrows);
-  
+
   A.rows = block_offsets[A.blockrows];
   A.columns = block_offsets[A.blockcols];
   free(block_sizes);  // Block sizes not needed anymore
@@ -65,9 +65,9 @@ int main(int argc, char * argv[]){
     exit(1);
   }
   printf(" done in %.3f sec\n", t);
-  
+
   printf("Matrix info : %lux%lu matrix with %lu non-zeros\n", (unsigned long) A.rows, (unsigned long) A.columns, (unsigned long) A.nnz);
-  
+
   printf("Calculating block ids..."); fflush(stdout);
   tick();
   calculate_block_id(A.elements, A.nnz, block_offsets, A.blockrows, block_offsets, A.blockcols);
@@ -90,7 +90,7 @@ int main(int argc, char * argv[]){
 
   printf("Writing to disk..."); fflush(stdout);
   tick();
-  ret = write_bin_blocked(A, argv[5]); 
+  ret = write_bin_blocked(A, argv[5]);
   t = tock();
   if(ret<0){
     fprintf(stderr, "Error while writing resulting matrix to disk.\n");

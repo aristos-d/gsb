@@ -64,7 +64,7 @@ template <class T, class IT>
 IT expand_indeces(Element<T, IT> * indeces, IT size, IT * block_sizes, IT * block_offsets, IT blocks)
 {
   IT new_block_size = expand_block_size(block_sizes, blocks);
-  
+
   #pragma omp parallel for schedule(static, 64)
   for (IT i=0; i<size; i++) {
     IT br, bc;

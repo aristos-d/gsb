@@ -75,7 +75,7 @@ int main(int argc, char * argv[])
       printf(" done in %.3f sec\n", t);
     }
   }
-  
+
   // Create a binary triplet file
   if (bin) {
     strncpy(buf, argv[4], FNBUFL-10);

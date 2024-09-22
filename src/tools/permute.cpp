@@ -74,7 +74,7 @@ int main(int argc, char * argv[])
     return 1;
   }
   printf("Reading complete : %lu row indeces\n", size);
-  
+
   permute_indeces(I, permutation, (INDEXTYPE) size);
 
   // Create new filename for output
@@ -91,7 +91,7 @@ int main(int argc, char * argv[])
   }
 
   free(I);
-  
+
   // Clean up
   free(permutation);
   return 0;

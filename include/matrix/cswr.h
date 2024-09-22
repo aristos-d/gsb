@@ -32,7 +32,7 @@ struct Cswr
             IT wrow_offset = width * i;
             IT wrow_start = wrow_ptr[i];
             IT wrow_nnz = wrow_ptr[i+1] - wrow_start;
-    
+
             spmv_coo(val + wrow_start, row + wrow_start, col + wrow_start,
                      width, columns, wrow_nnz,
                      x, y + wrow_offset);

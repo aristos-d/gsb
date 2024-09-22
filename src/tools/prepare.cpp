@@ -52,7 +52,7 @@ int main(int argc, char * argv[])
     free(permutation_vec);
     return 1;
   }
-  
+
   permute_indeces(indeces, permutation_vec, (INDEXTYPE) index_size);
 
   // Write permuted row indeces to disk
@@ -88,14 +88,14 @@ int main(int argc, char * argv[])
   printf("%lu column indeces permuted.\n", index_size);
   free(permutation_vec);
   free(indeces);
-  
+
   // Read block sizes
   ret = read_bin_array(argv[5], &block_sizes, &blocks );
   if(ret<0){
     fprintf(stderr, "Error while reading block sizes.\n");
     return 1;
   }
-  
+
   printf("%lu block sizes loaded.\n", blocks);
   printf("Block size info : %lu block-rows and %lu block-columns\n", blocks, blocks);
   A.blockrows = (INDEXTYPE) blocks;
@@ -119,7 +119,7 @@ int main(int argc, char * argv[])
   }
   printf("Matrix loaded to memory.\n");
   printf("Matrix info : %lux%lu matrix with %lu non-zeros\n", (unsigned long) A.rows, (unsigned long) A.columns, (unsigned long) A.nnz);
-  
+
   // Calculate block ids
   printf("Calculating block ids... "); fflush(stdout);
   tick();
@@ -167,7 +167,7 @@ int main(int argc, char * argv[])
 
   printf("Writing to file %s ...", buf); fflush(stdout);
   tick();
-  ret = write_bin_blocked(A, buf); 
+  ret = write_bin_blocked(A, buf);
   t = tock();
   if(ret<0){
     fprintf(stderr, "Error while writing matrix to disk.\n");
@@ -178,7 +178,7 @@ int main(int argc, char * argv[])
   // Sort columns
   printf("Sorting columns..."); fflush(stdout);
   tick();
-  sort_triplets(A.elements, A.nnz, false); 
+  sort_triplets(A.elements, A.nnz, false);
   t = tock();
   printf(" done in %.3f sec\n", t);
 

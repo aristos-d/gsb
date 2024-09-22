@@ -16,7 +16,7 @@ int main(int argc, char * argv[])
   OLDTYPE v;
   NEWTYPE v_new;
   FILE *f_in, *f_out;
-  
+
   if (argc < 2){
     fprintf(stderr, "Usage: %s [file-1] [file-2] ... [file-n]\n", argv[0]);
     exit(1);
@@ -46,9 +46,9 @@ int main(int argc, char * argv[])
 
     fclose(f_in);
     fclose(f_out);
-    
+
     printf("Conversion complete : %lu values\n", size);
   }
-  
+
   return 0;
 }

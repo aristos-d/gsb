@@ -7,9 +7,9 @@
 // http://faculty.cse.tamu.edu/davis/suitesparse.html
 template <typename IT>
 IT * invert_permutation (IT const * p, IT size)
-{    
+{
     IT * pinv = new IT[size];        /* allocate result */
-   
+
     #pragma omp parallel for schedule(static,64)
     for (IT k=0; k<size; k++) {
         pinv [p [k]] = k ;/* invert the permutation */

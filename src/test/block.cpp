@@ -1,6 +1,6 @@
-#include <stdint.h>
-#include <stdlib.h>
-#include <stdio.h>
+#include <cstdint>
+#include <cstdlib>
+#include <cstdio>
 #include <libgen.h>
 
 #define VALUETYPE float
@@ -53,7 +53,7 @@ int main(int argc, char* argv[])
     ret = read_COO(&coo2, argv[f]);
     if (ret!=0) {
         fprintf(stderr, "Something went wrong while reading the matrix. Aborting.\n");
-        return 1; 
+        return 1;
     }
 
     sscanf(basename(argv[f]), "size%luratio%f%*s", &N, &nnzratio);
@@ -71,14 +71,14 @@ int main(int argc, char* argv[])
     printf("%e, ", t_avg); fflush(stdout);
 
     /* ----------------------- Coo2 ----------------------- */
-    
+
     BENCH_AVG( coo2.spmv(x, y), ITERATIONS, t_avg );
     printf("%e, ", t_avg); fflush(stdout);
 
     /* --------------------- Coo (SI) --------------------- */
 
     Coo_to_Coo(&coo_si, coo2.triplets, coo2.nnz);
-    
+
     BENCH_AVG( coo_si.spmv(x, y), ITERATIONS, t_avg );
     printf("%e, ", t_avg); fflush(stdout);
 
@@ -106,7 +106,7 @@ int main(int argc, char* argv[])
     printf("%e, ", t_avg); fflush(stdout);
 
     release(csr_si);
-    
+
 
     /* ----------------------- Dense ---------------------- */
     Coo_to_Dense(&dense, &coo2);
@@ -119,6 +119,6 @@ int main(int argc, char* argv[])
     vector_release(x);
     release(coo2);
   }
-  
+
   return 0;
 }

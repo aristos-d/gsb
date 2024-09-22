@@ -9,7 +9,7 @@
 /*
  * Timer code
  */
-static std::chrono::time_point<std::chrono::high_resolution_clock> mark; 
+static std::chrono::time_point<std::chrono::high_resolution_clock> mark;
 
 void tick()
 {
@@ -65,7 +65,7 @@ void print_timing_csv (char const *method, unsigned long nnz, unsigned long iter
 }
 
 /*
- * Copied from 
+ * Copied from
  * https://stackoverflow.com/questions/10347689/how-can-i-check-whether-a-string-ends-with-csv-in-c
  */
 int string_ends_with(const char * str, const char * suffix)
@@ -73,7 +73,7 @@ int string_ends_with(const char * str, const char * suffix)
     int str_len = strlen(str);
     int suffix_len = strlen(suffix);
 
-    return 
+    return
       (str_len >= suffix_len) &&
       (0 == strcmp(str + (str_len-suffix_len), suffix));
 }
@@ -85,12 +85,12 @@ size_t get_file_size(const char * filename)
 {
   size_t size;
   FILE * f;
-  
+
   f = fopen(filename, "rb");
   if(f == NULL){
     fprintf(stderr, "Cannot open file %s\n", filename);
     exit(1);
-  } 
+  }
   fseek(f, 0, SEEK_END);
   size = ftell(f);
   fclose(f);
@@ -122,7 +122,7 @@ uint64_t next_power_of_two(uint64_t n)
  */
 unsigned int highest_bit_set(uint64_t v)
 {
-	// b in binary is {10,1100, 11110000, 1111111100000000 ...}  
+	// b in binary is {10,1100, 11110000, 1111111100000000 ...}
 	const uint64_t b[] = {0x2ULL, 0xCULL, 0xF0ULL, 0xFF00ULL, 0xFFFF0000ULL, 0xFFFFFFFF00000000ULL};
 	const unsigned int S[] = {1, 2, 4, 8, 16, 32};
 	int i;
@@ -132,7 +132,7 @@ unsigned int highest_bit_set(uint64_t v)
 		if (v & b[i]) { // highestbitset is on the left half (i.e. v > S[i] for sure)
 			v >>= S[i];
 			r |= S[i];
-		} 
+		}
 	}
 	return r;
 }
@@ -149,25 +149,25 @@ int64_t highest_bit_set(int64_t v)
 }
 
 /*
- * 32-bit version 
+ * 32-bit version
  * note: least significant bit is the "zeroth" bit
  * pre: v > 0
  */
 unsigned int highest_bit_set(unsigned int v)
 {
-	// b in binary is {10,1100, 11110000, 1111111100000000 ...}  
+	// b in binary is {10,1100, 11110000, 1111111100000000 ...}
 	const unsigned int b[] = {0x2, 0xC, 0xF0, 0xFF00, 0xFFFF0000};
 	const unsigned int S[] = {1, 2, 4, 8, 16};
 	int i;
 
-	unsigned int r = 0; 
-	for (i = 4; i >= 0; i--) 
+	unsigned int r = 0;
+	for (i = 4; i >= 0; i--)
 	{
 		if (v & b[i])	// highestbitset is on the left half (i.e. v > S[i] for sure)
 		{
 			v >>= S[i];
 			r |= S[i];
-		} 
+		}
 	}
 	return r;
 }
@@ -179,6 +179,6 @@ int highest_bit_set(int v)
 	} else {	
 		unsigned int uv = static_cast<unsigned int> (v);
 		unsigned int ur = highest_bit_set(uv);
-		return static_cast<int> (ur); 
+		return static_cast<int> (ur);
 	}
 }

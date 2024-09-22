@@ -20,18 +20,18 @@ int main(int argc, char * argv[])
     size_t perm_size;
     INDEXTYPE * permutation, * inv_permutation;
     INDEXTYPE beta;
-  
+
     Coo3<VALTYPE,INDEXTYPE> coo;
     Csr<VALTYPE,INDEXTYPE> csr;
     Cgbr2<VALTYPE,INDEXTYPE,SINDEXTYPE> cgbr;
-  
+
     if (argc != 3){
         fprintf(stderr, "Usage: %s [matrix] [permutation]\n", argv[0]);
         return 1;
     }
 
     printf("Threads   : %d\n", RT_WORKERS);
-    
+
     // Reading matrix
     printf("Reading matrix from disk..."); fflush(stdout);
     tick();
@@ -41,7 +41,7 @@ int main(int argc, char * argv[])
     if (ret<0) {
         fprintf(stderr, "Something went wrong while reading the matrix. Aborting.\n");
         return 1;
-    } 
+    }
     printf(" done in %.4f sec\n", t);
 
     // Pick block size
@@ -55,7 +55,7 @@ int main(int argc, char * argv[])
         return 1;
     }
     printf("Read permutation vector. Size : %lu\n", perm_size);
-  
+
     #ifdef INVPERM
     inv_permutation = invert_permutation(permutation, (INDEXTYPE) perm_size);
     if (inv_permutation == NULL) {
@@ -74,16 +74,16 @@ int main(int argc, char * argv[])
     t = tock();
     printf(" done in %.4f sec\n", t);
     delete [] permutation;
-    
+
     // CSR - start
     printf("Converting to CSR format..."); fflush(stdout);
     tick();
     Coo_to_Csr(&csr, &coo);
     t = tock();
     printf(" done in %.4f sec\n", t);
-    
+
     benchmark_spmv_csv(csr, ITERATIONS, "CSR");
-    
+
     release(csr);
     // CSR - end
 
@@ -95,12 +95,12 @@ int main(int argc, char * argv[])
     printf(" done in %.4f sec\n", t);
 
     print_info(cgbr);
-    
+
     benchmark_spmv_csv(cgbr, ITERATIONS, "GSB");
-    
+
     release(cgbr);
     // GSB - end
-  
+
     // Free memory
     release(coo);
     return 0;

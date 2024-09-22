@@ -58,7 +58,7 @@ int main(int argc, char * argv[]){
 
   printf("Sorting columns..."); fflush(stdout);
   tick();
-  sort_triplets(A.elements, A.nnz, false); 
+  sort_triplets(A.elements, A.nnz, false);
   t = tock();
   printf(" done in %.3f sec\n", t);
 
@@ -84,7 +84,7 @@ int main(int argc, char * argv[]){
   }else{
     printf("Writing complete.\n");
   }
-  
+
   // Clean up
   free(block_size);
   free(block_offset);

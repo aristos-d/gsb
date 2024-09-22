@@ -28,7 +28,7 @@ void show (T * x, int size)
 
 template <class T, class IT>
 void show (Triplet<T, IT> x)
-{   
+{
   std::cout << "(" << x.row << ", " << x.col << ", " << x.val << ")\n";
 }
 
@@ -89,7 +89,7 @@ int check_results (T * vec1, T * vec2, IT size)
         }
         norm += vec1[i] * vec1[i];
     }
-      
+
     mse = sq_error / size;
     nmse = mse / norm;
 

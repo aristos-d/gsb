@@ -16,8 +16,8 @@ IT pick_block_size(IT m, IT n, size_t val_size, int workers)
     bool ispar = (workers > 1);
     IT roundrowup = next_power_of_two(m);
     IT roundcolup = next_power_of_two(n);
-    
-    // if indices are negative, highestbitset returns -1, 
+
+    // if indices are negative, highestbitset returns -1,
     // but that will be caught by the sizereq below
     IT rowbits = highest_bit_set(roundrowup);
     IT colbits = highest_bit_set(roundcolup);
@@ -28,16 +28,16 @@ IT pick_block_size(IT m, IT n, size_t val_size, int workers)
     } else {
     	sizereq = ((rowbits > 1) && (colbits > 1));
     }
-    
+
     if (!sizereq) {
     	return 0;
     }
-    
+
     IT rowlowbits = rowbits-1;	
     IT collowbits = colbits-1;	
     IT inf = std::numeric_limits<IT>::max();
     IT maxbits = highest_bit_set(inf);
-    
+
     IT rowhighbits = rowbits-rowlowbits;	// # higher order bits for rows (has at least one bit)
     IT colhighbits = colbits-collowbits;	// # higher order bits for cols (has at least one bit)
     if(ispar) {
@@ -46,7 +46,7 @@ IT pick_block_size(IT m, IT n, size_t val_size, int workers)
     		rowlowbits--;
     	}
     }
-    
+
     // calculate the space that suby occupies in L2 cache
     IT yL2 = (1 << rowlowbits) * val_size;
     while(yL2 > L2SIZE)
@@ -55,7 +55,7 @@ IT pick_block_size(IT m, IT n, size_t val_size, int workers)
     	rowhighbits++;
     	rowlowbits--;
     }
-    
+
     // calculate the space that subx occupies in L2 cache
     IT xL2 = (1 << collowbits) * val_size;
     while(xL2 > L2SIZE)
@@ -64,8 +64,8 @@ IT pick_block_size(IT m, IT n, size_t val_size, int workers)
     	colhighbits++;
     	collowbits--;
     }
-    
-    // blocks need to be square for correctness (maybe generalize this later?) 
+
+    // blocks need to be square for correctness (maybe generalize this later?)
     while(rowlowbits+collowbits > maxbits)
     {
     	if(rowlowbits > collowbits)
@@ -90,10 +90,10 @@ IT pick_block_size(IT m, IT n, size_t val_size, int workers)
     	collowbits--;
     }
     assert (collowbits == rowlowbits);
-    
+
     IT lowrowmask = (1 << rowlowbits) - 1;
     IT lowcolmask = (1 << collowbits) - 1;
-    
+
     double sqrtn = sqrt(sqrt(static_cast<double>(m) * static_cast<double>(n)));
     IT logbeta = static_cast<IT>(ceil(log2(sqrtn))) + 2;
     if(rowlowbits > logbeta)
@@ -184,12 +184,12 @@ IT bit_interleave(IT row, IT col)
     x = (x | (x << S[2])) & B[2];
     x = (x | (x << S[1])) & B[1];
     x = (x | (x << S[0])) & B[0];
-    
+
     y = (y | (y << S[3])) & B[3];
     y = (y | (y << S[2])) & B[2];
     y = (y | (y << S[1])) & B[1];
     y = (y | (y << S[0])) & B[0];
-    
+
     return (IT) (x | (y << 1));
 }
 
@@ -200,7 +200,7 @@ template <class Value_t, class Index_t, class SmallIndex_t,
           template <typename, typename> class Point_t>
 void sort_triplets_morton(Point_t<Value_t,SmallIndex_t> * array, Index_t size)
 {
-    // Comparison function 
+    // Comparison function
     auto compare = [](Point_t<Value_t,SmallIndex_t> const& first,
                       Point_t<Value_t,SmallIndex_t> const& second)
     {
@@ -271,8 +271,8 @@ void sort_elements_blocks(Element<T, IT> * array, IT size)
 {
   auto compare = [](Element<T, IT> first, Element<T, IT> last)
   {
-    return ( first.block<last.block || 
-           ( first.block==last.block && first.row < last.row ) || 
+    return ( first.block<last.block ||
+           ( first.block==last.block && first.row < last.row ) ||
            ( first.block==last.block && first.row == last.row && first.col<last.col ));
   };
 
@@ -292,8 +292,8 @@ void sort_triplets_widerows(Point_t<Value_t,Index_t> * array, Index_t size, Inde
   {
     Index_t wr1 = first.row / width;
     Index_t wr2 = last.row / width;
-    return ( wr1 < wr2  || 
-           ( wr1 == wr2 && first.col < last.col ) || 
+    return ( wr1 < wr2  ||
+           ( wr1 == wr2 && first.col < last.col ) ||
            ( wr1 == wr2 && first.col == last.col && first.row < last.row ));
   };
 

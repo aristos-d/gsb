@@ -46,7 +46,7 @@
 #define BLOCK_SIZE(m, n) (BLOCK_SIZE_PARAM * round(sqrt(sqrt(m * n))))
 #endif
 
-#define DEFAULT_CSWR_WIDTH 32 
+#define DEFAULT_CSWR_WIDTH 32
 
 // L2 cache size for tuning
 #define KBYTE 1024

@@ -13,7 +13,7 @@ int main (int argc, char * argv[])
   char buf[FNBUFL];
   INDEXTYPE *indeces, n;
   FILE *f_in, *f_out;
-  
+
   if (argc < 2) {
     fprintf(stderr, "Usage: %s [file-1] [file-2] ... [file-n]\n", argv[0]);
     return 1;
@@ -62,10 +62,10 @@ int main (int argc, char * argv[])
 
     fwrite(indeces, sizeof(INDEXTYPE), n, f_out);
     fclose(f_out);
-    
+
     printf("Conversion complete : %lu values\n", (unsigned long ) n);
     free(indeces);
   }
-  
+
   return 0;
 }

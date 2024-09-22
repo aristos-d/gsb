@@ -36,12 +36,12 @@ struct Sgsb {
   IT nnz;
 };
 
-// --------------------- Constructor --------------------- 
+// --------------------- Constructor ---------------------
 
 template <class T, class IT, class SIT>
 Sgbs<T,IT,SIT>::Sgbs(Element<T,IT> * array, IT _rows, IT _columns, IT _nnz,
         IT * _blockrow_offset, IT _blockrows,
-        IT * _blockcol_offset, IT _blockcols) : 
+        IT * _blockcol_offset, IT _blockcols) :
     rows(_rows), columns(_columns), nnz(_nnz),
     blockrow_offset(_blockrow_offset), blockrows(_blockrows),
     blockcol_offset(_blockcol_offset), blockcols(_blockcols)
@@ -50,45 +50,45 @@ Sgbs<T,IT,SIT>::Sgbs(Element<T,IT> * array, IT _rows, IT _columns, IT _nnz,
     IT bc, bc_offset, bc_size;
     IT b;
     MatrixType block_type;
-    
+
     // Sanity checks on block sizes
     assert(blockrows <= rows);
     assert(blockcols <= columns);
     assert(blockrow_offset[blockrows] == rows);
     assert(blockcol_offset[blockcols] == columns);
-  
+
     // Sort non-zeros according to block-row, block-column, row, column
-    calculate_block_id(array, nnz, blockrow_offset, blockrows, blockcol_offset, blockcols);  
+    calculate_block_id(array, nnz, blockrow_offset, blockrows, blockcol_offset, blockcols);
     sort_elements_blocks(array, nnz);
 
     nnzblocks = count_blocks(array, nnz);
-  
+
     // Memory allocations
     blocks = new BLOCK<T,IT,SIT>[nnzblocks];
     blockcol_ind = new IT[nnzblocks];
     blockrow_ptr = new IT[blockrows + 1]();
-  
+
     IT block_index = 0;
     IT i=0, j=0, k;
 
     while (i<nnz) {
         b = array[i].block;
         j = i + 1;
-    
+
         // Scan forward to find the end of the current block
         while (j<nnz && array[j].block == b) j++;
-    
+
         br = b / blockcols;
         bc = b % blockcols;
         br_offset = blockrow_offset[br];
         bc_offset = blockcol_offset[bc];
         br_size = blockrow_offset[br + 1] - br_offset;
         bc_size = blockcol_offset[bc + 1] - bc_offset;
-        
+
         // Block meta data
         blockrow_ptr[br+1]++;
         blockcol_ind[block_index] = bc;
-    
+
         // Adjust indeces inside block
         for (k=i; k<j; k++) {
             assert(array[k].row >= br_offset);
@@ -98,24 +98,24 @@ Sgbs<T,IT,SIT>::Sgbs(Element<T,IT> * array, IT _rows, IT _columns, IT _nnz,
             array[k].row -= br_offset;
             array[k].col -= bc_offset;
         }
-    
+
         // Initialize new block
         block_type = factory.create(blocks + block_index, array + i,
                                     br_size, bc_size, j-i);
         type_block_count[block_type]++;
         type_nnz_count[block_type] += (j-i);
-    
+
         // Prepare for next block
         block_index++;
         i = j;
     }
-  
+
     for (br=0; br<blockrows; br++) {
         blockrow_ptr[br+1] = blockrow_ptr[br+1] + blockrow_ptr[br];
     }
-  
+
     assert(blockrow_ptr[blockrows] == nnzblocks);
-  
+
     // Now create block-row partitioning
     partition_init(this);
 }
@@ -132,7 +132,7 @@ int Coo_to_Cgbr (Sgbs<T,IT,SIT> * A, Coo3<T,IT> * B,
   MatrixType block_type;
 
   // Sort non-zeros according to block-row, block-column, row, column
-  calculate_block_id(B->elements, B->nnz, blockrow_offset, blockrows, blockcol_offset, blockcols);  
+  calculate_block_id(B->elements, B->nnz, blockrow_offset, blockrows, blockcol_offset, blockcols);
   sort_elements_blocks(B->elements, B->nnz);
   DEBUG(puts("Sorting complete"));
 
@@ -177,7 +177,7 @@ int Coo_to_Cgbr (Sgbs<T,IT,SIT> * A, Coo3<T,IT> * B,
     bc_offset = blockcol_offset[bc];
     br_size = blockrow_offset[br + 1] - br_offset;
     bc_size = blockcol_offset[bc + 1] - bc_offset;
-    
+
     // Block meta data
     A->blockrow_ptr[br+1]++;
     A->blockcol_ind[block_index] = bc;
@@ -193,7 +193,7 @@ int Coo_to_Cgbr (Sgbs<T,IT,SIT> * A, Coo3<T,IT> * B,
     }
 
     // Initialize new block
-    block_type = factory.create(A->blocks + block_index, 
+    block_type = factory.create(A->blocks + block_index,
                                 B->elements + i, br_size, bc_size, j-i);
     A->type_block_count[block_type]++;
     A->type_nnz_count[block_type] += (j-i);
@@ -238,7 +238,7 @@ void release(Sgbs<T,IT,SIT> A)
 
     delete [] A.blocks;
     delete [] A.blockrow_ptr;
-    delete [] A.blockcol_ind;  
+    delete [] A.blockcol_ind;
 }
 
 #endif
